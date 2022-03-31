@@ -5,47 +5,78 @@ use strict;
 
 # Find the midi numbers of the WORLDE, Launchpad X, and Pure Data
 
-my @aconnect_l = `aconnect -l`;
-print @aconnect_l;
-print scalar(@aconnect_l)." lines\n";
-my @wdd = grep {defined} map {/^client\s(\d+): 'WORLDE'/; $1} @aconnect_l;
-@wdd == 1 or die "Too many entries for worlde";
-my $worlde_device = $wdd[0];
-my @lpd = grep {defined} map {/^client (\d+): 'Launchpad X'/} @aconnect_l;
-@lpd == 1 or die "Too many entries for Launchpd X";
-my $launchpad_x_device = $lpd[0];
+sub set_up_midi() {
+    my @aconnect_l = `aconnect -l`;
+    # print @aconnect_l;
+    # print scalar(@aconnect_l)." lines\n";
+    my @wdd = grep {defined} map {/^client\s(\d+): 'WORLDE'/; $1} @aconnect_l;
+    @wdd == 0 and die "No MIDI entries found for WORLDE";
+    @wdd == 1 or die "Too many entries for worlde";
+    my $worlde_device = $wdd[0];
+    my @lpd = grep {defined} map {/^client (\d+): 'Launchpad X'/} @aconnect_l;
+    @lpd == 1 or die "Too many entries for Launchpd X";
+    my $launchpad_x_device = $lpd[0];
 
-my @pdd = grep {defined} map {/^client (\d+): 'Pure Data'/} @aconnect_l;
-@pdd == 1 or die "Too many entries for Pure Data: " . scalar(@pdd);
-my $pure_data_device = $pdd[0];
+    my @pdd = grep {defined} map {/^client (\d+): 'Pure Data'/} @aconnect_l;
+    @pdd == 1 or die "Too many entries for Pure Data: " . scalar(@pdd);
+    my $pure_data_device = $pdd[0];
 
-print "\$worlde_device $worlde_device. \n\$launchpad_x_device $launchpad_x_device. \n\$pure_data_device $pure_data_device\n";
+    print "\$worlde_device $worlde_device. \n\$launchpad_x_device $launchpad_x_device. \n\$pure_data_device $pure_data_device\n";
 
-## Delete connections to and from pure data
-sub del_con( $$ ) {
-    my ($l, $r) = @_;
-    print `aconnect -d $l $r`;
+    ## Delete connections to and from pure data
+    sub del_con( $$ ) {
+	my ($l, $r) = @_;
+	print `aconnect -d $l $r`;
+    }
+
+    &del_con("$worlde_device:0", "$pure_data_device:0");
+    &del_con("$worlde_device:0", "$pure_data_device:1");
+    &del_con("$launchpad_x_device:0", "$pure_data_device:0");
+    &del_con("$launchpad_x_device:1", "$pure_data_device:0");
+    &del_con("$launchpad_x_device:0", "$pure_data_device:1");
+    &del_con("$launchpad_x_device:1", "$pure_data_device:1");
+    &del_con("$pure_data_device:2", "$launchpad_x_device:0");
+    &del_con("$pure_data_device:2", "$launchpad_x_device:1");
+    &del_con("$pure_data_device:2", "$worlde_device:0");
+
+    ## Make new connections
+    sub make_con( $$ ) {
+	my ($l, $r) = @_;
+	print `aconnect  $l $r`;
+    }
+
+    &make_con("$worlde_device:0", "$pure_data_device:1");
+    &make_con("$launchpad_x_device:0", "$pure_data_device:0");
+    &make_con("$launchpad_x_device:1", "$pure_data_device:0");
+    &make_con("$pure_data_device:2", "$launchpad_x_device:0");
+    &make_con("$pure_data_device:2", "$launchpad_x_device:1");
+    &make_con("$pure_data_device:2", "$worlde_device:0");
 }
 
-&del_con("$worlde_device:0", "$pure_data_device:0");
-&del_con("$worlde_device:0", "$pure_data_device:1");
-&del_con("$launchpad_x_device:0", "$pure_data_device:0");
-&del_con("$launchpad_x_device:1", "$pure_data_device:0");
-&del_con("$launchpad_x_device:0", "$pure_data_device:1");
-&del_con("$launchpad_x_device:1", "$pure_data_device:1");
-&del_con("$pure_data_device:2", "$launchpad_x_device:0");
-&del_con("$pure_data_device:2", "$launchpad_x_device:1");
-&del_con("$pure_data_device:2", "$worlde_device:0");
+sub set_up_pure_data(){
 
-## Make new connections
-sub make_con( $$ ) {
-    my ($l, $r) = @_;
-    print `aconnect  $l $r`;
+    ## If pure data is running warn and quit
+    if(`pgrep pd -x`){
+	warn "pd (Pure Data) is running already";
+	return;
+    }
+    my $sample_rate = "48000";
+    my $audio_in_dev = "1,2"; # Stero. Standard
+    my $audio_out_dev = "1,2"; # Stero. Standard
+    my $midiindev = "1,2";
+
+    my $pd_command = "/usr/local/bin/pd -r $sample_rate -audioindev $audio_in_dev -audiooutdev $audio_out_dev -jack -rt -send \"; pd dsp 1\" -midiindev $midiindev ";
+    if(fork()){
+	## In parent
+    }else{
+	## In child
+	exec $pd_command;
+    }
 }
+			  
 
-&make_con("$worlde_device:0", "$pure_data_device:1");
-&make_con("$launchpad_x_device:0", "$pure_data_device:0");
-&make_con("$launchpad_x_device:1", "$pure_data_device:0");
-&make_con("$pure_data_device:2", "$launchpad_x_device:0");
-&make_con("$pure_data_device:2", "$launchpad_x_device:1");
-&make_con("$pure_data_device:2", "$worlde_device:0");
+&set_up_pure_data();
+## Have to allow pure data to start.  This i stacky.  I would like a
+## better way
+sleep(2);
+&set_up_midi();

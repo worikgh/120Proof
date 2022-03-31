@@ -6,13 +6,20 @@ Idiosyncratic music making system, mine.
 
 # Pure Data
 
-## MIDI
 
-`InitialiseMidi.pl` sets up the MIDI connections for the LPX (cahnnel 1) and WORLDE (channel 17)
+## Initialisation
+
+The programme `Initialise`:
+
+* sets up the MIDI connections for the LPX (channel 1) and WORLDE (channel 17)
+
+* Starts Pure Data
+
+
 
 ## Patches
 
-In `Pd` 
+In `pd_patches` 
 
 ### polysynth.pd
 
