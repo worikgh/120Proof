@@ -1,0 +1,3 @@
+#N canvas 357 201 450 300 12;
+#X obj 32 47 polysynth;
+#X text 8 2 This is the master patch of 120Proof;

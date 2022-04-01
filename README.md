@@ -42,6 +42,12 @@ Pitch bend works
 
 Controls do not properly work (knobs and sliders)
 
+* Pedal
+
+Essentially a three key usb-keyboard configured as a pedal
+
 * Berringer XR18
 
 Can only be controlled by software
+
+~/X-Air-LiveToolbox-132-source/X-AIR-Edit_RASPI_1.5/X-AIR-Edit
