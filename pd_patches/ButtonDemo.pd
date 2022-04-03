@@ -1,0 +1,15 @@
+#N canvas 62 70 450 300 12;
+#X obj 162 44 LPX/Button 57;
+#X msg 120 6 red;
+#X msg 196 12 green;
+#X msg 261 11 blue;
+#X obj 162 69 bng 15 250 50 0 empty empty empty 17 7 0 10 #fcfcfc #000000
+#000000;
+#X obj 195 72 bng 15 250 50 0 empty empty empty 17 7 0 10 #fcfcfc #000000
+#000000;
+#X obj 106 117 LPX/Main;
+#X connect 0 0 4 0;
+#X connect 0 1 5 0;
+#X connect 1 0 0 0;
+#X connect 2 0 0 0;
+#X connect 3 0 0 0;

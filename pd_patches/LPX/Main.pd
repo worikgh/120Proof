@@ -1,0 +1,10 @@
+#N canvas 492 134 450 300 12;
+#X obj 27 136 midiout;
+#X obj 28 110 list 240 0 32 41 2 12 0 127 247;
+#X text 45 85 Set programmer mode;
+#X text 13 2 Control Novation LP_X touchpad;
+#X obj 28 66 loadbang;
+#X text 13 26 Include this patch to put the device into Programmer
+Mode and make it useful;
+#X connect 1 0 0 0;
+#X connect 4 0 1 0;
