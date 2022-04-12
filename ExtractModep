@@ -312,10 +312,9 @@ my $prefix = 'a';
 opendir(my $dir, $MODEP_PEDALS) or die $!;
 my @names = grep { /\.pedalboard$/ } readdir($dir);
 
-## Put commands to pass to `control` here
+## For each pedalboard directory, collect the mod-host command strings
+## to set up the effects in @commands
 my @commands = ();
-
-## For each pedalboard directory
 foreach my $name (sort @names){
     $name =~ /^(\S+)\.pedalboard$/ or die $name;
     my $board = $1;
@@ -337,22 +336,34 @@ foreach my $name (sort @names){
     }
 }
 
-## Replace instance numbers with integers
+## Replace instance numbers with integers. `%effects_name_instance` is
+## a global that process_file maintains as a side effect
 my $inst = 1; ## Initial number
 foreach my $key (sort keys %effect_name_instance){
-    $VERBOSE  and print STDERR $effect_name_instance{$key}." -> $inst\n";
+    $VERBOSE  and print STDERR "For $key: " .
+	$effect_name_instance{$key}." -> $inst\n";
     $effect_name_instance{$key} = $inst++;
 }
 
 ## Now have propper instance numbers.  Apply them
 
+## The commands to set up pedal boards indexed by board name
 my %pedal_settings = ();
 foreach my $cc (@commands){
+
+    ## Get the name for the pedal board and the set of commands that
+    ## enable it in mod-host
+
     my $name = $cc->[0];
     my @cmds = @{$cc->[1]};
+    
     defined($pedal_settings{$name}) and die "$name";
     $pedal_settings{$name} = [];
     foreach my $c (@cmds){
+
+	## Take a mod-host command and match it with its device number
+	## stored in %effect_name_instance
+
 	if($c =~ /^param_set/ ||
 	   $c =~ /^add /) {
 
@@ -368,12 +379,11 @@ foreach my $cc (@commands){
     }
 }
 
-## Set up each possible pedal
-
-## Commeands to run now to set up the pedal
+## Commands to run now to set up the pedals indexed by board name
 my %control_commands = ();
 
-## Commands to run when the pedal is used
+## Commands to run when the pedal is used.  Mostly (only?) JACK
+## connections
 my %pedal_commands = ();
 
 foreach my $name ( sort keys %pedal_settings){
