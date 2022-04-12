@@ -1,24 +1,6 @@
 # 120Proof
 
-Idiosyncratic music making system, mine.
-
-## Software
-
-### Pure Data
-
-
-### Mistress
-
-The boss.  Calls scripts in the right order to initialise instruments, control, and audio paths.
-
-## Patches
-
-In `pd_patches` 
-
-### polysynth.pd
-
-Simple polyphonic synthesiser
-
+Idiosyncratic music making system.
 
 ## Instruments
 
