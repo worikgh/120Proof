@@ -291,6 +291,7 @@ sub process_file( $$ ) {
     unshift(@ret, $name_line);
     return @ret;
 }
+
 ## Get the ttl file that holds all the pedal board definitions
 sub get_board_ttl( $$$ ){
    my ($root, $name, $board) = @_;
@@ -314,6 +315,7 @@ my @names = grep { /\.pedalboard$/ } readdir($dir);
 ## Put commands to pass to `control` here
 my @commands = ();
 
+## For each pedalboard directory
 foreach my $name (sort @names){
     $name =~ /^(\S+)\.pedalboard$/ or die $name;
     my $board = $1;
