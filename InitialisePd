@@ -1,0 +1,36 @@
+#!/usr/bin/perl -w
+use strict;
+
+&set_up_pure_data();
+
+sub set_up_pure_data(){
+
+    ## If pure data is running warn and quit
+    if(`pgrep pd -x`){
+	warn "pd (Pure Data) is running already";
+	return;
+    }
+    my $sample_rate = "48000";
+    my $audio_in_dev = "'1,2'"; # Stero. Standard
+    my $audio_out_dev = "'1,2'"; # Stero. Standard
+    my $midiindev = "'1,2'";
+    my $path = `pwd`;
+    chomp $path;
+    my $pd_command = "/usr/local/bin/pd -r $sample_rate " .
+	"-audioindev $audio_in_dev " .
+	"-audiooutdev $audio_out_dev " .
+	"-jack -rt -send \"; pd dsp 1\" " .
+	"-path $path/pd_patches " .
+	"-path $path/pd_patches/instruments " .
+	# "-nostdpath " .
+	"-midiindev $midiindev " .
+	"120Proof.pd " .
+	"";
+    print "Run: $pd_command\n";
+    if(fork()){
+	## In parent
+    }else{
+	## In child
+	exec $pd_command;
+    }
+}

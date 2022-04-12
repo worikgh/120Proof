@@ -1,29 +1,34 @@
 #N canvas 213 58 450 364 12;
 #X obj 5 6 inlet;
-#X obj 34 135 route 1;
-#X obj 34 195 i 1;
-#X floatatom 44 224 5 0 0 0 - - - 0;
-#X obj 87 185 i 0;
-#X obj 5 255 spigot;
-#X floatatom 5 280 5 0 0 0 - - - 0;
-#X obj 34 81 expr $i1 < \$2 && $i1 > \$1;
-#X obj 5 304 + \$3;
-#X floatatom 37 62 5 0 0 0 - - - 0;
-#X obj 5 31 print \$1 \$2 \$3;
-#X obj 5 329 outlet;
-#X obj 34 160 bng 15 250 50 0 empty empty empty 17 7 0 10 #fcfcfc #000000
+#X obj 34 110 route 1;
+#X obj 34 170 i 1;
+#X floatatom 44 199 5 0 0 0 - - - 0;
+#X obj 87 160 i 0;
+#X obj 5 230 spigot;
+#X floatatom 5 255 5 0 0 0 - - - 0;
+#X obj 5 279 + \$3;
+#X floatatom 36 48 5 0 0 0 - - - 0;
+#X obj 5 304 outlet;
+#X obj 34 135 bng 15 250 50 0 empty empty empty 17 7 0 10 #fcfcfc #000000
 #000000;
-#X connect 0 0 7 0;
-#X connect 0 0 9 0;
-#X connect 0 0 10 0;
+#X obj 69 310 print Note;
+#X text 119 98 When the midi note is greater than the first argument
+and smaller than the second the note is alowed through and the third
+argument is added to it This reassigns pads midi output. The first
+and second argument define a row (one pad per row only emite ctl midi
+signals) and the third argument moves the note up or down scale;
+#X obj 34 81 expr $i1 > \$1 && $i1 < \$2;
 #X connect 0 0 5 0;
-#X connect 1 0 12 0;
+#X connect 0 0 8 0;
+#X connect 0 0 13 0;
+#X connect 1 0 10 0;
 #X connect 1 1 4 0;
 #X connect 2 0 3 0;
 #X connect 3 0 5 1;
 #X connect 4 0 3 0;
 #X connect 5 0 6 0;
-#X connect 6 0 8 0;
-#X connect 7 0 1 0;
-#X connect 8 0 11 0;
-#X connect 12 0 2 0;
+#X connect 6 0 7 0;
+#X connect 7 0 9 0;
+#X connect 7 0 11 0;
+#X connect 10 0 2 0;
+#X connect 13 0 1 0;
