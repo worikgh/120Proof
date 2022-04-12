@@ -1,0 +1,8 @@
+#!/usr/bin/perl -w
+use strict;
+
+## Test if there is an instance of mod-host running.  If so exit
+`pgrep mod-host` and exit 1;
+
+## Start mod-host
+print `/home/patch/mod-host/mod-host`;
