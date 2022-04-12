@@ -323,16 +323,16 @@ foreach my $name (sort @names){
     my $fn = &get_board_ttl($MODEP_PEDALS, $name, $board);
     
     # print STDERR "Process: $fn\n";
-    my @commands = &process_file($prefix, $fn);
-    if(@commands){
+    my @board_commands = &process_file($prefix, $fn);
+    if(@board_commands){
 	## First element is the name of the pedal board.
-	my $name_line = shift(@commands);
+	my $name_line = shift(@board_commands);
 	if($name_line =~ /name:\s(.+)/){
 	    $name = $1;
 	}else{
 	    warn "$name_line \n";
 	}
-	push(@commands, [$board, \@commands]);
+	push(@commands, [$board, \@board_commands]);
 	$prefix++;
     }
 }
