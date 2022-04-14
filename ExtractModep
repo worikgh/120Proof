@@ -451,7 +451,7 @@ foreach my $name (sort keys %control_commands){
     
     my $cmds = join("\n", @{$control_commands{$name}});
 
-    print $collected_commands "## $name\n$cmds\n";
-    print $collected_commands "## Acvtivate\n";
+    print $collected_commands "NAME $name\n$cmds\n";
+    print $collected_commands "ACVTIVATE\n";
     print $collected_commands join("\n", @{$pedal_commands{$name}})."\n";
 }

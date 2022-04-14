@@ -1,15 +1,16 @@
-#!/user/bin/perl -w
-use strict;
+#!/bin/bash
 
 ## Mistress is the boss.  She is in charge.
 
 ## She calls the scripts, in the proper order, to set up 120Proof.
 
 ## InitialisePd To get Pure Data started
+./InitialisePd
 
+## InitialiseModHost to get mod-host running
+./InitialiseModHost
+sleep 1
 ## InitialiseMidi where all the midi connections are defined
+./InitialiseMidi
 
-
-my $VERBOSE = shift;
-defined $VERBOSE or $VERBOSE  = 1;
 

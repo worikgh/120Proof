@@ -1,6 +1,6 @@
 #!/bin/bash
 
 pgrep mod-host && exit 1
-
+export LV2_PATH=/usr/modep/lv2
 ## Start mod-host
 /home/patch/mod-host/mod-host
