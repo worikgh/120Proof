@@ -5,4 +5,17 @@ use strict;
 `pgrep mod-host` and exit 1;
 
 ## Start mod-host
-print `/home/patch/mod-host/mod-host`;
+my $cmd = "/home/patch/mod-host/mod-host" ;
+warn "Run: $cmd\n";
+print `$cmd`;
+exit 0;
+
+if( fork() ){
+    ## Parent
+}else{
+    ## Child
+    #    -x $cmd or die "$!: $cmd";
+    warn "Run: $cmd\n";
+    exec $cmd;
+}
+exit 0;
