@@ -1,21 +1,6 @@
-#!/usr/bin/perl -w
-use strict;
+#!/bin/bash
 
-## Test if there is an instance of mod-host running.  If so exit
-`pgrep mod-host` and exit 1;
+pgrep mod-host && exit 1
 
 ## Start mod-host
-my $cmd = "/home/patch/mod-host/mod-host" ;
-warn "Run: $cmd\n";
-print `$cmd`;
-exit 0;
-
-if( fork() ){
-    ## Parent
-}else{
-    ## Child
-    #    -x $cmd or die "$!: $cmd";
-    warn "Run: $cmd\n";
-    exec $cmd;
-}
-exit 0;
+/home/patch/mod-host/mod-host
