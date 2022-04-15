@@ -408,7 +408,7 @@ foreach my $name ( sort keys %pedal_settings){
 		## To be run at pedal use time.
 		push(@{$pedal_commands{$name}}, $jack_cmd);
 	    }else{
-		push(@{$control_commands{$name}}, "jack $1");
+		push(@{$control_commands{$name}}, "mh connect $1");
 	    }
 	}else{
 	    ## All mod-host  commands run now
@@ -452,6 +452,6 @@ foreach my $name (sort keys %control_commands){
     my $cmds = join("\n", @{$control_commands{$name}});
 
     print $collected_commands "NAME $name\n$cmds\n";
-    print $collected_commands "ACVTIVATE\n";
-    print $collected_commands join("\n", @{$pedal_commands{$name}})."\n";
+    print $collected_commands "ACTIVATE\n";
+    print $collected_commands join("\n", map{"mh connect $_"} @{$pedal_commands{$name}})."\n";
 }

@@ -1,0 +1,20 @@
+#!/usr/bin/perl -w
+use strict;
+
+my $instrument = shift or die;
+my $fn= "Instruments/$instrument";
+-r $fn or die "$!: $fn";
+
+open(my $fh, $fn) or die "$!: $fn";
+while(my $line = <$fh>){
+    chomp $line;
+
+    if($line =~ /^mh\s(.+)\s*$/) {
+	## Mod host command
+	my $cmd = $1;
+	my $res = `echo $cmd | nc -N localhost 5555`;
+	print "\$cmd: $cmd\n\$res: $res\n";
+    }
+
+    
+}
