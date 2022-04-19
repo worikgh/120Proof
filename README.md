@@ -117,3 +117,9 @@ echo -n param_set 2 bass 0.250000| nc -N localhoocalhost 5555
 ..1. `InitialiseModHost` to start a mod-host instance
 
 ..2. A way to define pedal boards that can be used to assign them to instruments and the audio input
+
+..3 Set up an instrument:
+
+`/usr/local/bin/pd  -jack -path /home/patch/120Proof/pd_patches/ -send "; pd dsp 1" -stdpath  -nogui  pd_patches/instruments/HarpPoly.pd &`
+`sleep 2`
+`./InitialiseMidi`
