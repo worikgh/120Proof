@@ -28,6 +28,13 @@ Can only be controlled by software
 
 ~/X-Air-LiveToolbox-132-source/X-AIR-Edit_RASPI_1.5/X-AIR-Edit
 
+# Tools
+
+Some are built under `RustStuff`
+
+## lpx_programmers_mode
+
+Puts the LPX into "programmer's mode", in which it is most useful 
 
 # Workflow
 
@@ -123,3 +130,4 @@ echo -n param_set 2 bass 0.250000| nc -N localhoocalhost 5555
 `/usr/local/bin/pd  -jack -path /home/patch/120Proof/pd_patches/ -send "; pd dsp 1" -stdpath  -nogui  pd_patches/instruments/HarpPoly.pd &`
 `sleep 2`
 `./InitialiseMidi`
+
