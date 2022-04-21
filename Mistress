@@ -4,6 +4,9 @@
 
 ## She calls the scripts, in the proper order, to set up 120Proof.
 
+## Put the LPX into programmer's mode
+./lpx_programmers_mode
+
 ## InitialisePd To get Pure Data started
 ./InitialisePd
 
