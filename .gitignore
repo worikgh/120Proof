@@ -4,3 +4,6 @@ modep_commands.txt
 Instruments/*
 */Cargo.lock
 */target/
+RustStuff/lpx_programmers_mode/target/
+RustStuff/lpx_programmers_mode/Cargo.lock
+lpx_programmers_mode
