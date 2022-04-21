@@ -14,7 +14,6 @@ fn main() {
 }
 
 fn run() -> Result<(), Box<dyn Error>> {
-    let midi_out = MidiOutput::new("120 Proof")?;
 
     // This is the MIDI message that puts the LPX into programmer's
     // mode.
@@ -25,6 +24,7 @@ fn run() -> Result<(), Box<dyn Error>> {
     let source_port = "Launchpad X:Launchpad X MIDI 1".to_string().into_bytes();
 
     // Get the port by name
+    let midi_out = MidiOutput::new("120 Proof")?;
     for (i, p) in midi_out.ports().iter().enumerate() {
         let port_name = midi_out.port_name(p)?.into_bytes();
         let mut accept: bool = true;
