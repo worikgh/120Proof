@@ -7,3 +7,5 @@ Instruments/*
 RustStuff/lpx_programmers_mode/target/
 RustStuff/lpx_programmers_mode/Cargo.lock
 lpx_programmers_mode
+RustStuff/lpx_controll/Cargo.lock
+RustStuff/lpx_controll/target/
