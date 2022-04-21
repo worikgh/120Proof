@@ -1,4 +1,4 @@
-#N canvas 492 134 450 300 12;
+#N canvas 36 26 450 300 12;
 #X obj 27 136 midiout;
 #X obj 28 110 list 240 0 32 41 2 12 0 127 247;
 #X text 45 85 Set programmer mode;
@@ -57,7 +57,7 @@ Mode and make it useful;
 #X connect 19 0 12 1;
 #X connect 20 0 1 0;
 #X restore 26 264 pd reset;
-#N canvas 643 71 493 494 random 1;
+#N canvas 643 71 493 494 random 0;
 #X obj 193 98 bng 15 250 50 0 empty empty empty 17 7 0 10 #fcfcfc #000000
 #000000;
 #X obj 193 118 float;

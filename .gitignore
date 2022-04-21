@@ -1,3 +1,6 @@
 \#*
 *~
 modep_commands.txt
+Instruments/*
+*/Cargo.lock
+*/target/
