@@ -1,5 +1,8 @@
 extern crate midir;
 
+// Use the MIDI control keys from the LPX to run programes.  
+
+
 use std::error::Error;
 use std::io::{stdin};
 
@@ -12,7 +15,7 @@ fn main() {
     }
 }
 
-fn process_message(message:&[u8]){
+fn process_message(message:&[u8;3]){
     if message[0] == 176 {
 	// A ctl message
 	
@@ -71,7 +74,8 @@ fn run() -> Result<(), Box<dyn Error>> {
             //     message.len()
             // );
 	    if message.len() == 3 {
-		process_message(&message);
+		let array = <[u8; 3]>::try_from(message).unwrap();
+		process_message(&array);
 	    }
         },
         (),
