@@ -12,27 +12,58 @@ use midir::{Ignore, MidiInput, MidiInputPort};
 // Dispatcher matches a control key to an executable and executes it
 struct Dispatcher {
     // Associate a control value with a command
-    table: HashMap<u8, String>,    
+    up_table: HashMap<u8, String>,    
+    down_table: HashMap<u8, String>,    
+    last:Option<u8>,
+    // When a command runs the previous command stops
 }
 
 impl Dispatcher {
     fn new() -> Self {
-	let mut table:HashMap<u8, String> = HashMap::new();
-	table.insert(19, "CTL.19".to_string());
-	table.insert(29, "CTL.29".to_string());
-	table.insert(39, "CTL.39".to_string());
-	table.insert(49, "CTL.49".to_string());
-	table.insert(59, "CTL.59".to_string());
-	table.insert(69, "CTL.69".to_string());
-	table.insert(79, "CTL.79".to_string());
-	table.insert(89, "CTL.89".to_string());
+	let mut up_table:HashMap<u8, String> = HashMap::new();
+	up_table.insert(19, "UP-CTL.19".to_string());
+	up_table.insert(29, "UP-CTL.29".to_string());
+	up_table.insert(39, "UP-CTL.39".to_string());
+	up_table.insert(49, "UP-CTL.49".to_string());
+	up_table.insert(59, "UP-CTL.59".to_string());
+	up_table.insert(69, "UP-CTL.69".to_string());
+	up_table.insert(79, "UP-CTL.79".to_string());
+	up_table.insert(89, "UP-CTL.89".to_string());
+	let mut down_table:HashMap<u8, String> = HashMap::new();
+	down_table.insert(19, "DOWN-CTL.19".to_string());
+	down_table.insert(29, "DOWN-CTL.29".to_string());
+	down_table.insert(39, "DOWN-CTL.39".to_string());
+	down_table.insert(49, "DOWN-CTL.49".to_string());
+	down_table.insert(59, "DOWN-CTL.59".to_string());
+	down_table.insert(69, "DOWN-CTL.69".to_string());
+	down_table.insert(79, "DOWN-CTL.79".to_string());
+	down_table.insert(89, "DOWN-CTL.89".to_string());
 	Self {
-	    table:table,
+	    down_table:down_table,
+	    up_table:up_table,
+	    last:None,
 	}
     }
-    fn run(&self, ctl:u8){
-	match self.table.get(&ctl) {
-	    Some(cmd) => println!("Run: {}", &cmd),
+    fn run(&mut self, ctl:u8){
+	// use std::process::Command;
+
+	//     let output = Command::new("echo")
+	//         .arg("Hello world")
+	//         .output()
+	//         .expect("Failed to execute command");
+
+	//     assert_eq!(b"Hello world\n", output.stdout.as_slice());
+
+	if let Some(x) = self.last {
+	    match self.down_table.get(&x) {
+		Some(cmd) => println!("Run down: {}", &cmd),
+		None => (),
+	    }
+	}
+	self.last = Some(ctl);
+
+	match self.up_table.get(&ctl) {
+	    Some(cmd) => println!("Run up: {}", &cmd),
 	    None => (),
 	}
     }
@@ -47,7 +78,7 @@ fn main() {
     }
 }
 
-fn process_message(message:&[u8;3], dispatcher: &Dispatcher){
+fn process_message(message:&[u8;3], dispatcher: &mut Dispatcher){
     if message[0] == 176 {
 	// A ctl message
 	
@@ -55,7 +86,7 @@ fn process_message(message:&[u8;3], dispatcher: &Dispatcher){
 	let vel = message[2];
 	if key >= 19 {
 	    // There is some noise coming from the LPX with ctl-key 7
-	    // The rest are control signals tyhat we want
+	    // The rest are control signals that we want
 	    if vel > 0 {
 		// 0 VEL is pad release
 		dispatcher.run(key);
