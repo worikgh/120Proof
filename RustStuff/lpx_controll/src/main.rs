@@ -1,102 +1,135 @@
+// Use the MIDI control keys from the LPX to run programes.
+
 extern crate midir;
 use std::collections::HashMap;
-
-// Use the MIDI control keys from the LPX to run programes.  
-
-
+use std::env;
 use std::error::Error;
-use std::io::{stdin};
+use std::io::stdin;
+use std::process;
 
 use midir::{Ignore, MidiInput, MidiInputPort};
+
+fn log(msg: &str) {
+    println!("{}", msg);
+}
 
 // Dispatcher matches a control key to an executable and executes it
 struct Dispatcher {
     // Associate a control value with a command
-    up_table: HashMap<u8, String>,    
-    down_table: HashMap<u8, String>,    
-    last:Option<u8>,
+    up_table: HashMap<u8, String>,
+    down_table: HashMap<u8, String>,
+    last: Option<u8>,
     // When a command runs the previous command stops
 }
 
 impl Dispatcher {
     fn new() -> Self {
-	let mut up_table:HashMap<u8, String> = HashMap::new();
-	up_table.insert(19, "UP-CTL.19".to_string());
-	up_table.insert(29, "UP-CTL.29".to_string());
-	up_table.insert(39, "UP-CTL.39".to_string());
-	up_table.insert(49, "UP-CTL.49".to_string());
-	up_table.insert(59, "UP-CTL.59".to_string());
-	up_table.insert(69, "UP-CTL.69".to_string());
-	up_table.insert(79, "UP-CTL.79".to_string());
-	up_table.insert(89, "UP-CTL.89".to_string());
-	let mut down_table:HashMap<u8, String> = HashMap::new();
-	down_table.insert(19, "DOWN-CTL.19".to_string());
-	down_table.insert(29, "DOWN-CTL.29".to_string());
-	down_table.insert(39, "DOWN-CTL.39".to_string());
-	down_table.insert(49, "DOWN-CTL.49".to_string());
-	down_table.insert(59, "DOWN-CTL.59".to_string());
-	down_table.insert(69, "DOWN-CTL.69".to_string());
-	down_table.insert(79, "DOWN-CTL.79".to_string());
-	down_table.insert(89, "DOWN-CTL.89".to_string());
-	Self {
-	    down_table:down_table,
-	    up_table:up_table,
-	    last:None,
-	}
+
+	// Function tables for control keys on LPX.  Keys are the MIDI
+	// bytes passed from the pad and the values are the commands,
+	// as String.  A command string refers to an executable file
+	// in <PWD>/subs/.  Not every control key needs to be here,
+	// and if an executable does not exist it is ignored.
+
+	// Each button on the device has two commands associated with
+	// it: Firstly when it is activated.  Second when a button is
+	// pressed after it has been activated.  "ON" and "OFF".
+
+	// The commands for each button (executable files under
+	// <PWD>/subs/) are named: ON-Ctl.N and OFF-Ctl-N where N is
+	// MIDI value.  
+	let mut up_table: HashMap<u8, String> = HashMap::new();
+        let mut down_table: HashMap<u8, String> = HashMap::new();
+
+	// When a button pressed store its MIDI value here
+	let last: Option<u8> = None; 
+	
+        up_table.insert(19, "ON-CTL.19".to_string());
+        up_table.insert(29, "ON-CTL.29".to_string());
+        up_table.insert(39, "ON-CTL.39".to_string());
+        up_table.insert(49, "ON-CTL.49".to_string());
+        up_table.insert(59, "ON-CTL.59".to_string());
+        up_table.insert(69, "ON-CTL.69".to_string());
+        up_table.insert(79, "ON-CTL.79".to_string());
+        up_table.insert(89, "ON-CTL.89".to_string());
+
+        down_table.insert(19, "OFF-CTL.19".to_string());
+        down_table.insert(29, "OFF-CTL.29".to_string());
+        down_table.insert(39, "OFF-CTL.39".to_string());
+        down_table.insert(49, "OFF-CTL.49".to_string());
+        down_table.insert(59, "OFF-CTL.59".to_string());
+        down_table.insert(69, "OFF-CTL.69".to_string());
+        down_table.insert(79, "OFF-CTL.79".to_string());
+        down_table.insert(89, "OFF-CTL.89".to_string());
+
+        Self {
+            down_table: down_table,
+            up_table: up_table,
+            last: last,
+        }
     }
-    fn run(&mut self, ctl:u8){
-	// use std::process::Command;
+    fn run_cmd(cmd: &str){
+        // log(format!("Run down: {}", &cmd).as_str());
+        let command = format!(
+            "{}/subs/{}",
+            env::current_dir().unwrap().as_path().as_os_str().to_str().unwrap(),
+            &cmd
+        );
 
-	//     let output = Command::new("echo")
-	//         .arg("Hello world")
-	//         .output()
-	//         .expect("Failed to execute command");
+	match process::Command::new(command.as_str()).output() {
+	    Ok(out) => if out.status.success() {
+		let s = String::from_utf8_lossy(&out.stdout);
+		log(format!("Success: {} and stdout was:\n{}", cmd, s).as_str())
+	    },
+	    Err(err) => log(format!("Failure: cmd {}  Err: {:?}", cmd, err).as_str()),
+	}	
+    }
+    fn run(&mut self, ctl: u8) {
+        if let Some(x) = self.last {
+            match self.down_table.get(&x) {
+                Some(cmd) => {
+		    Self::run_cmd(cmd.as_str());
+		},
+                None => (),
+            }
+        }
+        self.last = Some(ctl);
 
-	//     assert_eq!(b"Hello world\n", output.stdout.as_slice());
-
-	if let Some(x) = self.last {
-	    match self.down_table.get(&x) {
-		Some(cmd) => println!("Run down: {}", &cmd),
-		None => (),
-	    }
-	}
-	self.last = Some(ctl);
-
-	match self.up_table.get(&ctl) {
-	    Some(cmd) => println!("Run up: {}", &cmd),
-	    None => (),
-	}
+        match self.up_table.get(&ctl) {
+            Some(cmd) => {
+		Self::run_cmd(cmd.as_str());
+	    },
+            None => (),
+        };
     }
 }
-
 
 fn main() {
     let dispatcher = Dispatcher::new();
     match run(dispatcher) {
         Ok(_) => (),
-        Err(err) => println!("Error: {}", err),
+        Err(err) => log(format!("Error: {}", err).as_str()),
     }
 }
 
-fn process_message(message:&[u8;3], dispatcher: &mut Dispatcher){
+fn process_message(message: &[u8; 3], dispatcher: &mut Dispatcher) {
     if message[0] == 176 {
-	// A ctl message
-	
-	let key = message[1];
-	let vel = message[2];
-	if key >= 19 {
-	    // There is some noise coming from the LPX with ctl-key 7
-	    // The rest are control signals that we want
-	    if vel > 0 {
-		// 0 VEL is pad release
-		dispatcher.run(key);
-	    }
-	}
+        // A ctl message
+
+        let key = message[1];
+        let vel = message[2];
+        if key >= 19 {
+            // There is some noise coming from the LPX with ctl-key 7
+            // The rest are control signals that we want
+            if vel > 0 {
+                // 0 VEL is pad release
+                dispatcher.run(key);
+            }
+        }
     }
 }
-	    
 
-fn run(dispatcher:Dispatcher) -> Result<(), Box<dyn Error>> {
+fn run(dispatcher: Dispatcher) -> Result<(), Box<dyn Error>> {
     let mut input = String::new();
 
     let mut midi_in = MidiInput::new("120 Proof")?;
@@ -105,7 +138,7 @@ fn run(dispatcher:Dispatcher) -> Result<(), Box<dyn Error>> {
     // The port we get messages on
     let mut port: Option<MidiInputPort> = None;
     let source_port = "Launchpad X:Launchpad X MIDI 2".to_string().into_bytes();
-    
+
     // Get an input port (read from console if multiple are available)
     let in_ports = midi_in.ports();
     for (i, p) in in_ports.iter().enumerate() {
@@ -116,15 +149,11 @@ fn run(dispatcher:Dispatcher) -> Result<(), Box<dyn Error>> {
                 accept = false;
                 break;
             }
-	}
+        }
         if accept {
-	    let p = midi_in
-                .ports()
-                .get(i)
-                .ok_or("Invalid port number")?
-                .clone();
-	    port = Some(p);
-	    break;
+            let p = midi_in.ports().get(i).ok_or("Invalid port number")?.clone();
+            port = Some(p);
+            break;
         }
     }
     let in_port = port.unwrap();
@@ -140,10 +169,10 @@ fn run(dispatcher:Dispatcher) -> Result<(), Box<dyn Error>> {
             //     &message,
             //     message.len()
             // );
-	    if message.len() == 3 {
-		let array = <[u8; 3]>::try_from(message).unwrap();
-		process_message(&array, dispatcher);
-	    }
+            if message.len() == 3 {
+                let array = <[u8; 3]>::try_from(message).unwrap();
+                process_message(&array, dispatcher);
+            }
         },
         dispatcher,
     )?;
@@ -151,7 +180,6 @@ fn run(dispatcher:Dispatcher) -> Result<(), Box<dyn Error>> {
     input.clear();
     stdin().read_line(&mut input)?; // wait for next enter key press
 
-    println!("Closing connection");
+    log(format!("Closing connection").as_str());
     Ok(())
 }
-
