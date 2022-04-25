@@ -26,7 +26,8 @@ sub set_up_midi() {
     ## Delete connections to and from pure data
     sub del_con( $$ ) {
 	my ($l, $r) = @_;
-	print `aconnect -d $l $r`;
+	`aconnect -d $l $r`;
+	$? == 0 or warn "Failed $?: aconnect -d $l $r ";
     }
 
     &del_con("$worlde_device:0", "$pure_data_device:0");
