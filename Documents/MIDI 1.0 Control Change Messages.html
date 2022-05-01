@@ -1,0 +1,2204 @@
+<!DOCTYPE html>
+<html dir="ltr" vocab="https://schema.org/" class="wk-notouch" lang="en-gb"><head>
+    <meta http-equiv="content-type" content="text/html; charset=UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <link rel="shortcut icon" href="https://www.midi.org/images/midi-fac2.png">
+    <link rel="apple-touch-icon" href="https://www.midi.org/templates/yootheme/vendor/yootheme/theme-joomla/assets/images/apple-touch-icon.png">
+    <meta charset="utf-8">
+    <!-- base href="https://www.midi.org/specifications-old/item/table-3-control-change-messages-data-bytes-2" -->
+    <meta name="keywords" content="MIDI">
+    <meta name="author" content="MMA">
+    <meta name="description" content="THE MIDI ASSOCIATION, a global community of people who work, play and create with MIDI and the central repository of information about anything related to MIDI.">
+    <meta name="generator" content="Joomla! - Open Source Content Management">
+    <title>MIDI 1.0 Control Change Messages (Data Bytes)</title>
+    <link href="https://www.midi.org/specifications-old/item/table-3-control-change-messages-data-bytes-2" rel="canonical">
+    <link href="https://www.midi.org/favicon.ico" rel="shortcut icon" type="image/vnd.microsoft.icon">
+    <link href="https://www.midi.org/component/search/?Itemid=273&amp;task=item&amp;item_id=37&amp;format=opensearch" rel="search" title="Search The MIDI Association" type="application/opensearchdescription+xml">
+    <link href="MIDI%201.0%20Control%20Change%20Messages_files/content.css" rel="stylesheet">
+    <link href="MIDI%201.0%20Control%20Change%20Messages_files/theme.css" rel="stylesheet">
+    <link href="MIDI%201.0%20Control%20Change%20Messages_files/custom.css" rel="stylesheet">
+    <link href="MIDI%201.0%20Control%20Change%20Messages_files/wk-styles-97fd94a7.css" rel="stylesheet" id="wk-styles-css">
+    <script type="text/javascript" async="" src="MIDI%201.0%20Control%20Change%20Messages_files/analytics_002.js"></script><script src="MIDI%201.0%20Control%20Change%20Messages_files/diffuser.js" async=""></script><script src="MIDI%201.0%20Control%20Change%20Messages_files/1161165920569963.js" async=""></script><script src="MIDI%201.0%20Control%20Change%20Messages_files/identity.js" async=""></script><script async="" src="MIDI%201.0%20Control%20Change%20Messages_files/fbevents.js"></script><script type="text/javascript" async="" src="MIDI%201.0%20Control%20Change%20Messages_files/recaptcha__en_gb.js" crossorigin="anonymous" integrity="sha384-JrSRmrUCeWs9BCN7SJ5/f4JjRfwgL7dKZVza0OIumlXkblHiBLEKdlVvXOYXmE1f"></script><script src="MIDI%201.0%20Control%20Change%20Messages_files/jquery.js"></script>
+    <script src="MIDI%201.0%20Control%20Change%20Messages_files/jquery-noconflict.js"></script>
+    <script src="MIDI%201.0%20Control%20Change%20Messages_files/jquery-migrate.js"></script>
+    <script src="MIDI%201.0%20Control%20Change%20Messages_files/responsive.js"></script>
+    <script src="MIDI%201.0%20Control%20Change%20Messages_files/default.js"></script>
+    <script src="MIDI%201.0%20Control%20Change%20Messages_files/api.js"></script>
+    <script src="MIDI%201.0%20Control%20Change%20Messages_files/improved_ajax_login.js"></script>
+    <script src="MIDI%201.0%20Control%20Change%20Messages_files/theme_002.js"></script>
+    <script src="MIDI%201.0%20Control%20Change%20Messages_files/analytics.js" defer="defer"></script>
+    <script src="MIDI%201.0%20Control%20Change%20Messages_files/uikit.js"></script>
+    <script src="MIDI%201.0%20Control%20Change%20Messages_files/uikit-icons-sonic.js"></script>
+    <script src="MIDI%201.0%20Control%20Change%20Messages_files/theme.js"></script>
+    <script src="MIDI%201.0%20Control%20Change%20Messages_files/uikit2-1aca1296.js"></script>
+    <script src="MIDI%201.0%20Control%20Change%20Messages_files/wk-scripts-8a648539.js"></script>
+    <script>
+      ;jQuery(function($){
+          $("input[type='file'][name^='jform[improved]']").each(function(){
+              $(this).next().next().html(this.size + "MB");
+          });
+      });
+      document.addEventListener('DOMContentLoaded', function() {
+          Array.prototype.slice.call(document.querySelectorAll('a span[id^="cloak"]')).forEach(function(span) {
+              span.innerText = span.textContent;
+          });
+      });
+    </script>
+    <link rel="stylesheet" href="MIDI%201.0%20Control%20Change%20Messages_files/679615cca571bb01b0403622930ea4f8.css" type="text/css">
+    <script data-cfasync="false">
+      document[(_el=document.addEventListener)?'addEventListener':'attachEvent'](_el?'DOMContentLoaded':'onreadystatechange',function(){
+	  if (!_el && document.readyState != 'complete') return;
+	  new ImprovedAJAXLogin({
+	      id: 321,
+	      isGuest: 1,
+	      oauth: {"facebook":"https:\/\/www.facebook.com\/dialog\/oauth?scope=email&response_type=code&display=popup&client_id=195598937444996&redirect_uri=https%3A%2F%2Fwww.midi.org%2Findex.php%3Foption%3Dcom_improved_ajax_login%26task%3Dfacebook"},
+	      bgOpacity: 40/100,
+	      returnUrl: 'https://www.midi.org/specifications-old/item/table-3-control-change-messages-data-bytes-2',
+	      border: parseInt('ffffff|*|3|*|4b6bb5|*|7|*|1|*|'.split('|*|')[1]),
+	      padding: 4,
+	      useAJAX: 0,
+	      openEvent: 'onclick',
+	      wndCenter: 1,
+	      regPopup: 1,
+	      dur: 300,
+	      timeout: 0,
+	      base: '/',
+	      theme: 'flat',
+	      socialProfile: '',
+	      socialType: 'socialIco',
+	      cssPath: '/modules/mod_improved_ajax_login/cache/321/679615cca571bb01b0403622930ea4f8.css',
+	      regPage: 'joomla',
+	      captcha: '6Le79b0UAAAAANhw-hUOo60BHAAwmVmdPuIwi0ZA',
+	      captchaVer: '2.0',
+	      showHint: 0,
+	      geolocation: true,
+	      windowAnim: '1',
+	      maxfilesize: 600*1024*1024
+	  });
+      });
+    </script>
+    <script>var $theme = {"google_analytics":"UA-18241461-1","google_analytics_anonymize":""};</script>
+    <!-- Joomla Facebook Integration Begin -->
+    <script type="text/javascript">
+      !function(f,b,e,v,n,t,s){if(f.fbq)return;n=f.fbq=function(){n.callMethod?
+								  n.callMethod.apply(n,arguments):n.queue.push(arguments)};if(!f._fbq)f._fbq=n;
+			       n.push=n;n.loaded=!0;n.version='2.0';n.queue=[];t=b.createElement(e);t.async=!0;
+			       t.src=v;s=b.getElementsByTagName(e)[0];s.parentNode.insertBefore(t,s)}(window,
+												      document,'script','https://connect.facebook.net/en_US/fbevents.js');
+      fbq('init', '1161165920569963', {}, {agent: 'pljoomla'});
+      fbq('track', 'PageView');
+    </script>
+    <noscript>
+      <img height="1" width="1" style="display:none" alt="fbpx"
+	   src="https://www.facebook.com/tr?id=1161165920569963&ev=PageView&noscript=1"/>
+    </noscript>
+    <!-- DO NOT MODIFY -->
+    <!-- Joomla Facebook Integration end -->
+
+    <script src="MIDI%201.0%20Control%20Change%20Messages_files/js.js" async=""></script><script type="text/javascript" charset="utf-8" src="MIDI%201.0%20Control%20Change%20Messages_files/a.js" async=""></script><script type="text/javascript" charset="utf-8" src="MIDI%201.0%20Control%20Change%20Messages_files/t_prism_sitemessages.php" async=""></script></head>
+  <body class="">
+
+    
+    
+    <div class="tm-page">
+
+      
+      <div class="tm-header-mobile uk-hidden@m">
+
+
+	<div class="uk-navbar-container">
+          <nav uk-navbar="container: .tm-header-mobile" class="uk-navbar">
+
+            <div class="uk-navbar-left">
+
+              
+              <a class="uk-navbar-toggle" href="#tm-mobile" uk-toggle="" aria-expanded="false">
+                <div uk-navbar-toggle-icon="" class="uk-icon uk-navbar-toggle-icon"><svg width="20" height="20" viewBox="0 0 20 20" xmlns="http://www.w3.org/2000/svg"><rect y="9" width="20" height="2"></rect><rect y="3" width="20" height="2"></rect><rect y="15" width="20" height="2"></rect></svg></div>
+              </a>
+              
+              
+            </div>
+            
+            <div class="uk-navbar-center">
+              
+	      <a href="https://www.midi.org/" class="uk-navbar-item uk-logo">
+		<img alt="" src="MIDI%201.0%20Control%20Change%20Messages_files/MIDI_Association_Logo_TM_Black-6d0d9807.png" srcset="MIDI%201.0%20Control%20Change%20Messages_files/MIDI_Association_Logo_TM_Black-6d0d9807.png 250w, MIDI%201.0%20Control%20Change%20Messages_files/MIDI_Association_Logo_TM_Black-b6e97ad9.png 500w" sizes="(min-width: 250px) 250px" data-width="250" data-height="70"></a>
+            </div>
+            
+            
+          </nav>
+	</div>
+
+	
+
+	<div id="tm-mobile" uk-offcanvas="" mode="slide" overlay="" class="uk-offcanvas">
+	  <div class="uk-offcanvas-bar">
+
+            <button class="uk-offcanvas-close uk-icon uk-close" type="button" uk-close=""><svg width="14" height="14" viewBox="0 0 14 14" xmlns="http://www.w3.org/2000/svg"><line fill="none" stroke="#000" stroke-width="1.1" x1="1" y1="1" x2="13" y2="13"></line><line fill="none" stroke="#000" stroke-width="1.1" x1="13" y1="1" x2="1" y2="13"></line></svg></button>
+            
+            
+            
+	    <div class="uk-child-width-1-1 uk-grid uk-grid-stack" uk-grid="">    <div>
+		<div class="uk-panel" id="module-menu-mobile">
+
+		  
+		  
+		  <ul class="uk-nav uk-nav-default">
+		    
+		    <li class="item-1130"><a href="https://www.midi.org/specifications"> Specs</a></li>
+		    <li class="item-1423"><a href="https://www.midi.org/innovation-awards"> MIDI Awards</a></li>
+		    <li class="item-571"><a href="https://www.midi.org/forum"> Forum</a></li>
+		    <li class="item-572"><a href="https://www.midi.org/about"> About</a></li>
+		    <li class="item-573"><a href="https://www.midi.org/our-partners"> Partners</a></li>
+		    <li class="item-547"><a href="https://www.midi.org/articles"> Articles</a></li>
+		    <li class="item-1288"><a href="https://shop.midi.org/" target="_blank"> Shop</a></li></ul>
+
+		</div>
+	      </div>    <div>
+		<div class="uk-panel" id="module-346">
+
+		  
+		  
+		  <div class="uk-margin-remove-last-child custom" style="background-image:url(/.)"><div class="uk-grid-small uk-grid uk-grid-stack" uk-grid="">
+		      <div><button type="button" class="loginBtn selectBtn" onclick="jQuery('.logBtn').trigger('click')"><span class="loginBtn">Login</span></button></div>
+		      <div><button type="button" class="regBtn selectBtn" onclick="jQuery('a.regBtn').trigger('click')"><span class="loginBtn">Register</span></button></div>
+		  </div></div>
+
+		</div>
+	      </div>    <div>
+		<div class="uk-panel" id="module-tm-2">
+
+		  
+		  
+
+		  <form id="search-tm-2" action="/specifications-old" method="post" role="search" class="uk-search uk-search-default uk-width-1-1"><span uk-search-icon="" class="uk-icon uk-search-icon"><svg width="20" height="20" viewBox="0 0 20 20" xmlns="http://www.w3.org/2000/svg"><circle fill="none" stroke="#000" stroke-width="1.1" cx="9" cy="9" r="7"></circle><path fill="none" stroke="#000" stroke-width="1.1" d="M14,14 L18,18 L14,14 Z"></path></svg></span><input name="searchword" placeholder="Search" minlength="3" type="search" class="uk-search-input"><input type="hidden" name="task" value="search"><input type="hidden" name="option" value="com_search"><input type="hidden" name="Itemid" value="273"></form>
+
+
+
+
+
+
+		</div>
+	    </div></div>
+
+            
+	  </div>
+	</div>
+
+      </div>
+
+
+      <div class="tm-header uk-visible@m tm-header-overlay" uk-header="">
+
+
+
+	
+        <div class="uk-navbar-container uk-navbar-primary uk-navbar-transparent uk-light">
+
+          <div class="uk-container uk-container-expand">
+            <nav class="uk-navbar" uk-navbar="{&quot;align&quot;:&quot;left&quot;,&quot;boundary&quot;:&quot;.tm-header .uk-navbar-container&quot;,&quot;container&quot;:&quot;.tm-header&quot;}">
+
+              <div class="uk-navbar-left">
+
+                
+		<a href="https://www.midi.org/" class="uk-navbar-item uk-logo">
+		  <img alt="" src="MIDI%201.0%20Control%20Change%20Messages_files/MIDI_Association_Logo_TM_Black-033d6025.png" srcset="MIDI%201.0%20Control%20Change%20Messages_files/MIDI_Association_Logo_TM_Black-033d6025.png 350w, MIDI%201.0%20Control%20Change%20Messages_files/MIDI_Association_Logo_TM_Black-e0a7ff78.png 699w, MIDI%201.0%20Control%20Change%20Messages_files/MIDI_Association_Logo_TM_Black-0fecab9d.png 700w" sizes="(min-width: 350px) 350px" data-width="350" data-height="97"><img class="uk-logo-inverse" alt="" src="MIDI%201.0%20Control%20Change%20Messages_files/MIDI_Association_Logo_TM_White-19413a77.png" srcset="MIDI%201.0%20Control%20Change%20Messages_files/MIDI_Association_Logo_TM_White-19413a77.png 350w, MIDI%201.0%20Control%20Change%20Messages_files/MIDI_Association_Logo_TM_White-0c3bd696.png 699w, MIDI%201.0%20Control%20Change%20Messages_files/MIDI_Association_Logo_TM_White-f037635c.png 700w" sizes="(min-width: 350px) 350px" data-width="350" data-height="97"></a>
+                
+                
+              </div>
+              
+              
+              <div class="uk-navbar-right">
+
+                
+		<ul class="uk-navbar-nav">
+		  
+		  <li class="item-1130"><a href="https://www.midi.org/specifications"> Specs</a></li>
+		  <li class="item-1423"><a href="https://www.midi.org/innovation-awards"> MIDI Awards</a></li>
+		  <li class="item-571"><a href="https://www.midi.org/forum"> Forum</a></li>
+		  <li class="item-572"><a href="https://www.midi.org/about"> About</a></li>
+		  <li class="item-573"><a href="https://www.midi.org/our-partners"> Partners</a></li>
+		  <li class="item-547"><a href="https://www.midi.org/articles"> Articles</a></li>
+		  <li class="item-1288"><a href="https://shop.midi.org/" target="_blank"> Shop</a></li></ul>
+
+		<div id="module-tm-1">
+
+		  
+		  
+
+		  <a class="uk-navbar-toggle uk-icon uk-search-icon" href="#search-tm-1-modal" uk-search-icon="" uk-toggle="" aria-expanded="false"><svg width="20" height="20" viewBox="0 0 20 20" xmlns="http://www.w3.org/2000/svg"><circle fill="none" stroke="#000" stroke-width="1.1" cx="9" cy="9" r="7"></circle><path fill="none" stroke="#000" stroke-width="1.1" d="M14,14 L18,18 L14,14 Z"></path></svg></a>
+
+		  <div id="search-tm-1-modal" class="uk-modal-full uk-modal" uk-modal="">
+		    <div class="uk-modal-dialog uk-flex uk-flex-center uk-flex-middle" uk-height-viewport="">
+		      <button class="uk-modal-close-full uk-icon uk-close" type="button" uk-close=""><svg width="14" height="14" viewBox="0 0 14 14" xmlns="http://www.w3.org/2000/svg"><line fill="none" stroke="#000" stroke-width="1.1" x1="1" y1="1" x2="13" y2="13"></line><line fill="none" stroke="#000" stroke-width="1.1" x1="13" y1="1" x2="1" y2="13"></line></svg></button>
+		      <div class="uk-search uk-search-large">
+			<form id="search-tm-1" action="/specifications-old" method="post" role="search" class="uk-search uk-search-large"><input name="searchword" placeholder="Search" minlength="3" type="search" class="uk-search-input uk-text-center" autofocus=""><input type="hidden" name="task" value="search"><input type="hidden" name="option" value="com_search"><input type="hidden" name="Itemid" value="273"></form>            </div>
+		    </div>
+		  </div>
+
+
+
+
+
+
+
+		</div>
+
+                
+                
+		<div class="uk-navbar-item" id="module-321">
+
+		  
+		  <div id="mod_improved_ajax_login-321" class="">
+
+                    <a class="logBtn selectBtn" onclick="return false" href="https://www.midi.org/tld-test">
+		      <span class="loginBtn">Log in</span>
+		    </a>
+    		    
+		    
+	      	    <a class="regBtn selectBtn  " href="https://www.midi.org/midi-signup">
+		      <span class="loginBtn">Register</span>
+  		    </a>
+		    
+
+		    
+
+		    <a class="resetBtn selectBtn" style="display:none"></a>
+		    
+		    
+		  </div><script>var ialText = {"COM_USERS_REGISTER_REQUIRED":"<strong class=\"red\">*<\/strong> Required field","COM_USERS_REGISTRATION":"User Registration","IAL_PLEASE_WAIT":"Please wait","IAL_VERY_WEAK":"Very weak","IAL_WEAK":"Weak","IAL_REASONABLE":"Reasonable","IAL_STRONG":"Strong","IAL_VERY_STRONG":"Very strong","COM_MEDIA_FIELD_MAXIMUM_SIZE_LABEL":"Maximum Size (in MB)","COM_MEDIA_ERROR_WARNFILETOOLARGE":"This file is too large to upload."};</script>
+		</div>
+
+
+              </div>
+              
+            </nav>
+          </div>
+
+        </div>
+
+	
+
+
+
+
+
+      </div>
+      
+      
+      <div id="module-322" class="builder"><!-- Builder #module-322 -->
+	<div class="uk-section-primary uk-section" tm-header-transparent="light">
+	  
+          
+          
+          
+          
+          <div class="uk-container">                
+            
+            <div class="tm-grid-expand uk-child-width-1-1 uk-grid-margin uk-grid uk-grid-stack" uk-grid="">
+	      <div class="uk-first-column">
+		
+		
+		
+		
+                
+                
+                
+		
+		
+		
+	      </div>
+	    </div>
+          </div>
+          
+          
+          
+	  
+	</div>
+      </div>
+
+
+      
+      <div id="tm-main" class="tm-main uk-section uk-section-default" uk-height-viewport="expand: true">
+        <div class="uk-container">
+
+          
+          
+          
+          <div id="system-message-container" data-messages="[]">
+	  </div>
+
+          <div class="yoo-zoo product-uikit product-uikit-table-3-control-change-messages-data-bytes-2">
+
+	    
+
+	    <h1> MIDI 1.0 Control Change Messages (Data Bytes) </h1>
+
+
+	    <div class="uk-margin">
+	      <p style="text-align:
+			center;">
+		<span class="biggerbolder">
+		  <strong>
+		    <a href="https://www.midi.org/midi-articles/may-is-midi-month-2021">
+		      <img src="MIDI%201.0%20Control%20Change%20Messages_files/MIDI_Association_MIMM_202_1_V10002.jpeg"
+			   alt="MIDI Association MIMM 202 1
+				V10002">
+		    </a>
+		    <br>
+		    <a href="https://www.midi.org/midi-articles/may-is-midi-month-2021">
+		      <strong>May
+			Is MIDI Month 2021 is raising money to help sick kids throught the
+			healing power of MIDI and
+			Music.&nbsp;</strong>
+		    </a>
+		    <br>
+		    <a href="https://www.midi.org/midi-articles/may-is-midi-month-2021">
+		      <strong>Click
+			on the image above to learn
+			more.&nbsp;</strong>
+		    </a>
+		    <br>
+		    <br>
+		    <br>
+		    <br>Table 3 - Control Change
+		    Messages and RPNs</strong>
+		</span>
+		<br>
+		<br>The following table lists
+		all currently defined MIDI 1.0 Control Change messages and Channel
+		Mode messages, in control number order&nbsp;(adapted from "MIDI by
+		the Numbers" by D. Valenti-Electronic Musician 2/88, and updated by
+		the MIDI Association.) This table is intended as an overview of MIDI,
+		and is by no means complete.</p>
+	      <p>
+		<strong>WARNING! Details about implementing these messages can 
+		  dramatically impact compatibility with other products. We strongly 
+		  recommend consulting the official MMA Detailed MIDI Specification for 
+		  additional information.</strong>
+	      </p>
+	      <p>Registered Parameter Numbers (RPNs) are an extension to the Control 
+		Change message for setting additional parameters. Appended at the bottom
+		is a table of all currently defined RPNs.<br>
+		<br>WARNING! Details about
+		implementing these messages can dramatically impact compatibility with 
+		other products. We strongly recommend consulting the official MMA 
+		Detailed MIDI Specification for additional information. <!-- Table 3 -->
+	      </p>
+	      <table class="maintext" style="width: 740px;" cellspacing="0" cellpadding="5" border="1" align="center">
+		<tbody>
+		  <tr>
+		    <td colspan="6" style="width: 733px;" align="center">
+		      <span style="font-size: 10pt;">
+			<strong>
+			  <br>Table 3: Control Changes and Mode Changes<br> </strong> (Status Bytes 176-191)</span>
+		    </td>
+		  </tr>
+		  <tr>
+		    <td colspan="3" style="width: 173px;" align="center">
+		      <strong>Control Number </strong>
+		      <br> (2nd Byte Value)</td>
+		    <td rowspan="2" style="width: 347px;" align="center">
+		      <strong>Control Function </strong>
+		    </td>
+		    <td colspan="2" style="width: 189px;" align="center">
+		      <strong>3rd Byte Value </strong>
+		    </td>
+		  </tr>
+		  <tr>
+		    <td style="width: 52px;" align="center">
+		      <strong>Decimal </strong>
+		    </td>
+		    <td style="width: 72px;" align="center">
+		      <strong>Binary </strong>
+		    </td>
+		    <td style="width: 25px;" align="center">
+		      <strong>Hex </strong>
+		    </td>
+		    <td style="width: 144px;" align="center">
+		      <strong>Value</strong>
+		    </td>
+		    <td style="width: 33px;" align="center">
+		      <strong>Used As </strong>
+		    </td>
+		  </tr>
+		  <tr>
+		    <td style="width: 52px;">0</td>
+		    <td style="width: 72px;">00000000</td>
+		    <td style="width: 25px;">00</td>
+		    <td style="width: 347px;" align="left">Bank Select</td>
+		    <td style="width: 144px;">0-127</td>
+		    <td style="width: 33px;">MSB</td>
+		  </tr>
+		  <tr>
+		    <td style="width: 52px;">1</td>
+		    <td style="width: 72px;">00000001</td>
+		    <td style="width: 25px;">01</td>
+		    <td style="width: 347px;" align="left">Modulation Wheel or Lever</td>
+		    <td style="width: 144px;">0-127</td>
+		    <td style="width: 33px;">MSB</td>
+		  </tr>
+		  <tr>
+		    <td style="width: 52px;">2</td>
+		    <td style="width: 72px;">00000010</td>
+		    <td style="width: 25px;">02</td>
+		    <td style="width: 347px;" align="left">Breath Controller</td>
+		    <td style="width: 144px;">0-127</td>
+		    <td style="width: 33px;">MSB</td>
+		  </tr>
+		  <tr>
+		    <td style="width: 52px;">3</td>
+		    <td style="width: 72px;">00000011</td>
+		    <td style="width: 25px;">03</td>
+		    <td style="width: 347px;" align="left">Undefined</td>
+		    <td style="width: 144px;">0-127</td>
+		    <td style="width: 33px;">MSB</td>
+		  </tr>
+		  <tr>
+		    <td style="width: 52px;">4</td>
+		    <td style="width: 72px;">00000100</td>
+		    <td style="width: 25px;">04</td>
+		    <td style="width: 347px;" align="left">Foot Controller</td>
+		    <td style="width: 144px;">0-127</td>
+		    <td style="width: 33px;">MSB</td>
+		  </tr>
+		  <tr>
+		    <td style="width: 52px;">5</td>
+		    <td style="width: 72px;">00000101</td>
+		    <td style="width: 25px;">05</td>
+		    <td style="width: 347px;" align="left">Portamento Time</td>
+		    <td style="width: 144px;">0-127</td>
+		    <td style="width: 33px;">MSB</td>
+		  </tr>
+		  <tr>
+		    <td style="width: 52px;">6</td>
+		    <td style="width: 72px;">00000110</td>
+		    <td style="width: 25px;">06</td>
+		    <td style="width: 347px;" align="left">Data Entry MSB</td>
+		    <td style="width: 144px;">0-127</td>
+		    <td style="width: 33px;">MSB</td>
+		  </tr>
+		  <tr>
+		    <td style="width: 52px;">7</td>
+		    <td style="width: 72px;">00000111</td>
+		    <td style="width: 25px;">07</td>
+		    <td style="width: 347px;" align="left">Channel Volume (formerly Main Volume)</td>
+		    <td style="width: 144px;">0-127</td>
+		    <td style="width: 33px;">MSB</td>
+		  </tr>
+		  <tr>
+		    <td style="width: 52px;">8</td>
+		    <td style="width: 72px;">00001000</td>
+		    <td style="width: 25px;">08</td>
+		    <td style="width: 347px;" align="left">Balance</td>
+		    <td style="width: 144px;">0-127</td>
+		    <td style="width: 33px;">MSB</td>
+		  </tr>
+		  <tr>
+		    <td style="width: 52px;">9</td>
+		    <td style="width: 72px;">00001001</td>
+		    <td style="width: 25px;">09</td>
+		    <td style="width: 347px;" align="left">Undefined</td>
+		    <td style="width: 144px;">0-127</td>
+		    <td style="width: 33px;">MSB</td>
+		  </tr>
+		  <tr>
+		    <td style="width: 52px;">10</td>
+		    <td style="width: 72px;">00001010</td>
+		    <td style="width: 25px;">0A</td>
+		    <td style="width: 347px;" align="left">Pan</td>
+		    <td style="width: 144px;">0-127</td>
+		    <td style="width: 33px;">MSB</td>
+		  </tr>
+		  <tr>
+		    <td style="width: 52px;">11</td>
+		    <td style="width: 72px;">00001011</td>
+		    <td style="width: 25px;">0B</td>
+		    <td style="width: 347px;" align="left">Expression Controller</td>
+		    <td style="width: 144px;">0-127</td>
+		    <td style="width: 33px;">MSB</td>
+		  </tr>
+		  <tr>
+		    <td style="width: 52px;">12</td>
+		    <td style="width: 72px;">00001100</td>
+		    <td style="width: 25px;">0C</td>
+		    <td style="width: 347px;" align="left">Effect Control 1</td>
+		    <td style="width: 144px;">0-127</td>
+		    <td style="width: 33px;">MSB</td>
+		  </tr>
+		  <tr>
+		    <td style="width: 52px;">13</td>
+		    <td style="width: 72px;">00001101</td>
+		    <td style="width: 25px;">0D</td>
+		    <td style="width: 347px;" align="left">Effect Control 2</td>
+		    <td style="width: 144px;">0-127</td>
+		    <td style="width: 33px;">MSB</td>
+		  </tr>
+		  <tr>
+		    <td style="width: 52px;">14</td>
+		    <td style="width: 72px;">00001110</td>
+		    <td style="width: 25px;">0E</td>
+		    <td style="width: 347px;" align="left">Undefined</td>
+		    <td style="width: 144px;">0-127</td>
+		    <td style="width: 33px;">MSB</td>
+		  </tr>
+		  <tr>
+		    <td style="width: 52px;">15</td>
+		    <td style="width: 72px;">00001111</td>
+		    <td style="width: 25px;">0F</td>
+		    <td style="width: 347px;" align="left">Undefined</td>
+		    <td style="width: 144px;">0-127</td>
+		    <td style="width: 33px;">MSB</td>
+		  </tr>
+		  <tr>
+		    <td style="width: 52px;">16</td>
+		    <td style="width: 72px;">00010000</td>
+		    <td style="width: 25px;">10</td>
+		    <td style="width: 347px;" align="left">General Purpose Controller 1</td>
+		    <td style="width: 144px;">0-127</td>
+		    <td style="width: 33px;">MSB</td>
+		  </tr>
+		  <tr>
+		    <td style="width: 52px;">17</td>
+		    <td style="width: 72px;">00010001</td>
+		    <td style="width: 25px;">11</td>
+		    <td style="width: 347px;" align="left">General Purpose Controller 2</td>
+		    <td style="width: 144px;">0-127</td>
+		    <td style="width: 33px;">MSB</td>
+		  </tr>
+		  <tr>
+		    <td style="width: 52px;">18</td>
+		    <td style="width: 72px;">00010010</td>
+		    <td style="width: 25px;">12</td>
+		    <td style="width: 347px;" align="left">General Purpose Controller 3</td>
+		    <td style="width: 144px;">0-127</td>
+		    <td style="width: 33px;">MSB</td>
+		  </tr>
+		  <tr>
+		    <td style="width: 52px;">19</td>
+		    <td style="width: 72px;">00010011</td>
+		    <td style="width: 25px;">13</td>
+		    <td style="width: 347px;" align="left">General Purpose Controller 4</td>
+		    <td style="width: 144px;">0-127</td>
+		    <td style="width: 33px;">MSB</td>
+		  </tr>
+		  <tr>
+		    <td style="width: 52px;">20</td>
+		    <td style="width: 72px;">00010100</td>
+		    <td style="width: 25px;">14</td>
+		    <td style="width: 347px;" align="left">Undefined</td>
+		    <td style="width: 144px;">0-127</td>
+		    <td style="width: 33px;">MSB</td>
+		  </tr>
+		  <tr>
+		    <td style="width: 52px;">21</td>
+		    <td style="width: 72px;">00010101</td>
+		    <td style="width: 25px;">15</td>
+		    <td style="width: 347px;" align="left">Undefined</td>
+		    <td style="width: 144px;">0-127</td>
+		    <td style="width: 33px;">MSB</td>
+		  </tr>
+		  <tr>
+		    <td style="width: 52px;">22</td>
+		    <td style="width: 72px;">00010110</td>
+		    <td style="width: 25px;">16</td>
+		    <td style="width: 347px;" align="left">Undefined</td>
+		    <td style="width: 144px;">0-127</td>
+		    <td style="width: 33px;">MSB</td>
+		  </tr>
+		  <tr>
+		    <td style="width: 52px;">23</td>
+		    <td style="width: 72px;">00010111</td>
+		    <td style="width: 25px;">17</td>
+		    <td style="width: 347px;" align="left">Undefined</td>
+		    <td style="width: 144px;">0-127</td>
+		    <td style="width: 33px;">MSB</td>
+		  </tr>
+		  <tr>
+		    <td style="width: 52px;">24</td>
+		    <td style="width: 72px;">00011000</td>
+		    <td style="width: 25px;">18</td>
+		    <td style="width: 347px;" align="left">Undefined</td>
+		    <td style="width: 144px;">0-127</td>
+		    <td style="width: 33px;">MSB</td>
+		  </tr>
+		  <tr>
+		    <td style="width: 52px;">25</td>
+		    <td style="width: 72px;">00011001</td>
+		    <td style="width: 25px;">19</td>
+		    <td style="width: 347px;" align="left">Undefined</td>
+		    <td style="width: 144px;">0-127</td>
+		    <td style="width: 33px;">MSB</td>
+		  </tr>
+		  <tr>
+		    <td style="width: 52px;">26</td>
+		    <td style="width: 72px;">00011010</td>
+		    <td style="width: 25px;">1A</td>
+		    <td style="width: 347px;" align="left">Undefined</td>
+		    <td style="width: 144px;">0-127</td>
+		    <td style="width: 33px;">MSB</td>
+		  </tr>
+		  <tr>
+		    <td style="width: 52px;">27</td>
+		    <td style="width: 72px;">00011011</td>
+		    <td style="width: 25px;">1B</td>
+		    <td style="width: 347px;" align="left">Undefined</td>
+		    <td style="width: 144px;">0-127</td>
+		    <td style="width: 33px;">MSB</td>
+		  </tr>
+		  <tr>
+		    <td style="width: 52px;">28</td>
+		    <td style="width: 72px;">00011100</td>
+		    <td style="width: 25px;">1C</td>
+		    <td style="width: 347px;" align="left">Undefined</td>
+		    <td style="width: 144px;">0-127</td>
+		    <td style="width: 33px;">MSB</td>
+		  </tr>
+		  <tr>
+		    <td style="width: 52px;">29</td>
+		    <td style="width: 72px;">00011101</td>
+		    <td style="width: 25px;">1D</td>
+		    <td style="width: 347px;" align="left">Undefined</td>
+		    <td style="width: 144px;">0-127</td>
+		    <td style="width: 33px;">MSB</td>
+		  </tr>
+		  <tr>
+		    <td style="width: 52px;">30</td>
+		    <td style="width: 72px;">00011110</td>
+		    <td style="width: 25px;">1E</td>
+		    <td style="width: 347px;" align="left">Undefined</td>
+		    <td style="width: 144px;">0-127</td>
+		    <td style="width: 33px;">MSB</td>
+		  </tr>
+		  <tr>
+		    <td style="width: 52px;">31</td>
+		    <td style="width: 72px;">00011111</td>
+		    <td style="width: 25px;">1F</td>
+		    <td style="width: 347px;" align="left">Undefined</td>
+		    <td style="width: 144px;">0-127</td>
+		    <td style="width: 33px;">MSB</td>
+		  </tr>
+		  <tr>
+		    <td style="width: 52px;">32</td>
+		    <td style="width: 72px;">00100000</td>
+		    <td style="width: 25px;">20</td>
+		    <td style="width: 347px;" align="left">LSB for Control 0 (Bank Select)</td>
+		    <td style="width: 144px;">0-127</td>
+		    <td style="width: 33px;">LSB</td>
+		  </tr>
+		  <tr>
+		    <td style="width: 52px;">33</td>
+		    <td style="width: 72px;">00100001</td>
+		    <td style="width: 25px;">21</td>
+		    <td style="width: 347px;" align="left">LSB for Control 1 (Modulation Wheel or Lever)</td>
+		    <td style="width: 144px;">0-127</td>
+		    <td style="width: 33px;">LSB</td>
+		  </tr>
+		  <tr>
+		    <td style="width: 52px;">34</td>
+		    <td style="width: 72px;">00100010</td>
+		    <td style="width: 25px;">22</td>
+		    <td style="width: 347px;" align="left">LSB for Control 2 (Breath Controller)</td>
+		    <td style="width: 144px;">0-127</td>
+		    <td style="width: 33px;">LSB</td>
+		  </tr>
+		  <tr>
+		    <td style="width: 52px;">35</td>
+		    <td style="width: 72px;">00100011</td>
+		    <td style="width: 25px;">23</td>
+		    <td style="width: 347px;" align="left">LSB for Control 3 (Undefined)</td>
+		    <td style="width: 144px;">0-127</td>
+		    <td style="width: 33px;">LSB</td>
+		  </tr>
+		  <tr>
+		    <td style="width: 52px;">36</td>
+		    <td style="width: 72px;">00100100</td>
+		    <td style="width: 25px;">24</td>
+		    <td style="width: 347px;" align="left">LSB for Control 4 (Foot Controller)</td>
+		    <td style="width: 144px;">0-127</td>
+		    <td style="width: 33px;">LSB</td>
+		  </tr>
+		  <tr>
+		    <td style="width: 52px;">37</td>
+		    <td style="width: 72px;">00100101</td>
+		    <td style="width: 25px;">25</td>
+		    <td style="width: 347px;" align="left">LSB for Control 5 (Portamento Time)</td>
+		    <td style="width: 144px;">0-127</td>
+		    <td style="width: 33px;">LSB</td>
+		  </tr>
+		  <tr>
+		    <td style="width: 52px;">38</td>
+		    <td style="width: 72px;">00100110</td>
+		    <td style="width: 25px;">26</td>
+		    <td style="width: 347px;" align="left">LSB for Control 6 (Data Entry)</td>
+		    <td style="width: 144px;">0-127</td>
+		    <td style="width: 33px;">LSB</td>
+		  </tr>
+		  <tr>
+		    <td style="width: 52px;">39</td>
+		    <td style="width: 72px;">00100111</td>
+		    <td style="width: 25px;">27</td>
+		    <td style="width: 347px;" align="left">LSB for Control 7 (Channel Volume, formerly Main Volume)</td>
+		    <td style="width: 144px;">0-127</td>
+		    <td style="width: 33px;">LSB</td>
+		  </tr>
+		  <tr>
+		    <td style="width: 52px;">40</td>
+		    <td style="width: 72px;">00101000</td>
+		    <td style="width: 25px;">28</td>
+		    <td style="width: 347px;" align="left">LSB for Control 8 (Balance)</td>
+		    <td style="width: 144px;">0-127</td>
+		    <td style="width: 33px;">LSB</td>
+		  </tr>
+		  <tr>
+		    <td style="width: 52px;">41</td>
+		    <td style="width: 72px;">00101001</td>
+		    <td style="width: 25px;">29</td>
+		    <td style="width: 347px;" align="left">LSB for Control 9 (Undefined)</td>
+		    <td style="width: 144px;">0-127</td>
+		    <td style="width: 33px;">LSB</td>
+		  </tr>
+		  <tr>
+		    <td style="width: 52px;">42</td>
+		    <td style="width: 72px;">00101010</td>
+		    <td style="width: 25px;">2A</td>
+		    <td style="width: 347px;" align="left">LSB for Control 10 (Pan)</td>
+		    <td style="width: 144px;">0-127</td>
+		    <td style="width: 33px;">LSB</td>
+		  </tr>
+		  <tr>
+		    <td style="width: 52px;">43</td>
+		    <td style="width: 72px;">00101011</td>
+		    <td style="width: 25px;">2B</td>
+		    <td style="width: 347px;" align="left">LSB for Control 11 (Expression Controller)</td>
+		    <td style="width: 144px;">0-127</td>
+		    <td style="width: 33px;">LSB</td>
+		  </tr>
+		  <tr>
+		    <td style="width: 52px;">44</td>
+		    <td style="width: 72px;">00101100</td>
+		    <td style="width: 25px;">2C</td>
+		    <td style="width: 347px;" align="left">LSB for Control 12 (Effect control 1)</td>
+		    <td style="width: 144px;">0-127</td>
+		    <td style="width: 33px;">LSB</td>
+		  </tr>
+		  <tr>
+		    <td style="width: 52px;">45</td>
+		    <td style="width: 72px;">00101101</td>
+		    <td style="width: 25px;">2D</td>
+		    <td style="width: 347px;" align="left">LSB for Control 13 (Effect control 2)</td>
+		    <td style="width: 144px;">0-127</td>
+		    <td style="width: 33px;">LSB</td>
+		  </tr>
+		  <tr>
+		    <td style="width: 52px;">46</td>
+		    <td style="width: 72px;">00101110</td>
+		    <td style="width: 25px;">2E</td>
+		    <td style="width: 347px;" align="left">LSB for Control 14 (Undefined)</td>
+		    <td style="width: 144px;">0-127</td>
+		    <td style="width: 33px;">LSB</td>
+		  </tr>
+		  <tr>
+		    <td style="width: 52px;">47</td>
+		    <td style="width: 72px;">00101111</td>
+		    <td style="width: 25px;">2F</td>
+		    <td style="width: 347px;" align="left">LSB for Control 15 (Undefined)</td>
+		    <td style="width: 144px;">0-127</td>
+		    <td style="width: 33px;">LSB</td>
+		  </tr>
+		  <tr>
+		    <td style="width: 52px;">48</td>
+		    <td style="width: 72px;">00110000</td>
+		    <td style="width: 25px;">30</td>
+		    <td style="width: 347px;" align="left">LSB for Control 16 (General Purpose Controller 1)</td>
+		    <td style="width: 144px;">0-127</td>
+		    <td style="width: 33px;">LSB</td>
+		  </tr>
+		  <tr>
+		    <td style="width: 52px;">49</td>
+		    <td style="width: 72px;">00110001</td>
+		    <td style="width: 25px;">31</td>
+		    <td style="width: 347px;" align="left">LSB for Control 17 (General Purpose Controller 2)</td>
+		    <td style="width: 144px;">0-127</td>
+		    <td style="width: 33px;">LSB</td>
+		  </tr>
+		  <tr>
+		    <td style="width: 52px;">50</td>
+		    <td style="width: 72px;">00110010</td>
+		    <td style="width: 25px;">32</td>
+		    <td style="width: 347px;" align="left">LSB for Control 18 (General Purpose Controller 3)</td>
+		    <td style="width: 144px;">0-127</td>
+		    <td style="width: 33px;">LSB</td>
+		  </tr>
+		  <tr>
+		    <td style="width: 52px;">51</td>
+		    <td style="width: 72px;">00110011</td>
+		    <td style="width: 25px;">33</td>
+		    <td style="width: 347px;" align="left">LSB for Control 19 (General Purpose Controller 4)</td>
+		    <td style="width: 144px;">0-127</td>
+		    <td style="width: 33px;">LSB</td>
+		  </tr>
+		  <tr>
+		    <td style="width: 52px;">52</td>
+		    <td style="width: 72px;">00110100</td>
+		    <td style="width: 25px;">34</td>
+		    <td style="width: 347px;" align="left">LSB for Control 20 (Undefined)</td>
+		    <td style="width: 144px;">0-127</td>
+		    <td style="width: 33px;">LSB</td>
+		  </tr>
+		  <tr>
+		    <td style="width: 52px;">53</td>
+		    <td style="width: 72px;">00110101</td>
+		    <td style="width: 25px;">35</td>
+		    <td style="width: 347px;" align="left">LSB for Control 21 (Undefined)</td>
+		    <td style="width: 144px;">0-127</td>
+		    <td style="width: 33px;">LSB</td>
+		  </tr>
+		  <tr>
+		    <td style="width: 52px;">54</td>
+		    <td style="width: 72px;">00110110</td>
+		    <td style="width: 25px;">36</td>
+		    <td style="width: 347px;" align="left">LSB for Control 22 (Undefined)</td>
+		    <td style="width: 144px;">0-127</td>
+		    <td style="width: 33px;">LSB</td>
+		  </tr>
+		  <tr>
+		    <td style="width: 52px;">55</td>
+		    <td style="width: 72px;">00110111</td>
+		    <td style="width: 25px;">37</td>
+		    <td style="width: 347px;" align="left">LSB for Control 23 (Undefined)</td>
+		    <td style="width: 144px;">0-127</td>
+		    <td style="width: 33px;">LSB</td>
+		  </tr>
+		  <tr>
+		    <td style="width: 52px;">56</td>
+		    <td style="width: 72px;">00111000</td>
+		    <td style="width: 25px;">38</td>
+		    <td style="width: 347px;" align="left">LSB for Control 24 (Undefined)</td>
+		    <td style="width: 144px;">0-127</td>
+		    <td style="width: 33px;">LSB</td>
+		  </tr>
+		  <tr>
+		    <td style="width: 52px;">57</td>
+		    <td style="width: 72px;">00111001</td>
+		    <td style="width: 25px;">39</td>
+		    <td style="width: 347px;" align="left">LSB for Control 25 (Undefined)</td>
+		    <td style="width: 144px;">0-127</td>
+		    <td style="width: 33px;">LSB</td>
+		  </tr>
+		  <tr>
+		    <td style="width: 52px;">58</td>
+		    <td style="width: 72px;">00111010</td>
+		    <td style="width: 25px;">3A</td>
+		    <td style="width: 347px;" align="left">LSB for Control 26 (Undefined)</td>
+		    <td style="width: 144px;">0-127</td>
+		    <td style="width: 33px;">LSB</td>
+		  </tr>
+		  <tr>
+		    <td style="width: 52px;">59</td>
+		    <td style="width: 72px;">00111011</td>
+		    <td style="width: 25px;">3B</td>
+		    <td style="width: 347px;" align="left">LSB for Control 27 (Undefined)</td>
+		    <td style="width: 144px;">0-127</td>
+		    <td style="width: 33px;">LSB</td>
+		  </tr>
+		  <tr>
+		    <td style="width: 52px;">60</td>
+		    <td style="width: 72px;">00111100</td>
+		    <td style="width: 25px;">3C</td>
+		    <td style="width: 347px;" align="left">LSB for Control 28 (Undefined)</td>
+		    <td style="width: 144px;">0-127</td>
+		    <td style="width: 33px;">LSB</td>
+		  </tr>
+		  <tr>
+		    <td style="width: 52px;">61</td>
+		    <td style="width: 72px;">00111101</td>
+		    <td style="width: 25px;">3D</td>
+		    <td style="width: 347px;" align="left">LSB for Control 29 (Undefined)</td>
+		    <td style="width: 144px;">0-127</td>
+		    <td style="width: 33px;">LSB</td>
+		  </tr>
+		  <tr>
+		    <td style="width: 52px;">62</td>
+		    <td style="width: 72px;">00111110</td>
+		    <td style="width: 25px;">3E</td>
+		    <td style="width: 347px;" align="left">LSB for Control 30 (Undefined)</td>
+		    <td style="width: 144px;">0-127</td>
+		    <td style="width: 33px;">LSB</td>
+		  </tr>
+		  <tr>
+		    <td style="width: 52px;">63</td>
+		    <td style="width: 72px;">00111111</td>
+		    <td style="width: 25px;">3F</td>
+		    <td style="width: 347px;" align="left">LSB for Control 31 (Undefined)</td>
+		    <td style="width: 144px;">0-127</td>
+		    <td style="width: 33px;">LSB</td>
+		  </tr>
+		  <tr>
+		    <td style="width: 52px;">64</td>
+		    <td style="width: 72px;">01000000</td>
+		    <td style="width: 25px;">40</td>
+		    <td style="width: 347px;" align="left">Damper Pedal on/off (Sustain)</td>
+		    <td style="width: 144px;">≤63 off, ≥64 on</td>
+		    <td style="width: 33px;">---</td>
+		  </tr>
+		  <tr>
+		    <td style="width: 52px;">65</td>
+		    <td style="width: 72px;">01000001</td>
+		    <td style="width: 25px;">41</td>
+		    <td style="width: 347px;" align="left">Portamento On/Off</td>
+		    <td style="width: 144px;">≤63 off, ≥64 on</td>
+		    <td style="width: 33px;">---</td>
+		  </tr>
+		  <tr>
+		    <td style="width: 52px;">66</td>
+		    <td style="width: 72px;">01000010</td>
+		    <td style="width: 25px;">42</td>
+		    <td style="width: 347px;" align="left">Sostenuto On/Off</td>
+		    <td style="width: 144px;">≤63 off, ≥64 on</td>
+		    <td style="width: 33px;">---</td>
+		  </tr>
+		  <tr>
+		    <td style="width: 52px;">67</td>
+		    <td style="width: 72px;">01000011</td>
+		    <td style="width: 25px;">43</td>
+		    <td style="width: 347px;" align="left">Soft Pedal On/Off</td>
+		    <td style="width: 144px;">≤63 off, ≥64 on</td>
+		    <td style="width: 33px;">---</td>
+		  </tr>
+		  <tr>
+		    <td style="width: 52px;">68</td>
+		    <td style="width: 72px;">01000100</td>
+		    <td style="width: 25px;">44</td>
+		    <td style="width: 347px;" align="left">Legato Footswitch</td>
+		    <td style="width: 144px;">≤63 Normal, ≥64 Legato</td>
+		    <td style="width: 33px;">---</td>
+		  </tr>
+		  <tr>
+		    <td style="width: 52px;">69</td>
+		    <td style="width: 72px;">01000101</td>
+		    <td style="width: 25px;">45</td>
+		    <td style="width: 347px;" align="left">Hold 2</td>
+		    <td style="width: 144px;">≤63 off, ≥64 on</td>
+		    <td style="width: 33px;">---</td>
+		  </tr>
+		  <tr>
+		    <td style="width: 52px;">70</td>
+		    <td style="width: 72px;">01000110</td>
+		    <td style="width: 25px;">46</td>
+		    <td style="width: 347px;" align="left">Sound Controller 1 (default: Sound Variation)</td>
+		    <td style="width: 144px;">0-127</td>
+		    <td style="width: 33px;">LSB</td>
+		  </tr>
+		  <tr>
+		    <td style="width: 52px;">71</td>
+		    <td style="width: 72px;">01000111</td>
+		    <td style="width: 25px;">47</td>
+		    <td style="width: 347px;" align="left">Sound Controller 2 (default: Timbre/Harmonic Intens.)</td>
+		    <td style="width: 144px;">0-127</td>
+		    <td style="width: 33px;">LSB</td>
+		  </tr>
+		  <tr>
+		    <td style="width: 52px;">72</td>
+		    <td style="width: 72px;">01001000</td>
+		    <td style="width: 25px;">48</td>
+		    <td style="width: 347px;" align="left">Sound Controller 3 (default: Release Time)</td>
+		    <td style="width: 144px;">0-127</td>
+		    <td style="width: 33px;">LSB</td>
+		  </tr>
+		  <tr>
+		    <td style="width: 52px;">73</td>
+		    <td style="width: 72px;">01001001</td>
+		    <td style="width: 25px;">49</td>
+		    <td style="width: 347px;" align="left">Sound Controller 4 (default: Attack Time)</td>
+		    <td style="width: 144px;">0-127</td>
+		    <td style="width: 33px;">LSB</td>
+		  </tr>
+		  <tr>
+		    <td style="width: 52px;">74</td>
+		    <td style="width: 72px;">01001010</td>
+		    <td style="width: 25px;">4A</td>
+		    <td style="width: 347px;" align="left">Sound Controller 5 (default: Brightness)</td>
+		    <td style="width: 144px;">0-127</td>
+		    <td style="width: 33px;">LSB</td>
+		  </tr>
+		  <tr>
+		    <td style="width: 52px;">75</td>
+		    <td style="width: 72px;">01001011</td>
+		    <td style="width: 25px;">4B</td>
+		    <td style="width: 347px;" align="left">Sound Controller 6 (default: Decay Time - see MMA RP-021)</td>
+		    <td style="width: 144px;">0-127</td>
+		    <td style="width: 33px;">LSB</td>
+		  </tr>
+		  <tr>
+		    <td style="width: 52px;">76</td>
+		    <td style="width: 72px;">01001100</td>
+		    <td style="width: 25px;">4C</td>
+		    <td style="width: 347px;" align="left">Sound Controller 7 (default: Vibrato Rate - see MMA RP-021)</td>
+		    <td style="width: 144px;">0-127</td>
+		    <td style="width: 33px;">LSB</td>
+		  </tr>
+		  <tr>
+		    <td style="width: 52px;">77</td>
+		    <td style="width: 72px;">01001101</td>
+		    <td style="width: 25px;">4D</td>
+		    <td style="width: 347px;" align="left">Sound Controller 8 (default: Vibrato Depth - see MMA RP-021)</td>
+		    <td style="width: 144px;">0-127</td>
+		    <td style="width: 33px;">LSB</td>
+		  </tr>
+		  <tr>
+		    <td style="width: 52px;">78</td>
+		    <td style="width: 72px;">01001110</td>
+		    <td style="width: 25px;">4E</td>
+		    <td style="width: 347px;" align="left">Sound Controller 9 (default: Vibrato Delay - see MMA RP-021)</td>
+		    <td style="width: 144px;">0-127</td>
+		    <td style="width: 33px;">LSB</td>
+		  </tr>
+		  <tr>
+		    <td style="width: 52px;">79</td>
+		    <td style="width: 72px;">01001111</td>
+		    <td style="width: 25px;">4F</td>
+		    <td style="width: 347px;" align="left">Sound Controller 10 (default undefined - see MMA RP-021)</td>
+		    <td style="width: 144px;">0-127</td>
+		    <td style="width: 33px;">LSB</td>
+		  </tr>
+		  <tr>
+		    <td style="width: 52px;">80</td>
+		    <td style="width: 72px;">01010000</td>
+		    <td style="width: 25px;">50</td>
+		    <td style="width: 347px;" align="left">General Purpose Controller 5</td>
+		    <td style="width: 144px;">0-127</td>
+		    <td style="width: 33px;">LSB</td>
+		  </tr>
+		  <tr>
+		    <td style="width: 52px;">81</td>
+		    <td style="width: 72px;">01010001</td>
+		    <td style="width: 25px;">51</td>
+		    <td style="width: 347px;" align="left">General Purpose Controller 6</td>
+		    <td style="width: 144px;">0-127</td>
+		    <td style="width: 33px;">LSB</td>
+		  </tr>
+		  <tr>
+		    <td style="width: 52px;">82</td>
+		    <td style="width: 72px;">01010010</td>
+		    <td style="width: 25px;">52</td>
+		    <td style="width: 347px;" align="left">General Purpose Controller 7</td>
+		    <td style="width: 144px;">0-127</td>
+		    <td style="width: 33px;">LSB</td>
+		  </tr>
+		  <tr>
+		    <td style="width: 52px;">83</td>
+		    <td style="width: 72px;">01010011</td>
+		    <td style="width: 25px;">53</td>
+		    <td style="width: 347px;" align="left">General Purpose Controller 8</td>
+		    <td style="width: 144px;">0-127</td>
+		    <td style="width: 33px;">LSB</td>
+		  </tr>
+		  <tr>
+		    <td style="width: 52px;">84</td>
+		    <td style="width: 72px;">01010100</td>
+		    <td style="width: 25px;">54</td>
+		    <td style="width: 347px;" align="left">Portamento Control</td>
+		    <td style="width: 144px;">0-127</td>
+		    <td style="width: 33px;">LSB</td>
+		  </tr>
+		  <tr>
+		    <td style="width: 52px;">85</td>
+		    <td style="width: 72px;">01010101</td>
+		    <td style="width: 25px;">55</td>
+		    <td style="width: 347px;" align="left">Undefined</td>
+		    <td style="width: 144px;">---</td>
+		    <td style="width: 33px;">---</td>
+		  </tr>
+		  <tr>
+		    <td style="width: 52px;">86</td>
+		    <td style="width: 72px;">01010110</td>
+		    <td style="width: 25px;">56</td>
+		    <td style="width: 347px;" align="left">Undefined</td>
+		    <td style="width: 144px;">---</td>
+		    <td style="width: 33px;">---</td>
+		  </tr>
+		  <tr>
+		    <td style="width: 52px;">87</td>
+		    <td style="width: 72px;">01010111</td>
+		    <td style="width: 25px;">57</td>
+		    <td style="width: 347px;" align="left">Undefined</td>
+		    <td style="width: 144px;">---</td>
+		    <td style="width: 33px;">---</td>
+		  </tr>
+		  <tr>
+		    <td style="width: 52px;">88</td>
+		    <td style="width: 72px;">01011000</td>
+		    <td style="width: 25px;">58</td>
+		    <td style="width: 347px;" align="left">High Resolution Velocity Prefix</td>
+		    <td style="width: 144px;">0-127</td>
+		    <td style="width: 33px;">LSB</td>
+		  </tr>
+		  <tr>
+		    <td style="width: 52px;">89</td>
+		    <td style="width: 72px;">01011001</td>
+		    <td style="width: 25px;">59</td>
+		    <td style="width: 347px;" align="left">Undefined</td>
+		    <td style="width: 144px;">---</td>
+		    <td style="width: 33px;">---</td>
+		  </tr>
+		  <tr>
+		    <td style="width: 52px;">90</td>
+		    <td style="width: 72px;">01011010</td>
+		    <td style="width: 25px;">5A</td>
+		    <td style="width: 347px;" align="left">Undefined</td>
+		    <td style="width: 144px;">---</td>
+		    <td style="width: 33px;">---</td>
+		  </tr>
+		  <tr>
+		    <td style="width: 52px;">91</td>
+		    <td style="width: 72px;">01011011</td>
+		    <td style="width: 25px;">5B</td>
+		    <td style="width: 347px;" align="left">Effects 1 Depth <br> (default: Reverb Send Level - see MMA RP-023) <br> (formerly External Effects Depth)</td>
+		    <td style="width: 144px;">0-127</td>
+		    <td style="width: 33px;">---</td>
+		  </tr>
+		  <tr>
+		    <td style="width: 52px;">92</td>
+		    <td style="width: 72px;">01011100</td>
+		    <td style="width: 25px;">5C</td>
+		    <td style="width: 347px;" align="left">Effects 2 Depth (formerly Tremolo Depth)</td>
+		    <td style="width: 144px;">0-127</td>
+		    <td style="width: 33px;">---</td>
+		  </tr>
+		  <tr>
+		    <td style="width: 52px;">93</td>
+		    <td style="width: 72px;">01011101</td>
+		    <td style="width: 25px;">5D</td>
+		    <td style="width: 347px;" align="left">Effects 3 Depth <br> (default: Chorus Send Level - see MMA RP-023) <br> (formerly Chorus Depth)</td>
+		    <td style="width: 144px;">0-127</td>
+		    <td style="width: 33px;">---</td>
+		  </tr>
+		  <tr>
+		    <td style="width: 52px;">94</td>
+		    <td style="width: 72px;">01011110</td>
+		    <td style="width: 25px;">5E</td>
+		    <td style="width: 347px;" align="left">Effects 4 Depth (formerly Celeste [Detune] Depth)</td>
+		    <td style="width: 144px;">0-127</td>
+		    <td style="width: 33px;">---</td>
+		  </tr>
+		  <tr>
+		    <td style="width: 52px;">95</td>
+		    <td style="width: 72px;">01011111</td>
+		    <td style="width: 25px;">5F</td>
+		    <td style="width: 347px;" align="left">Effects 5 Depth (formerly Phaser Depth)</td>
+		    <td style="width: 144px;">0-127</td>
+		    <td style="width: 33px;">---</td>
+		  </tr>
+		  <tr>
+		    <td style="width: 52px;">96</td>
+		    <td style="width: 72px;">01100000</td>
+		    <td style="width: 25px;">60</td>
+		    <td style="width: 347px;" align="left">Data Increment (Data Entry +1) (see MMA RP-018)</td>
+		    <td style="width: 144px;">N/A</td>
+		    <td style="width: 33px;">---</td>
+		  </tr>
+		  <tr>
+		    <td style="width: 52px;">97</td>
+		    <td style="width: 72px;">01100001</td>
+		    <td style="width: 25px;">61</td>
+		    <td style="width: 347px;" align="left">Data Decrement (Data Entry -1) (see MMA RP-018)</td>
+		    <td style="width: 144px;">N/A</td>
+		    <td style="width: 33px;">---</td>
+		  </tr>
+		  <tr>
+		    <td style="width: 52px;">98</td>
+		    <td style="width: 72px;">01100010</td>
+		    <td style="width: 25px;">62</td>
+		    <td style="width: 347px;" align="left">Non-Registered Parameter Number (NRPN) - LSB</td>
+		    <td style="width: 144px;">0-127</td>
+		    <td style="width: 33px;">LSB</td>
+		  </tr>
+		  <tr>
+		    <td style="width: 52px;">99</td>
+		    <td style="width: 72px;">01100011</td>
+		    <td style="width: 25px;">63</td>
+		    <td style="width: 347px;" align="left">Non-Registered Parameter Number (NRPN) - MSB</td>
+		    <td style="width: 144px;">0-127</td>
+		    <td style="width: 33px;">MSB</td>
+		  </tr>
+		  <tr>
+		    <td style="width: 52px;">100</td>
+		    <td style="width: 72px;">01100100</td>
+		    <td style="width: 25px;">64</td>
+		    <td style="width: 347px;" align="left">Registered Parameter Number (RPN) - LSB*</td>
+		    <td style="width: 144px;">0-127</td>
+		    <td style="width: 33px;">LSB</td>
+		  </tr>
+		  <tr>
+		    <td style="width: 52px;">101</td>
+		    <td style="width: 72px;">01100101</td>
+		    <td style="width: 25px;">65</td>
+		    <td style="width: 347px;" align="left">Registered Parameter Number (RPN) - MSB*</td>
+		    <td style="width: 144px;">0-127</td>
+		    <td style="width: 33px;">MSB</td>
+		  </tr>
+		  <tr>
+		    <td style="width: 52px;">102</td>
+		    <td style="width: 72px;">01100110</td>
+		    <td style="width: 25px;">66</td>
+		    <td style="width: 347px;" align="left">Undefined</td>
+		    <td style="width: 144px;">---</td>
+		    <td style="width: 33px;">---</td>
+		  </tr>
+		  <tr>
+		    <td style="width: 52px;">103</td>
+		    <td style="width: 72px;">01100111</td>
+		    <td style="width: 25px;">67</td>
+		    <td style="width: 347px;" align="left">Undefined</td>
+		    <td style="width: 144px;">---</td>
+		    <td style="width: 33px;">---</td>
+		  </tr>
+		  <tr>
+		    <td style="width: 52px;">104</td>
+		    <td style="width: 72px;">01101000</td>
+		    <td style="width: 25px;">68</td>
+		    <td style="width: 347px;" align="left">Undefined</td>
+		    <td style="width: 144px;">---</td>
+		    <td style="width: 33px;">---</td>
+		  </tr>
+		  <tr>
+		    <td style="width: 52px;">105</td>
+		    <td style="width: 72px;">01101001</td>
+		    <td style="width: 25px;">69</td>
+		    <td style="width: 347px;" align="left">Undefined</td>
+		    <td style="width: 144px;">---</td>
+		    <td style="width: 33px;">---</td>
+		  </tr>
+		  <tr>
+		    <td style="width: 52px;">106</td>
+		    <td style="width: 72px;">01101010</td>
+		    <td style="width: 25px;">6A</td>
+		    <td style="width: 347px;" align="left">Undefined</td>
+		    <td style="width: 144px;">---</td>
+		    <td style="width: 33px;">---</td>
+		  </tr>
+		  <tr>
+		    <td style="width: 52px;">107</td>
+		    <td style="width: 72px;">01101011</td>
+		    <td style="width: 25px;">6B</td>
+		    <td style="width: 347px;" align="left">Undefined</td>
+		    <td style="width: 144px;">---</td>
+		    <td style="width: 33px;">---</td>
+		  </tr>
+		  <tr>
+		    <td style="width: 52px;">108</td>
+		    <td style="width: 72px;">01101100</td>
+		    <td style="width: 25px;">6C</td>
+		    <td style="width: 347px;" align="left">Undefined</td>
+		    <td style="width: 144px;">---</td>
+		    <td style="width: 33px;">---</td>
+		  </tr>
+		  <tr>
+		    <td style="width: 52px;">109</td>
+		    <td style="width: 72px;">01101101</td>
+		    <td style="width: 25px;">6D</td>
+		    <td style="width: 347px;" align="left">Undefined</td>
+		    <td style="width: 144px;">---</td>
+		    <td style="width: 33px;">---</td>
+		  </tr>
+		  <tr>
+		    <td style="width: 52px;">110</td>
+		    <td style="width: 72px;">01101110</td>
+		    <td style="width: 25px;">6E</td>
+		    <td style="width: 347px;" align="left">Undefined</td>
+		    <td style="width: 144px;">---</td>
+		    <td style="width: 33px;">---</td>
+		  </tr>
+		  <tr>
+		    <td style="width: 52px;">111</td>
+		    <td style="width: 72px;">01101111</td>
+		    <td style="width: 25px;">6F</td>
+		    <td style="width: 347px;" align="left">Undefined</td>
+		    <td style="width: 144px;">---</td>
+		    <td style="width: 33px;">---</td>
+		  </tr>
+		  <tr>
+		    <td style="width: 52px;">112</td>
+		    <td style="width: 72px;">01110000</td>
+		    <td style="width: 25px;">70</td>
+		    <td style="width: 347px;" align="left">Undefined</td>
+		    <td style="width: 144px;">---</td>
+		    <td style="width: 33px;">---</td>
+		  </tr>
+		  <tr>
+		    <td style="width: 52px;">113</td>
+		    <td style="width: 72px;">01110001</td>
+		    <td style="width: 25px;">71</td>
+		    <td style="width: 347px;" align="left">Undefined</td>
+		    <td style="width: 144px;">---</td>
+		    <td style="width: 33px;">---</td>
+		  </tr>
+		  <tr>
+		    <td style="width: 52px;">114</td>
+		    <td style="width: 72px;">01110010</td>
+		    <td style="width: 25px;">72</td>
+		    <td style="width: 347px;" align="left">Undefined</td>
+		    <td style="width: 144px;">---</td>
+		    <td style="width: 33px;">---</td>
+		  </tr>
+		  <tr>
+		    <td style="width: 52px;">115</td>
+		    <td style="width: 72px;">01110011</td>
+		    <td style="width: 25px;">73</td>
+		    <td style="width: 347px;" align="left">Undefined</td>
+		    <td style="width: 144px;">---</td>
+		    <td style="width: 33px;">---</td>
+		  </tr>
+		  <tr>
+		    <td style="width: 52px;">116</td>
+		    <td style="width: 72px;">01110100</td>
+		    <td style="width: 25px;">74</td>
+		    <td style="width: 347px;" align="left">Undefined</td>
+		    <td style="width: 144px;">---</td>
+		    <td style="width: 33px;">---</td>
+		  </tr>
+		  <tr>
+		    <td style="width: 52px;">117</td>
+		    <td style="width: 72px;">01110101</td>
+		    <td style="width: 25px;">75</td>
+		    <td style="width: 347px;" align="left">Undefined</td>
+		    <td style="width: 144px;">---</td>
+		    <td style="width: 33px;">---</td>
+		  </tr>
+		  <tr>
+		    <td style="width: 52px;">118</td>
+		    <td style="width: 72px;">01110110</td>
+		    <td style="width: 25px;">76</td>
+		    <td style="width: 347px;" align="left">Undefined</td>
+		    <td style="width: 144px;">---</td>
+		    <td style="width: 33px;">---</td>
+		  </tr>
+		  <tr>
+		    <td style="width: 52px;">119</td>
+		    <td style="width: 72px;">01110111</td>
+		    <td style="width: 25px;">77</td>
+		    <td style="width: 347px;" align="left">Undefined</td>
+		    <td style="width: 144px;">---</td>
+		    <td style="width: 33px;">---</td>
+		  </tr>
+		  <tr>
+		    <td style="width: 52px;">
+		      <strong>
+			<a name="ModeChanges">
+			</a>Note: </strong>
+		    </td>
+		    <td colspan="5" style="width: 669px;" align="left">Controller numbers 
+		      120-127 are reserved for Channel Mode Messages, which rather than 
+		      controlling sound parameters, affect the channel's operating mode. (See 
+		      also Table 1.)</td>
+		  </tr>
+		  <tr>
+		    <td style="width: 52px;">120</td>
+		    <td style="width: 72px;">01111000</td>
+		    <td style="width: 25px;">78</td>
+		    <td style="width: 347px;" align="left">[Channel Mode Message] All Sound Off</td>
+		    <td style="width: 144px;">0</td>
+		    <td style="width: 33px;">---</td>
+		  </tr>
+		  <tr>
+		    <td style="width: 52px;">121</td>
+		    <td style="width: 72px;">01111001</td>
+		    <td style="width: 25px;">79</td>
+		    <td style="width: 347px;" align="left">[Channel Mode Message] Reset All Controllers <br> (See MMA RP-015)</td>
+		    <td style="width: 144px;">0</td>
+		    <td style="width: 33px;">---</td>
+		  </tr>
+		  <tr>
+		    <td style="width: 52px;">122</td>
+		    <td style="width: 72px;">01111010</td>
+		    <td style="width: 25px;">7A</td>
+		    <td style="width: 347px;" align="left">[Channel Mode Message] Local Control On/Off</td>
+		    <td style="width: 144px;">0 off, 127 on</td>
+		    <td style="width: 33px;">---</td>
+		  </tr>
+		  <tr>
+		    <td style="width: 52px;">123</td>
+		    <td style="width: 72px;">01111011</td>
+		    <td style="width: 25px;">7B</td>
+		    <td style="width: 347px;" align="left">[Channel Mode Message] All Notes Off</td>
+		    <td style="width: 144px;">0</td>
+		    <td style="width: 33px;">---</td>
+		  </tr>
+		  <tr>
+		    <td style="width: 52px;">124</td>
+		    <td style="width: 72px;">01111100</td>
+		    <td style="width: 25px;">7C</td>
+		    <td style="width: 347px;" align="left">[Channel Mode Message] Omni Mode Off (+ all notes off)</td>
+		    <td style="width: 144px;">0</td>
+		    <td style="width: 33px;">---</td>
+		  </tr>
+		  <tr>
+		    <td style="width: 52px;">125</td>
+		    <td style="width: 72px;">01111101</td>
+		    <td style="width: 25px;">7D</td>
+		    <td style="width: 347px;" align="left">[Channel Mode Message] Omni Mode On (+ all notes off)</td>
+		    <td style="width: 144px;">0</td>
+		    <td style="width: 33px;">---</td>
+		  </tr>
+		  <tr>
+		    <td style="width: 52px;">126</td>
+		    <td style="width: 72px;">01111110</td>
+		    <td style="width: 25px;">7E</td>
+		    <td style="width: 347px;" align="left">[Channel Mode Message] Mono Mode On (+ poly off, + all notes off)</td>
+		    <td style="width: 144px;">
+		      <p>Note: This equals the number of channels, or zero if the number of channels equals the number of voices in the receiver.</p>
+		    </td>
+		    <td style="width: 33px;">---</td>
+		  </tr>
+		  <tr>
+		    <td style="width: 52px;">127</td>
+		    <td style="width: 72px;">01111111</td>
+		    <td style="width: 25px;">7F</td>
+		    <td style="width: 347px;" align="left">[Channel Mode Message] Poly Mode On (+ mono off, +all notes off)</td>
+		    <td style="width: 144px;">0</td>
+		    <td style="width: 33px;">---</td>
+		  </tr>
+		  <tr>
+		    <td colspan="6" style="width: 733px;">
+		      <p align="center">
+			<span class="mainbold">
+			  <br> <a name="3a">
+			  </a>Table 3a: Registered Parameter Numbers<br>
+			</span>
+		      </p>
+		    </td>
+		  </tr>
+		  <tr>
+		    <td colspan="6" style="width: 733px;">
+		      <p>To set or change the value of a Registered Parameter:</p>
+		      <p>1. Send two Control Change messages using Control Numbers 101 (65H) 
+			and 100 (64H) to select the desired Registered Parameter Number, as per 
+			the following table.</p>
+		      <p>2. To set the selected Registered Parameter to a specific value, send
+			a Control Change messages to the Data Entry MSB controller (Control 
+			Number 6). If the selected Registered Parameter requires the LSB to be 
+			set, send another Control Change message to the Data Entry LSB 
+			controller (Control Number 38).</p>
+		      <p>3. To make a relative adjustment to the selected Registered 
+			Parameter's current value, use the Data Increment or Data Decrement 
+			controllers (Control Numbers 96 and 97).</p>
+		    </td>
+		  </tr>
+		  <tr>
+		    <td colspan="6" style="width: 733px;">
+		      <!-- Table 3a -->
+		      <table class="maintext" border="1" align="center">
+			<tbody>
+			  <tr>
+			    <td colspan="2" style="height: 13px;" align="center">
+			      <strong>Parameter Number </strong>
+			    </td>
+			    <td style="height: 13px;" align="center">
+			      <strong>Parameter Function </strong>
+			    </td>
+			    <td style="height: 13px;" align="center">
+			      <strong>Data Entry Value </strong>
+			    </td>
+			  </tr>
+			  <tr>
+			    <td style="width: 90px; height: 39px;">
+			      <strong>MSB: Control 101 (65H) Value</strong>
+			    </td>
+			    <td style="width: 90px; height: 39px;">
+			      <strong>LSB: Control 100 (64H) Value</strong>
+			    </td>
+			  </tr>
+			  <tr>
+			    <td rowspan="7" style="width: 90px; height: 251px;">00H</td>
+			    <td style="width: 90px; height: 26px;">00H</td>
+			    <td style="height: 26px;">Pitch Bend Sensitivity</td>
+			    <td style="width: 160px; height: 26px;">MSB = +/- semitones <br> LSB =+/--cents</td>
+			  </tr>
+			  <tr>
+			    <td style="width: 90px; height: 52px;">01H</td>
+			    <td style="height: 52px;">Channel Fine Tuning <br> (formerly Fine Tuning - see MMA RP-022)</td>
+			    <td style="width: 160px; height: 52px;">Resolution 100/8192 cents <br> 00H 00H = -100 cents <br> 40H 00H = A440 <br> 7FH 7FH = +100 cents</td>
+			  </tr>
+			  <tr>
+			    <td style="width: 90px; height: 65px;">02H</td>
+			    <td style="height: 65px;">Channel Coarse Tuning <br> (formerly Coarse Tuning - see MMA RP-022)</td>
+			    <td style="width: 160px; height: 65px;">Only MSB used <br> Resolution 100 cents <br> 00H = -6400 cents <br> 40H = A440 <br> 7FH = +6300 cents</td>
+			  </tr>
+			  <tr>
+			    <td style="width: 90px; height: 13px;">03H</td>
+			    <td style="height: 13px;">Tuning Program Change</td>
+			    <td style="width: 160px; height: 13px;">Tuning Program Number</td>
+			  </tr>
+			  <tr>
+			    <td style="width: 90px; height: 13px;">04H</td>
+			    <td style="height: 13px;">Tuning Bank Select</td>
+			    <td style="width: 160px; height: 13px;">Tuning Bank Number</td>
+			  </tr>
+			  <tr>
+			    <td style="width: 90px; height: 52px;">05H&nbsp;</td>
+			    <td style="height: 52px;">Modulation Depth Range <br> (see MMA General MIDI Level 2 Specification)</td>
+			    <td style="width: 160px; height: 52px;">For GM2, defined in GM2 Specification. <br> For other systems, defined by manufacturer</td>
+			  </tr>
+			  <tr>
+			    <td style="width: 90px; height: 52px;">06H&nbsp;</td>
+			    <td style="height: 52px;">
+			      <p>MPE Configuration Message (see MPE Specification)</p>
+			    </td>
+			    <td style="width: 160px; height: 52px;">See MPE Specification</td>
+			  </tr>
+			  <tr>
+			    <td style="width: 90px; height: 13px;">&nbsp;...</td>
+			    <td style="width: 90px; height: 13px;">&nbsp;...</td>
+			    <td style="height: 13px;">&nbsp;All RESERVED for future MMA Definition</td>
+			    <td style="width: 160px; height: 13px;">&nbsp;...</td>
+			  </tr>
+			  <tr>
+			    <td rowspan="10" style="width: 90px; height: 184px;">3DH (61)</td>
+			    <td colspan="3" style="height: 13px;" align="center">Three Dimensional Sound Controllers</td>
+			  </tr>
+			  <tr>
+			    <td style="width: 90px; height: 13px;">00H</td>
+			    <td style="height: 13px;">AZIMUTH ANGLE&nbsp;</td>
+			    <td style="width: 160px; height: 13px;">See RP-049</td>
+			  </tr>
+			  <tr>
+			    <td style="width: 90px; height: 13px;">01H</td>
+			    <td style="height: 13px;">ELEVATION ANGLE&nbsp;</td>
+			    <td style="width: 160px; height: 13px;">See RP-049</td>
+			  </tr>
+			  <tr>
+			    <td style="width: 90px; height: 13px;">02H</td>
+			    <td style="height: 13px;">GAIN&nbsp;</td>
+			    <td style="width: 160px; height: 13px;">See RP-049</td>
+			  </tr>
+			  <tr>
+			    <td style="width: 90px; height: 13px;">03H</td>
+			    <td style="height: 13px;">DISTANCE RATIO&nbsp;</td>
+			    <td style="width: 160px; height: 13px;">See RP-049</td>
+			  </tr>
+			  <tr>
+			    <td style="width: 90px; height: 13px;">04H</td>
+			    <td style="height: 13px;">MAXIMUM DISTANCE&nbsp;</td>
+			    <td style="width: 160px; height: 13px;">See RP-049</td>
+			  </tr>
+			  <tr>
+			    <td style="width: 90px; height: 13px;">05H</td>
+			    <td style="height: 13px;">GAIN AT MAXIMUM DISTANCE&nbsp;</td>
+			    <td style="width: 160px; height: 13px;">See RP-049</td>
+			  </tr>
+			  <tr>
+			    <td style="width: 90px; height: 13px;">06H</td>
+			    <td style="height: 13px;">REFERENCE DISTANCE RATIO&nbsp;</td>
+			    <td style="width: 160px; height: 13px;">See RP-049</td>
+			  </tr>
+			  <tr>
+			    <td style="width: 90px; height: 13px;">07H</td>
+			    <td style="height: 13px;">PAN SPREAD ANGLE&nbsp;</td>
+			    <td style="width: 160px; height: 13px;">See RP-049</td>
+			  </tr>
+			  <tr>
+			    <td style="width: 90px; height: 13px;">08H</td>
+			    <td style="height: 13px;">ROLL ANGLE&nbsp;</td>
+			    <td style="width: 160px; height: 13px;">See RP-049</td>
+			  </tr>
+			  <tr>
+			    <td style="width: 90px; height: 13px;">&nbsp;...</td>
+			    <td style="width: 90px; height: 13px;">&nbsp;...</td>
+			    <td style="height: 13px;">&nbsp;All RESERVED for future MMA Definition</td>
+			    <td style="width: 160px; height: 13px;">&nbsp;...</td>
+			  </tr>
+			  <tr>
+			    <td style="width: 90px; height: 13px;">7FH</td>
+			    <td style="width: 90px; height: 13px;">7FH</td>
+			    <td style="height: 13px;">Null Function Number for RPN/NRPN</td>
+			    <td style="width: 160px; height: 13px;">Setting RPN to 7FH,7FH will 
+			      disable the data entry, data increment, and data decrement controllers 
+			      until a new RPN or NRPN is selected.</td>
+			  </tr>
+			</tbody>
+		      </table>
+		      <!-- end Table 3a -->
+		    </td>
+		  </tr>
+		</tbody>
+	      </table>
+	      <p>
+		<!-- end Table 3 -->
+	      </p>
+	    </div> 
+
+
+
+	    
+	  </div>
+
+          
+          
+        </div>
+      </div>
+      
+      
+
+      <!-- Builder #footer -->
+      <div class="uk-section-primary uk-section">
+	
+        
+        
+        
+        
+        <div class="uk-container">                
+          
+          <div class="tm-grid-expand uk-grid-margin uk-grid" uk-grid="">
+	    <div class="uk-width-expand@m uk-first-column">
+	      
+              
+              
+              
+              
+              
+	      <div class="uk-panel uk-margin-remove-first-child uk-margin">
+		
+                
+                
+
+		
+		
+		
+		
+		
+		
+                <div class="el-content uk-panel uk-margin-top">
+		  <strong>
+		    <span style="font-size: 14pt;">
+		      <a href="https://www.midi.org/about">About the MIDI Association<br>
+		      </a>
+		    </span>
+		    <span style="font-size: 14pt;">
+		      <a href="https://www.midi.org/mma-ip-policy">MIDI Association IP Policy<br>
+		      </a>
+		    </span>
+		  </strong>
+		  <span style="font-size: 14pt;">
+		    <a href="https://www.midi.org/antitrust-guidelines">MIDI Association Anti-Trust Policy</a>
+		  </span>
+		</div>        
+		
+		
+		
+		
+		
+	      </div>
+              
+              
+              
+	      
+	    </div>
+
+	    <div class="uk-width-large@m">
+	      
+              
+              
+              
+              
+              
+	      <div class="uk-panel uk-margin-remove-first-child uk-position-relative uk-margin-medium" style="left: 0px;">
+		
+                
+                
+
+		
+		
+		
+		
+		
+		
+                <div class="el-content uk-panel uk-margin-top">
+		  <h3 class="tm-tag-1 tm-title-border">
+		    <a href="https://www.midi.org/contact-us" data-mce-tmp="1">Contact Us</a>
+		  </h3>
+		  <ul class="uk-list uk-list-line">
+		    <li>
+		      <h4>
+			<a href="https://www.midi.org/contact-us" data-mce-tmp="1">Click here to contact us -- We'd love to hear from you</a>
+		      </h4>
+		    </li>
+		    <li>
+		      <a href="https://www.midi.org/contact-us" data-mce-tmp="1">
+		      </a>
+		    </li>
+		    <li>
+		      <a href="https://www.midi.org/contact-us" data-mce-tmp="1">
+		      </a>
+		    </li>
+		    <li>
+		    </li>
+		  </ul>
+		</div>        
+		
+		
+		
+		
+		
+	      </div>
+              
+              
+              
+	      
+	    </div>
+
+	    <div class="uk-width-expand@m">
+	      
+              
+              
+              
+              
+              
+	      <div class="uk-panel uk-margin-remove-first-child uk-margin">
+		
+                <a href="https://www.midi.org/about-the-mma" target="_blank">
+		  <img class="el-image" alt="" data-src="/templates/yootheme/cache/MIDI_Association_Logo_TM_White_Small-0812b189.png" data-srcset="/templates/yootheme/cache/MIDI_Association_Logo_TM_White_Small-610f4192.png 439w, /templates/yootheme/cache/MIDI_Association_Logo_TM_White_Small-0812b189.png 440w" data-sizes="(min-width: 440px) 440px" data-width="440" data-height="121" uk-img="" src="MIDI%201.0%20Control%20Change%20Messages_files/MIDI_Association_Logo_TM_White_Small-0812b189.png" sizes="(min-width: 440px) 440px" srcset="MIDI%201.0%20Control%20Change%20Messages_files/MIDI_Association_Logo_TM_White_Small-610f4192.png 439w, MIDI%201.0%20Control%20Change%20Messages_files/MIDI_Association_Logo_TM_White_Small-0812b189.png 440w">
+		</a>        
+                
+
+		
+		
+		
+		
+		
+		
+                <div class="el-content uk-panel uk-margin-top">
+		  <h3 style="text-align: center;">©2022</h3>
+		</div>        
+		
+		
+		
+		
+		
+	      </div>
+	      <div class="uk-margin-small uk-text-center">    <div class="uk-child-width-auto uk-grid-small uk-flex-inline uk-grid" uk-grid="">
+		  <div class="uk-first-column">
+		    <a class="el-link uk-icon-button" href="https://www.facebook.com/TheMIDIAssociation/" target="_blank" rel="noreferrer">
+		      <span uk-icon="icon: facebook;" class="uk-icon">
+			<svg width="20" height="20" viewBox="0 0 20 20" xmlns="http://www.w3.org/2000/svg">
+			  <path d="M11,10h2.6l0.4-3H11V5.3c0-0.9,0.2-1.5,1.5-1.5H14V1.1c-0.3,0-1-0.1-2.1-0.1C9.6,1,8,2.4,8,5v2H5.5v3H8v8h3V10z">
+			  </path>
+			</svg>
+		      </span>
+		    </a>
+		  </div>
+		  <div>
+		    <a class="el-link uk-icon-button" href="https://twitter.com/midiassociation?lang=en" target="_blank" rel="noreferrer">
+		      <span uk-icon="icon: twitter;" class="uk-icon">
+			<svg width="20" height="20" viewBox="0 0 20 20" xmlns="http://www.w3.org/2000/svg">
+			  <path d="M19,4.74 C18.339,5.029 17.626,5.229 16.881,5.32 C17.644,4.86 18.227,4.139 18.503,3.28 C17.79,3.7 17.001,4.009 16.159,4.17 C15.485,3.45 14.526,3 13.464,3 C11.423,3 9.771,4.66 9.771,6.7 C9.771,6.99 9.804,7.269 9.868,7.539 C6.795,7.38 4.076,5.919 2.254,3.679 C1.936,4.219 1.754,4.86 1.754,5.539 C1.754,6.82 2.405,7.95 3.397,8.61 C2.79,8.589 2.22,8.429 1.723,8.149 L1.723,8.189 C1.723,9.978 2.997,11.478 4.686,11.82 C4.376,11.899 4.049,11.939 3.713,11.939 C3.475,11.939 3.245,11.919 3.018,11.88 C3.49,13.349 4.852,14.419 6.469,14.449 C5.205,15.429 3.612,16.019 1.882,16.019 C1.583,16.019 1.29,16.009 1,15.969 C2.635,17.019 4.576,17.629 6.662,17.629 C13.454,17.629 17.17,12 17.17,7.129 C17.17,6.969 17.166,6.809 17.157,6.649 C17.879,6.129 18.504,5.478 19,4.74">
+			  </path>
+			</svg>
+		      </span>
+		    </a>
+		  </div>
+		  <div>
+		    <a class="el-link uk-icon-button" href="https://www.linkedin.com/company/the-midi-association" target="_blank" rel="noreferrer">
+		      <span uk-icon="icon: linkedin;" class="uk-icon">
+			<svg width="20" height="20" viewBox="0 0 20 20" xmlns="http://www.w3.org/2000/svg">
+			  <path d="M5.77,17.89 L5.77,7.17 L2.21,7.17 L2.21,17.89 L5.77,17.89 L5.77,17.89 Z M3.99,5.71 C5.23,5.71 6.01,4.89 6.01,3.86 C5.99,2.8 5.24,2 4.02,2 C2.8,2 2,2.8 2,3.85 C2,4.88 2.77,5.7 3.97,5.7 L3.99,5.7 L3.99,5.71 L3.99,5.71 Z">
+			  </path>
+			  <path d="M7.75,17.89 L11.31,17.89 L11.31,11.9 C11.31,11.58 11.33,11.26 11.43,11.03 C11.69,10.39 12.27,9.73 13.26,9.73 C14.55,9.73 15.06,10.71 15.06,12.15 L15.06,17.89 L18.62,17.89 L18.62,11.74 C18.62,8.45 16.86,6.92 14.52,6.92 C12.6,6.92 11.75,7.99 11.28,8.73 L11.3,8.73 L11.3,7.17 L7.75,7.17 C7.79,8.17 7.75,17.89 7.75,17.89 L7.75,17.89 L7.75,17.89 Z">
+			  </path>
+			</svg>
+		      </span>
+		    </a>
+		  </div>
+		  
+		</div>
+	      </div>
+	      <div class="uk-panel uk-margin-medium uk-width-large uk-margin-auto uk-text-right">
+		<div style="text-align: center;">
+		  <a href="https://www.midi.org/index.php?option=com_content&amp;view=article&amp;id=72&amp;Itemid=294">Privacy Policy</a> | <a href="https://www.midi.org/index.php?option=com_content&amp;view=article&amp;id=73&amp;Itemid=295" data-mce-tmp="1">Terms of Use</a>
+		</div>
+	      </div>
+              
+              
+              
+	      
+	    </div>
+	  </div>
+	  <div class="tm-grid-expand uk-child-width-1-1 uk-grid-margin uk-grid uk-grid-stack" uk-grid="">
+	    <div class="uk-width-1-1@m uk-first-column">
+	      
+              
+              
+              
+              
+              <div>
+		<script type="text/javascript">
+		  (function(e,t,o,n,p,r,i){e.visitorGlobalObjectAlias=n;e[e.visitorGlobalObjectAlias]=e[e.visitorGlobalObjectAlias]||function(){(e[e.visitorGlobalObjectAlias].q=e[e.visitorGlobalObjectAlias].q||[]).push(arguments)};e[e.visitorGlobalObjectAlias].l=(new Date).getTime();r=t.createElement("script");r.src=o;r.async=true;i=t.getElementsByTagName("script")[0];i.parentNode.insertBefore(r,i)})(window,document,"https://diffuser-cdn.app-us1.com/diffuser/diffuser.js","vgo");
+		  vgo('setAccount', '251835469');
+		  vgo('setTrackByDefault', true);
+
+		  vgo('setEmail', 'Email_Address_Goes_Here');
+
+		  vgo('process');
+		</script>
+	      </div>
+              
+              
+              
+	      
+	    </div>
+	  </div>
+	  <div class="tm-grid-expand uk-child-width-1-1 uk-grid-margin uk-grid uk-grid-stack" uk-grid="">
+	    <div class="uk-width-1-1@m uk-first-column">
+	      
+              
+              
+              
+              
+              
+              
+              
+              
+	      
+	    </div>
+	  </div>
+        </div>
+        
+        
+        
+	
+      </div>
+
+    </div>
+
+    
+    
+
+    
+
+    <div class="ial-bg ial-trans-gpu">
+    </div>
+    <div class="ial-window mod-321 ial-trans-gpu ial-effect-1">
+      <div class="loginWndInside">
+    	<span class="ial-close loginBtn" style="margin-left: 25px; margin-right: 25px;">
+	</span>
+        
+
+
+
+	<form action="https://www.midi.org/specifications-old?task=user.login" method="post" name="ialLogin" class="ial-login  ialLoginBaseForm" style="width: 300px;">
+	  <div class="gi-elem gi-wide" style="overflow: hidden; padding: 0px 25px;">
+	    <h3 class="loginH3">Login to your account</h3>
+	  </div>
+	  
+	  <div class="gi-elem gi-wide" style="padding: 0px 25px;">
+            <div class="gi-field-out">
+	      <div class="gi-field-icon gi-user">
+		<div class="gi-field-icon-hover gi-user">
+		</div>
+	      </div>
+	    </div>
+	    <input id="userTxt" class="loginTxt" name="username" type="text" placeholder="Username" autocomplete="off">
+	  </div>
+	  <div class="gi-elem gi-wide" style="padding: 0px 25px;">
+	    <div class="gi-field-out">
+	      <div class="gi-field-icon gi-passw">
+		<div class="gi-field-icon-hover gi-passw">
+		</div>
+	      </div>
+	    </div>
+	    <input id="passTxt" class="loginTxt" name="password" type="password" placeholder="Password" autocomplete="off">
+	  </div>
+	  <div class="gi-elem gi-wide" style="padding: 0px 25px;">
+	    <button class="loginBtn ial-submit" id="submitBtn">
+	      <span>
+		<i class="ial-load" style="visibility: hidden;">
+		</i>
+		<span>Log in</span>
+	      </span>
+	    </button>
+	  </div>
+	  <div class="gi-elem gi-wide" style="padding: 0px 25px;">
+            <label class="ial-check-lbl smallTxt" for="keepSigned">
+  	      <div class="ial-checkbox">
+	      </div>
+	      <input id="keepSigned" name="remember" type="checkbox" class="ial-checkbox" style="display: none;">
+  	      Remember Me  		</label>
+  	    <div class="forgetDiv">
+              <a class="forgetLnk frg_reset" href="https://www.midi.org/change-username-password?view=reset">Forgot your password?</a>
+	      <br>
+            </div>
+	  </div>
+	  <br style="clear: both; width: 250px; margin: 0px 25px;">
+	  <input type="hidden" name="option" value="com_users" style="width: 250px; margin: 0px 25px;">
+	  <input type="hidden" name="task" value="user.login" style="width: 250px; margin: 0px 25px;">
+	  <input type="hidden" name="return" value="aHR0cHM6Ly93d3cubWlkaS5vcmcvc3BlY2lmaWNhdGlvbnMtb2xkL2l0ZW0vdGFibGUtMy1jb250cm9sLWNoYW5nZS1tZXNzYWdlcy1kYXRhLWJ5dGVzLTI=" style="width: 250px; margin: 0px 25px;">
+	  <input type="hidden" name="lang" value="en-GB" style="width: 250px; margin: 0px 25px;">
+	  <input type="hidden" name="9294ef9cbc52f6007d82b89a92c9fda0" value="1" style="width: 250px; margin: 0px 25px;">
+	</form>
+
+
+
+
+
+	<div class="ial-socials" style="margin-left: 25px; margin-right: 25px;">
+          <div class="socialIco" data-oauth="facebook" title="Use Facebook account">
+	    <div class="socialImg facebookImg">
+	      <div class="socialImgHover facebookImg">
+	      </div>
+	    </div>
+	  </div>
+	</div>
+
+
+      </div>
+    </div>
+    <div class="ial-window mod-321 ial-trans-gpu ial-effect-1">
+      <div class="loginWndInside">
+	<span class="ial-close loginBtn" style="margin-left: 25px; margin-right: 25px;">
+	</span>
+	
+
+
+	<script style="margin-left: 25px; margin-right: 25px;">var ialFields = {"page":[{"elem":{"LM5416e3590b599":{"jform[elem_type]":{"value":"header","predefined":"title","readonly":true,"button":"Title","icon":"icon-quote icon-font"},"jform[elem_wide]":{"checked":true,"value":true},"jform[elem_class]":{"value":""},"jform[elem_label]":{"value":"Please fill out the following fields to join."},"jform[elem_subtitle]":{"value":"<strong class=\"red\">*<\/strong> Required field"}},"LM5416e3590b59c":{"jform[elem_type]":{"value":"textfield","defaultValue":"text","predefined":"name","readonly":true,"button":"Name","icon":"icon-user"},"jform[elem_required]":{"checked":true,"disabled":false,"value":true},"jform[elem_wide]":{"checked":false},"jform[elem_class]":{"value":"ial-name"},"jform[elem_name]":{"value":"name","readonly":true,"prefix":"jform["},"jform[elem_prefix]":{"value":"jform"},"jform[elem_label]":{"value":"First Name"},"jform[elem_placeholder]":{"value":""},"jform[elem_title]":{"value":"Enter your full name."},"jform[elem_pattern]":{"value":".+","placeholder":".+"},"jform[elem_error]":{"value":"Invalid field: %s"},"jform[elem_id]":{"value":"ial-name"}},"LM58d834433d8d0":{"jform[elem_type]":{"value":"textfield","defaultValue":"text","readonly":true,"button":"Textfield","icon":"icon-pencil","profile":1},"jform[elem_required]":{"checked":true,"disabled":false,"value":true},"jform[elem_wide]":{"checked":false},"jform[elem_class]":{"value":""},"jform[elem_name]":{"value":"last_name","readonly":false},"jform[elem_prefix]":{"value":"jform[improved]"},"jform[elem_label]":{"value":"Last Name"},"jform[elem_value]":{"value":""},"jform[elem_placeholder]":{"value":""},"jform[elem_title]":{"value":""},"jform[elem_error]":{"value":"Invalid field: %s"},"jform[elem_pattern]":{"value":""}},"LM5416e3590b59e":{"jform[elem_type]":{"value":"textfield","defaultValue":"text","predefined":"username","readonly":true,"button":"Username","icon":"icon-user"},"jform[elem_required]":{"checked":true,"disabled":true,"value":true},"jform[elem_wide]":{"checked":false},"jform[elem_class]":{"value":"ial-username"},"jform[elem_name]":{"value":"username","readonly":true,"prefix":"jform["},"jform[elem_prefix]":{"value":"jform"},"jform[elem_label]":{"value":"Username"},"jform[elem_placeholder]":{"value":""},"jform[elem_title]":{"value":"Enter your desired username."},"jform[elem_error]":{"value":"Please enter a valid username. No space at beginning or end, at least 2 characters, must <strong>not<\/strong> have the following characters: < > \\ \" ' % ; ( ) & and be less than 150 characters long."},"jform[elem_pattern]":{"value":"^[^\\\\&%'\";\\(\\)]{2,}$","placeholder":"^[^\\\\&%'\";\\(\\)]{2,}$"},"jform[elem_ajax]":"username","jform[elem_id]":{"value":"ial-username"}},"LM5416e3590b5a1":{"jform[elem_type]":{"value":"textfield","defaultValue":"text","predefined":"email","readonly":true,"button":"Email","icon":"icon-mail-2 icon-envelope"},"jform[elem_required]":{"checked":true,"disabled":true,"value":true},"jform[elem_wide]":{"checked":false},"jform[elem_class]":{"value":"ial-email1"},"jform[elem_name]":{"value":"email1","readonly":true,"prefix":"jform["},"jform[elem_prefix]":{"value":"jform"},"jform[elem_label]":{"value":"Email Address"},"jform[elem_placeholder]":{"value":""},"jform[elem_title]":{"value":"Enter your email address."},"jform[elem_error]":{"value":"Invalid email address"},"jform[elem_pattern]":{"value":"^([\\w0-9\\.\\-])+\\@(([a-zA-Z0-9\\-])+\\.)+[a-zA-Z]{2,4}$","placeholder":"^([\\w0-9\\.\\-])+\\@(([a-zA-Z0-9\\-])+\\.)+[a-zA-Z]{2,4}$"},"jform[elem_ajax]":"email","jform[elem_id]":{"value":"ial-email1"}},"LM5416e3590b5a2":{"jform[elem_type]":{"value":"textfield","defaultValue":"text","predefined":"email2","readonly":true,"button":"Email again","icon":"icon-mail-2 icon-envelope"},"jform[elem_required]":{"checked":true,"disabled":true,"value":true},"jform[elem_wide]":{"checked":false},"jform[elem_class]":{"value":"ial-email2"},"jform[elem_name]":{"value":"email2","readonly":true,"prefix":"jform["},"jform[elem_prefix]":{"value":"jform"},"jform[elem_label]":{"value":"Confirm Email Address"},"jform[elem_placeholder]":{"value":""},"jform[elem_title]":{"value":"Confirm your email address."},"jform[elem_error]":{"value":"The email addresses you entered do not match. Please enter your email address in the email address field and confirm your entry by entering it in the confirm email address field."},"jform[elem_id]":{"value":"ial-email2"}},"LM5658c7d05fcd0":{"jform[elem_type]":{"value":"password1","defaultValue":"password","predefined":"password1","readonly":true,"button":"Password","icon":"icon-lock"},"jform[elem_required]":{"checked":true,"disabled":true,"value":true},"jform[elem_wide]":{"checked":false},"jform[elem_class]":{"value":"ial-password1"},"jform[elem_name]":{"value":"password1","readonly":true},"jform[elem_prefix]":{"value":"jform"},"jform[elem_label]":{"value":"Password"},"jform[elem_placeholder]":{"value":""},"jform[elem_title]":{"value":"Enter your desired password."},"jform[elem_error]":{"value":"Invalid field: %s"}},"LM5416e3590b59f":{"jform[elem_type]":{"value":"password2","defaultValue":"password","predefined":"password2","readonly":true,"button":"Password again","icon":"icon-lock"},"jform[elem_required]":{"checked":true,"disabled":true,"value":true},"jform[elem_wide]":{"checked":false},"jform[elem_class]":{"value":"ial-password2"},"jform[elem_name]":{"value":"password2","readonly":true,"prefix":"jform["},"jform[elem_prefix]":{"value":"jform"},"jform[elem_label]":{"value":"Confirm Password"},"jform[elem_placeholder]":{"value":""},"jform[elem_title]":{"value":"Confirm your password."},"jform[elem_error]":{"value":"The passwords you entered do not match. Please enter your desired password in the password field and confirm your entry by entering it in the confirm password field."},"jform[elem_id]":{"value":"ial-password2"}},"LM5b8086958be14":{"jform[elem_type]":{"value":"textarea","readonly":true,"button":"Textarea","icon":"icon-pencil-2 icon-pencil","profile":1},"jform[elem_required]":{"checked":false,"disabled":false},"jform[elem_wide]":{"checked":true,"value":true},"jform[elem_class]":{"value":""},"jform[elem_name]":{"value":"consent","readonly":false},"jform[elem_prefix]":{"value":"jform[improved]"},"jform[elem_label]":{"value":"Consent"},"jform[elem_value]":{"value":""},"jform[elem_placeholder]":{"value":"By signing up as a MIDI Association member, I agree to receive communications from MIDI.org about new MIDI specifications, content, downloads and more."},"jform[elem_title]":{"value":""},"jform[elem_error]":{"value":"Invalid field: %s"},"jform[elem_pattern]":{"value":""}},"LM58dac287411dd":{"jform[elem_type]":{"value":"select","readonly":true,"button":"Select","icon":"icon-chevron-down","profile":1},"jform[elem_required]":{"checked":true,"disabled":false,"value":true},"jform[elem_wide]":{"checked":true,"value":true},"jform[elem_class]":{"value":""},"jform[elem_name]":{"value":"what_best_describes_your_primary_use_of_midi","readonly":false},"jform[elem_prefix]":{"value":"jform[improved]"},"jform[elem_label]":{"value":"What best describes your *primary* use of MIDI?"},"jform[elem_select]":{"value":"<option value=\"Please select one\" selected=\"selected\">Please select one<\/option>
+<option value=\"I have fun playing with MIDI just for my own personal enjoyment\">I have fun playing with MIDI just for my own personal enjoyment<\/option>
+<option value=\"I'm a developer of MIDI hardware or software\">I'm a developer of MIDI hardware or software<\/option>
+<option value=\"I'm a music educator and use MIDI in the classroom\">I'm a music educator and use MIDI in the classroom<\/option>
+<option value=\"I'm a student and I am studying MIDI at school\">I'm a student and I am studying MIDI at school<\/option>
+<option value=\"I'm a musician who uses MIDI to write music\">I'm a musician who uses MIDI to write music<\/option>
+<option value=\"I'm a musician who uses MIDI to perform live\">I'm a musician who uses MIDI to perform live<\/option>
+<option value=\"I'm a Music Therapist interested in MIDI\">I'm a Music Therapist interested in MIDI<\/option>"},"jform[elem_title]":{"value":""}},"LM5658c7d05fcd1":{"jform[elem_type]":{"value":"select","readonly":true,"button":"Select","icon":"icon-chevron-down","profile":1},"jform[elem_required]":{"checked":false,"disabled":false},"jform[elem_wide]":{"checked":true,"value":true},"jform[elem_class]":{"value":""},"jform[elem_name]":{"value":"midi_experience","readonly":false},"jform[elem_prefix]":{"value":"jform[improved]"},"jform[elem_label]":{"value":"MIDI Experience"},"jform[elem_select]":{"value":"<option value=\"Please select one\" selected=\"selected\">Please select one<\/option>
+<option value=\"Newbie (less than 1 year)\">Newbie (less than 1 year)<\/option>
+<option value=\"Moderate (1-2 years)\">Moderate (1-2 years)<\/option>
+<option value=\"Advanced (2-5 years)\">Advanced (2-5 years)<\/option>
+<option value=\"Expert (5 years +)\">Expert (5 years +)<\/option>"},"jform[elem_title]":{"value":""}},"LM6062fb7e98076":{"jform[elem_type]":{"value":"captcha","predefined":"captcha","readonly":true,"button":"I'm not a robot","icon":"icon-checkbox icon-ok-circle"},"jform[elem_class]":{"value":""},"jform[elem_wide]":{"checked":true,"value":true}},"LM5416e3590b5a4":{"jform[elem_type]":{"value":"button","predefined":"submit","readonly":true,"button":"Submit","icon":"icon-arrow-right"},"jform[elem_wide]":{"checked":false},"jform[elem_class]":{"value":""},"jform[elem_label]":{"value":"Register"},"jform[elem_subtitle]":{"value":""}},"LM56777e2bbdaf4":{"jform[elem_type]":{"value":"label","readonly":true,"button":"Label","icon":"icon-quote icon-align-justify"},"jform[elem_wide]":{"checked":false},"jform[elem_class]":{"value":""},"jform[elem_label]":{"value":"By registering, <a href=\"index.php?option=com_content&amp;view=article&amp;id=73&amp;Itemid=295\" target=\"_blank\">I agree to the Privacy Policy and Terms of Use.<\/a>"}}}}]}, ialProps = {"layout":{"jform[layout_columns]":"3","jform[layout_margin]":"20px","jform[layout_width]":"250px"}};</script>
+	<form action="https://www.midi.org/component/users/?Itemid=543&amp;task=registration.register" method="post" name="ialRegister" class="ial-form" style="width: 900px;">
+	  <input type="hidden" value="com_users" name="option" style="width: 250px; margin: 0px 25px;">
+	  <input type="hidden" value="registration.register" name="task" style="width: 250px; margin: 0px 25px;">
+	  <input type="hidden" name="lang" value="en-GB" style="width: 250px; margin: 0px 25px;">
+	  <input type="hidden" name="9294ef9cbc52f6007d82b89a92c9fda0" value="1" style="width: 250px; margin: 0px 25px;">
+	  <div class="gi-elem gi-wide" style="overflow: hidden; padding: 0px 25px;">
+	    <h3 class="loginH3">
+	      <span data-attr="label">Please fill out the following fields to join.</span>
+	      <span data-attr="subtitle" class="smallTxt regRequired">
+		<strong class="red">*</strong> Required field</span>
+	    </h3>
+	  </div>
+	  <div class="gi-elem ial-name" style="width: 250px; margin: 0px 25px;">
+	    <label data-attr="label required" class="smallTxt req" for="ialTextfield5">First Name</label>
+	    <div class="gi-field-out">
+	      <div class="gi-field-icon gi-user gi-ial-name">
+		<div class="gi-field-icon-hover gi-user gi-ial-name">
+		</div>
+	      </div>
+	    </div>
+	    <input data-attr="id name title placeholder pattern value" class="loginTxt regTxt" type="text" name="jform[name]" placeholder="" title="Enter your full name." id="ialTextfield5">
+	    <div data-attr="error" class="hidden">Invalid field: %s</div>
+	  </div>
+	  <div class="gi-elem" style="width: 250px; margin: 0px 25px;">
+	    <label data-attr="label required" class="smallTxt req" for="ialTextfield6">Last Name</label>
+	    <div class="gi-field-out">
+	      <div class="gi-field-icon gi-user gi-ial-last_name">
+		<div class="gi-field-icon-hover gi-user gi-ial-last_name">
+		</div>
+	      </div>
+	    </div>
+	    <input data-attr="id name title placeholder pattern value" class="loginTxt regTxt" type="text" name="jform[improved][last_name]" placeholder="" title="" id="ialTextfield6">
+	    <div data-attr="error" class="hidden">Invalid field: %s</div>
+	  </div>
+	  <div class="gi-elem ial-username" style="width: 250px; margin: 0px 25px;">
+	    <label data-attr="label required" class="smallTxt req" for="ialTextfield7">Username</label>
+	    <div class="gi-field-out">
+	      <div class="gi-field-icon gi-user gi-ial-username">
+		<div class="gi-field-icon-hover gi-user gi-ial-username">
+		</div>
+	      </div>
+	    </div>
+	    <i class="ial-load" style="visibility: hidden;">
+	    </i>
+	    <input data-attr="id name title placeholder pattern value" class="loginTxt regTxt" type="text" name="jform[username]" placeholder="" title="Enter your desired username." id="ialTextfield7">
+	    <div data-attr="error" class="hidden">Please enter a valid username. No space at beginning or end, at least 2 characters, must <strong>not</strong> have the following characters: &lt; &gt; \ " ' % ; ( ) &amp; and be less than 150 characters long.</div>
+	  </div>
+	  <div class="gi-elem ial-email1" style="width: 250px; margin: 0px 25px;">
+	    <label data-attr="label required" class="smallTxt req" for="ialTextfield9">Email Address</label>
+	    <div class="gi-field-out">
+	      <div class="gi-field-icon gi-user gi-ial-email1">
+		<div class="gi-field-icon-hover gi-user gi-ial-email1">
+[		</div>
+	      </div>
+	    </div>
+	    <i class="ial-load" style="visibility: hidden;">
+	    </i>
+	    <input data-attr="id name title placeholder pattern value" class="loginTxt regTxt" type="text" name="jform[email1]" placeholder="" title="Enter your email address." id="ialTextfield9">
+	    <div data-attr="error" class="hidden">Invalid email address</div>
+	  </div>
+	  <div class="gi-elem ial-email2" style="width: 250px; margin: 0px 25px;">
+	    <label data-attr="label required" class="smallTxt req" for="ialTextfield11">Confirm Email Address</label>
+	    <div class="gi-field-out">
+	      <div class="gi-field-icon gi-user gi-ial-email2">
+		<div class="gi-field-icon-hover gi-user gi-ial-email2">
+		</div>
+	      </div>
+	    </div>
+	    <input data-attr="id name title placeholder pattern value" class="loginTxt regTxt" type="text" name="jform[email2]" placeholder="" title="Confirm your email address." id="ialTextfield11">
+	    <div data-attr="error" class="hidden">The
+	      email addresses you entered do not match. Please enter your email 
+	      address in the email address field and confirm your entry by entering it
+	      in the confirm email address field.</div>
+	  </div>
+	  <div class="gi-elem ial-password1" style="width: 250px; margin: 0px 25px;">
+	    <label data-attr="label required" class="smallTxt req" for="ialPassword112">Password</label>
+	    <label class="smallTxt passStrongness" for="ialPassword112">
+	    </label>
+	    <div class="gi-field-out">
+	      <div class="gi-field-icon gi-passw">
+		<div class="gi-field-icon-hover gi-passw">
+		</div>
+	      </div>
+	    </div>
+	    <input data-attr="id name title placeholder" class="loginTxt regTxt" type="password" autocomplete="new-password" name="jform[password1]" placeholder="" title="Enter your desired password." id="ialPassword112">
+	    <div data-attr="error" class="hidden">Invalid field: %s</div>
+	    <label class="strongFields" for="ialPassword112">
+	      <i class="empty strongField">
+	      </i>
+	      <i class="empty strongField">
+	      </i>
+	      <i class="empty strongField">
+	      </i>
+	      <i class="empty strongField">
+	      </i>
+	      <i class="empty strongField">
+	      </i>
+	    </label>
+	  </div>
+	  <div class="gi-elem ial-password2" style="width: 250px; margin: 0px 25px;">
+	    <label data-attr="label required" class="smallTxt req" for="ialPassword213">Confirm Password</label>
+	    <div class="gi-field-out">
+	      <div class="gi-field-icon gi-passw">
+		<div class="gi-field-icon-hover gi-passw">
+		</div>
+	      </div>
+	    </div>
+	    <input data-attr="id name title placeholder value" class="loginTxt regTxt" type="password" autocomplete="off" name="jform[password2]" placeholder="" title="Confirm your password." id="ialPassword213">
+	    <div data-attr="error" class="hidden">The
+	      passwords you entered do not match. Please enter your desired password 
+	      in the password field and confirm your entry by entering it in the 
+	      confirm password field.</div>
+	  </div>
+	  <div class="gi-elem gi-wide" style="padding: 0px 25px;">
+	    <label data-attr="label required" class="smallTxt" for="ialTextarea14">Consent</label>
+	    <div class="gi-field-out">
+	      <div class="gi-field-icon gi-ial-textarea">
+		<div class="gi-field-icon-hover gi-ial-textarea">
+		</div>
+	      </div>
+	    </div>
+	    <textarea data-attr="name title value placeholder" class="loginTxt regTxt" name="jform[improved][consent]" placeholder="By signing up as a MIDI Association member, I agree to receive communications from MIDI.org about new MIDI specifications, content, downloads and more." title="" id="ialTextarea14">
+	    </textarea>
+	  </div>
+	  <div class="gi-elem gi-wide" style="padding: 0px 25px;">
+	    <label data-attr="label required" class="smallTxt req" for="ialSelect15">What best describes your *primary* use of MIDI?</label>
+	    <label class="ial-select" for="ialSelect15">
+	      <select data-attr="id name title select" class="loginTxt" name="jform[improved][what_best_describes_your_primary_use_of_midi]" title="" id="ialSelect15">
+		<option value="Please select one" selected="selected">Please select one</option>
+		<option value="I have fun playing with MIDI just for my own personal enjoyment">I have fun playing with MIDI just for my own personal enjoyment</option>
+		<option value="I'm a developer of MIDI hardware or software">I'm a developer of MIDI hardware or software</option>
+		<option value="I'm a music educator and use MIDI in the classroom">I'm a music educator and use MIDI in the classroom</option>
+		<option value="I'm a student and I am studying MIDI at school">I'm a student and I am studying MIDI at school</option>
+		<option value="I'm a musician who uses MIDI to write music">I'm a musician who uses MIDI to write music</option>
+		<option value="I'm a musician who uses MIDI to perform live">I'm a musician who uses MIDI to perform live</option>
+		<option value="I'm a Music Therapist interested in MIDI">I'm a Music Therapist interested in MIDI</option>
+	      </select>
+	    </label>
+	  </div>
+	  <div class="gi-elem gi-wide" style="padding: 0px 25px;">
+	    <label data-attr="label required" class="smallTxt" for="ialSelect16">MIDI Experience</label>
+	    <label class="ial-select" for="ialSelect16">
+	      <select data-attr="id name title select" class="loginTxt" name="jform[improved][midi_experience]" title="" id="ialSelect16">
+		<option value="Please select one" selected="selected">Please select one</option>
+		<option value="Newbie (less than 1 year)">Newbie (less than 1 year)</option>
+		<option value="Moderate (1-2 years)">Moderate (1-2 years)</option>
+		<option value="Advanced (2-5 years)">Advanced (2-5 years)</option>
+		<option value="Expert (5 years +)">Expert (5 years +)</option>
+	      </select>
+	    </label>
+	  </div>
+	  <div class="gi-elem gi-wide" style="padding: 0px 25px;">
+	    <div id="registerCaptcha" class="ial-recaptcha" data-sitekey="6Le79b0UAAAAANhw-hUOo60BHAAwmVmdPuIwi0ZA">
+	    </div>
+	  </div>
+	  <div class="gi-elem" style="width: 250px; margin: 0px 25px;">
+	    <label data-attr="subtitle" class="smallTxt hidden" for="ialButton18">
+	    </label>
+	    <button class="loginBtn ial-submit" name="submit" id="ialButton18">
+	      <span>
+		<i class="ial-load" style="visibility: hidden;">
+		</i>
+		<span data-attr="label">Register</span>
+	      </span>
+	    </button>
+	  </div>
+	  <div class="gi-elem" style="width: 250px; margin: 0px 25px;">
+	    <span data-attr="label" class="smallTxt">By registering, <a href="https://www.midi.org/specifications-old/item/index.php?option=com_content&amp;view=article&amp;id=73&amp;Itemid=295" target="_blank">I agree to the Privacy Policy and Terms of Use.</a>
+	    </span>
+	  </div>
+	</form>
+
+	<br style="clear:both">
+
+
+	<div class="ial-socials" style="margin-left: 25px; margin-right: 25px;">
+          <div class="socialIco" data-oauth="facebook" title="Use Facebook account">
+	    <div class="socialImg facebookImg">
+	      <div class="socialImgHover facebookImg">
+	      </div>
+	    </div>
+	  </div>
+	</div>
+
+      </div>
+    </div>
+    <div class="ial-window mod-321 ial-trans-gpu ial-effect-1">
+      <div class="loginWndInside">
+	<span class="ial-close loginBtn" style="margin-left: 25px; margin-right: 25px;">
+	</span>
+	<form action="https://www.midi.org/component/users/?task=reset.request&amp;Itemid=543" method="post" class="ial-login ialResetForm" name="ialLoginReset" style="width: 300px;">
+	  <div class="gi-elem gi-wide" style="padding: 0px 25px;">
+	    <h3 class="loginH3">Password Reset</h3>
+	  </div>
+	  <div class="gi-elem" style="width: 250px; margin: 0px 25px;">
+	    <span class="smallTxt">Please enter the email address for your 
+	      account. A verification code will be sent to you. Once you have received
+	      the verification code, you will be able to choose a new password for 
+	      your account.<br>
+	      <br>
+	    </span>
+	  </div>
+	  <div class="gi-elem" style="width: 250px; margin: 0px 25px;">
+	    <div class="gi-field-out">
+	      <div class="gi-field-icon gi-ial-email1">
+		<div class="gi-field-icon-hover gi-ial-email1">
+		</div>
+	      </div>
+	    </div>
+	    <input id="resetEmail" class="loginTxt" name="jform[email]" type="text" placeholder="Email Address">
+	  </div>
+	  <div class="gi-elem" style="width: 250px; margin: 0px 25px;">
+	    <div id="resetCaptcha" class="ial-recaptcha" data-sitekey="6Le79b0UAAAAANhw-hUOo60BHAAwmVmdPuIwi0ZA">
+	    </div>
+	  </div>
+	  <div class="gi-elem" style="width: 250px; margin: 0px 25px;">
+	    <button class="loginBtn ial-reset" id="resetBtn" style="width: 100%; margin-bottom: 20px">
+	      <span>
+		<i class="ial-load" style="visibility: hidden;">
+		</i>
+		<span>Submit</span>
+	      </span>
+	    </button>
+	  </div>
+	  <input type="hidden" name="9294ef9cbc52f6007d82b89a92c9fda0" value="1" style="width: 250px; margin: 0px 25px;">
+	</form>
+	<br style="clear:both">    </div>
+    </div>
+  </body>
+</html>
