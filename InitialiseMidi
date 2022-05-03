@@ -18,7 +18,7 @@ sub set_up_midi() {
     my $launchpad_x_device = $lpd[0];
 
     my @pdd = grep {defined} map {/^client (\d+): 'Pure Data'/} @aconnect_l;
-    @pdd == 1 or die "Too many entries for Pure Data: " . scalar(@pdd);
+    @pdd == 1 or die "Wrong number entries for Pure Data: " . scalar(@pdd);
     my $pure_data_device = $pdd[0];
 
     print "\$worlde_device $worlde_device. \n\$launchpad_x_device $launchpad_x_device. \n\$pure_data_device $pure_data_device\n";
@@ -26,8 +26,9 @@ sub set_up_midi() {
     ## Delete connections to and from pure data
     sub del_con( $$ ) {
 	my ($l, $r) = @_;
-	`aconnect -d $l $r`;
-	$? == 0 or warn "Failed $?: aconnect -d $l $r ";
+	my $cmd = "aconnect -d $l $r";
+	`$cmd`;
+	$? == 0 or warn "Failed $?: $cmd ";
     }
 
     &del_con("$worlde_device:0", "$pure_data_device:0");
@@ -43,7 +44,9 @@ sub set_up_midi() {
     ## Make new connections
     sub make_con( $$ ) {
 	my ($l, $r) = @_;
-	print `aconnect  $l $r`;
+	my $cmd = "aconnect $l $r";
+	`$cmd`;
+	$? == 0 or warn "Failed $?: $cmd ";
     }
 
     &make_con("$worlde_device:0", "$pure_data_device:1");
