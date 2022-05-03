@@ -26,7 +26,7 @@ sub set_up_pure_data(){
 	"-midiindev $midiindev " .
 	"120Proof.pd " .
 	"";
-    print "Run: $pd_command\n";
+    ## print "Run: $pd_command\n";
     if(fork()){
 	## In parent
     }else{
