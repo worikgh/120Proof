@@ -2,8 +2,6 @@ use midi_connection::MIDICommunicator;
 
 use std::env;
 use std::error::Error;
-use std::thread;
-use std::time;
 fn get_colour(args: &Vec<String>) -> Result<(u8, u8, u8), Box<dyn Error>> {
     let red: u8 = args[1].parse()?;
     let green: u8 = args[2].parse()?;
@@ -28,9 +26,5 @@ fn main() -> Result<(), Box<dyn Error>> {
             };
         }
     };
-    // loop {
-    //     println!("tick/tock");
-    //     thread::sleep(time::Duration::from_secs(60))
-    // }
     Ok(())
 }
