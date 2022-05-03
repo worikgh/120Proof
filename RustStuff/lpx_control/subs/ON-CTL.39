@@ -1,0 +1,16 @@
+#!/bin/sh
+echo ON-CTL.39
+
+pwd
+
+echo  kill old pd
+
+killall pd
+
+echo starting new pd $?
+ 
+/usr/local/bin/pd & # -jack -path /home/patch/120Proof/pd_patches/ -send "; pd dsp 1" -nostdpath -path `pwd` -stderr -nogui pd_patches/instruments/HarpPoly.pd &
+
+# sleep 2
+
+# ./InitialiseMidi
