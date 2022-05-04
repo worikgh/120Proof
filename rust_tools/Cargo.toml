@@ -1,0 +1,8 @@
+[workspace]
+
+members = [
+    "lpx_colour",
+    "lpx_control",
+    "lpx_mode",
+    "midi_connection",
+]
