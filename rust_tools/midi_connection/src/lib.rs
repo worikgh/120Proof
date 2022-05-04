@@ -24,7 +24,7 @@ impl MIDICommunicator {
     }
     /// Given the name of a device return an input and output connection
     /// to it
-    pub fn get_midi_connections(
+    fn get_midi_connections(
         name: &str,
     ) -> Result<
         (

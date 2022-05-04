@@ -12,7 +12,7 @@ fn main() -> Result<(), Box<dyn Error>> {
     // Get the pad (11..99) and colour (r,g,b)
     let args: Vec<String> = env::args().collect();
     match args[1].parse::<u8>() {
-        Err(_) => eprintln!("Got an error"), //ueprintln!("{:?}", err),
+        Err(err) => eprintln!("{:?}", err),
         Ok(pad) => {
             match get_colour(&args) {
                 Err(err) => eprintln!("{:?}", err),

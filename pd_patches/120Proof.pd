@@ -59,6 +59,8 @@
 #000000 #000000;
 #X obj 358 242 == 29;
 #X text 377 289 This bangs if button 29 is pressed;
+#X obj 162 201 bng 15 250 50 0 empty empty empty 17 7 0 10 #fcfcfc
+#000000 #000000;
 #X connect 1 0 2 0;
 #X connect 1 0 2 1;
 #X connect 5 0 4 0;
@@ -124,3 +126,4 @@
 #X connect 49 0 50 0;
 #X connect 52 0 53 0;
 #X connect 54 0 52 0;
+#X connect 56 0 34 0;
