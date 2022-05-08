@@ -18,3 +18,5 @@ rust_tools/lpx_control/target/
 rust_tools/midi_connection/Cargo.lock
 rust_tools/lpx_control/Cargo.lock
 rust_tools/midi_connection/target/
+Documents/MIDI 1.0 Control Change Messages_files/
+rust_tools/lpx_control/src/
