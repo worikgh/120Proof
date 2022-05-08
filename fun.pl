@@ -1,6 +1,8 @@
 #!/usr/bin/perl -w
 use strict;
 
+## Flash the lights of the LPX pad
+
 my $d = 5;
 
 ## For each pad
