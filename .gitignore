@@ -16,3 +16,5 @@ rust_tools/lpx_colour/Cargo.lock
 rust_tools/lpx_colour/target/
 rust_tools/lpx_control/target/
 rust_tools/midi_connection/Cargo.lock
+rust_tools/lpx_control/Cargo.lock
+rust_tools/midi_connection/target/
