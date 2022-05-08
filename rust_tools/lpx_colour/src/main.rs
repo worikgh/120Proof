@@ -18,7 +18,7 @@ fn main() -> Result<(), Box<dyn Error>> {
                 Err(err) => eprintln!("{:?}", err),
                 Ok((red, green, blue)) => {
                     let mut midi_communicator1 =
-                        MIDICommunicator::new("Launchpad X:Launchpad X MIDI 1")?;
+                        MIDICommunicator::new("Launchpad X:Launchpad X MIDI 1", |_, _, _| {}, ())?;
                     let msg: [u8; 13] = [240, 0, 32, 41, 2, 12, 3, 3, pad, red, green, blue, 247];
                     // let msg: [u8; 12] = [240, 0, 32, 41, 2, 12, 3, pad, red, green, blue, 247];
                     midi_communicator1.send(&msg).unwrap()

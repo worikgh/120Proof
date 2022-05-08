@@ -14,10 +14,16 @@ use std::error::Error;
 // use std::thread;
 // use std::time;
 fn main() -> Result<(), Box<dyn Error>> {
-    let mut midi_communicator1 =
-        MIDICommunicator::new("Launchpad X:Launchpad X MIDI 1")?;
-    let _midi_communicator2 =
-        MIDICommunicator::new("Launchpad X:Launchpad X MIDI 2")?;
+    let mut midi_communicator1 = MIDICommunicator::new(
+        "Launchpad X:Launchpad X MIDI 1",
+        |_, _, _| {},
+        (),
+    )?;
+    let _midi_communicator2 = MIDICommunicator::new(
+        "Launchpad X:Launchpad X MIDI 2",
+        |_, _, _| {},
+        (),
+    )?;
     // This is the MIDI message that puts the LPX into programmer's
     // mode.
 
@@ -29,14 +35,13 @@ fn main() -> Result<(), Box<dyn Error>> {
 \n 07h (7): Custom mode 4 (Lighting mode in Session layout by factory default)\n 0Dh (13): DAW Faders (only selectable in DAW mode) 7Fh (127): Programmer mode\n", args[0]);
     } else {
         assert!(args.len() == 2);
-        let mode = &args[1];
-        println!("Error mode: {}", &mode);
+        let mode: &str = &args[1];
         match mode.parse() {
             Ok(mode) => {
                 let msg: [u8; 9] = [240, 0, 32, 41, 2, 12, 0, mode, 247];
                 midi_communicator1.send(&msg).unwrap()
             },
-            Err(err) => eprintln!("{:?}", err),
+            Err(err) => eprintln!("Mode {}: {:?}", mode, err),
         };
     }
     // Get the replies.  In midi_communicator there is an infinite

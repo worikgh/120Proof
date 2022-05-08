@@ -1,11 +1,14 @@
 use std::error::Error;
-pub struct MIDICommunicator {
-    _in_conn: Option<midir::MidiInputConnection<()>>,
+pub struct MIDICommunicator<T: 'static> {
+    _in_conn: Option<midir::MidiInputConnection<T>>,
     out_conn: Option<midir::MidiOutputConnection>,
 }
-impl MIDICommunicator {
-    pub fn new(name: &str) -> Result<MIDICommunicator, Box<dyn Error>> {
-        match Self::get_midi_connections(name) {
+impl<T: std::fmt::Debug + Send> MIDICommunicator<T> {
+    pub fn new<F>(name: &str, callback: F, data: T) -> Result<MIDICommunicator<T>, Box<dyn Error>>
+    where
+        F: FnMut(u64, &[u8], &mut T) + Send + 'static,
+    {
+        match Self::get_midi_connections(name, callback, data) {
             Ok((o_conn_in, o_conn_out)) => Ok(MIDICommunicator {
                 out_conn: o_conn_out,
                 _in_conn: o_conn_in,
@@ -24,18 +27,23 @@ impl MIDICommunicator {
     }
     /// Given the name of a device return an input and output connection
     /// to it
-    fn get_midi_connections(
+    fn get_midi_connections<F>(
         name: &str,
+        callback: F,
+        data: T,
     ) -> Result<
         (
-            Option<midir::MidiInputConnection<()>>,
+            Option<midir::MidiInputConnection<T>>,
             Option<midir::MidiOutputConnection>,
         ),
         Box<dyn Error>,
-    > {
-        let mut result_in: Option<midir::MidiInputConnection<()>> = None;
+    >
+    where
+        F: FnMut(u64, &[u8], &mut T) + Send + 'static,
+    {
+        let mut result_in: Option<midir::MidiInputConnection<T>> = None;
         let mut result_out: Option<midir::MidiOutputConnection> = None;
-        let copy_name = name.to_string();
+        // let copy_name = name.to_string();
         let source_port = name.to_string().into_bytes();
         let midi_out = midir::MidiOutput::new("120 Proof")?;
         let mut midi_in = midir::MidiInput::new("120 Proof")?;
@@ -94,8 +102,9 @@ impl MIDICommunicator {
                 result_in = match midi_in.connect(
                     &port,
                     "120 Proof Connection",
-                    move |_time, message, ()| println!("{} MIDI In: {:?}", copy_name, message),
-                    (),
+                    // move |_time, message, ()| println!("{} MIDI In: {:?}", copy_name, message),
+                    callback,
+                    data,
                 ) {
                     Ok(a) => Some(a),
                     Err(err) => {
@@ -130,6 +139,7 @@ mod tests {
     #[test]
     fn test_midi_connections() {
         let port_names = MIDICommunicator::get_midi_inputs().unwrap();
-        let midiConnections = MIDICommunicator::new(port_names.first().as_str()).unwrap();
+        let midiConnections =
+            MIDICommunicator::new(port_names.first().as_str(), move |_, _, _| (), ()).unwrap();
     }
 }
