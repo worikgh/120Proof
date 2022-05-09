@@ -4,11 +4,16 @@ pub struct MIDICommunicator<T: 'static> {
     out_conn: Option<midir::MidiOutputConnection>,
 }
 impl<T: std::fmt::Debug + Send> MIDICommunicator<T> {
-    pub fn new<F>(name: &str, callback: F, data: T) -> Result<MIDICommunicator<T>, Box<dyn Error>>
+    pub fn new<F>(
+        other_name: &str,
+        this_name: &str,
+        callback: F,
+        data: T,
+    ) -> Result<MIDICommunicator<T>, Box<dyn Error>>
     where
         F: FnMut(u64, &[u8], &mut T) + Send + 'static,
     {
-        match Self::get_midi_connections(name, callback, data) {
+        match Self::get_midi_connections(other_name, this_name, callback, data) {
             Ok((o_conn_in, o_conn_out)) => Ok(MIDICommunicator {
                 out_conn: o_conn_out,
                 _in_conn: o_conn_in,
@@ -27,7 +32,8 @@ impl<T: std::fmt::Debug + Send> MIDICommunicator<T> {
     /// Given the name of a device return an input and output connection
     /// to it
     fn get_midi_connections<F>(
-        name: &str,
+        other_name: &str,
+        this_name: &str,
         callback: F,
         data: T,
     ) -> Result<
@@ -43,9 +49,9 @@ impl<T: std::fmt::Debug + Send> MIDICommunicator<T> {
         let mut result_in: Option<midir::MidiInputConnection<T>> = None;
         let mut result_out: Option<midir::MidiOutputConnection> = None;
         // let copy_name = name.to_string();
-        let source_port = name.to_string().into_bytes();
-        let midi_out = midir::MidiOutput::new("120 Proof")?;
-        let mut midi_in = midir::MidiInput::new("120 Proof")?;
+        let source_port = other_name.to_string().into_bytes();
+        let midi_out = midir::MidiOutput::new(this_name)?;
+        let mut midi_in = midir::MidiInput::new(this_name)?;
         midi_in.ignore(midir::Ignore::None);
 
         for (index, port) in midi_out.ports().iter().enumerate() {
@@ -69,13 +75,14 @@ impl<T: std::fmt::Debug + Send> MIDICommunicator<T> {
                             .ok_or("Invalid port number")
                             .unwrap()
                             .clone();
-                        result_out = match midi_out.connect(&port, "120 Proof Connection") {
-                            Ok(s) => Some(s),
-                            Err(err) => {
-                                eprintln!("{:?}", err);
-                                None
-                            }
-                        };
+                        result_out =
+                            match midi_out.connect(&port, format!("{}-out", this_name).as_str()) {
+                                Ok(s) => Some(s),
+                                Err(err) => {
+                                    eprintln!("{:?}", err);
+                                    None
+                                }
+                            };
                         break;
                     }
                 }
@@ -100,8 +107,7 @@ impl<T: std::fmt::Debug + Send> MIDICommunicator<T> {
                     .clone();
                 result_in = match midi_in.connect(
                     &port,
-                    "120 Proof Connection",
-                    // move |_time, message, ()| println!("{} MIDI In: {:?}", copy_name, message),
+                    format!("{}-in", this_name).as_str(),
                     callback,
                     data,
                 ) {
@@ -149,7 +155,12 @@ mod tests {
     #[test]
     fn test_midi_connections() {
         let port_names = MIDICommunicator::get_midi_inputs().unwrap();
-        let midiConnections =
-            MIDICommunicator::new(port_names.first().as_str(), move |_, _, _| (), ()).unwrap();
+        let midiConnections = MIDICommunicator::new(
+            port_names.first().as_str(),
+            "120-Proof-Test",
+            move |_, _, _| (),
+            (),
+        )
+        .unwrap();
     }
 }

@@ -16,11 +16,13 @@ use std::error::Error;
 fn main() -> Result<(), Box<dyn Error>> {
     let mut midi_communicator1 = MIDICommunicator::new(
         "Launchpad X:Launchpad X MIDI 1",
+        "120-Proof-1",
         |_, _, _| {},
         (),
     )?;
     let _midi_communicator2 = MIDICommunicator::new(
         "Launchpad X:Launchpad X MIDI 2",
+        "120-Proof-2",
         |_, _, _| {},
         (),
     )?;
