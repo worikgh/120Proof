@@ -22,7 +22,6 @@ impl<T: std::fmt::Debug + Send> MIDICommunicator<T> {
             .unwrap()
             .send(&msg)
             .unwrap_or_else(|_| println!("Error when forwarding message ..."));
-
         Ok(())
     }
     /// Given the name of a device return an input and output connection
@@ -118,11 +117,22 @@ impl<T: std::fmt::Debug + Send> MIDICommunicator<T> {
 
         Ok((result_in, result_out))
     }
+
+    // Lists midi devices that can be used as inputs
     pub fn get_midi_inputs() -> Result<Vec<String>, Box<dyn Error>> {
         let midi_in = midir::MidiInput::new("120 Proof")?;
         let mut result: Vec<String> = Vec::new();
         for (_, p) in midi_in.ports().iter().enumerate() {
             result.push(midi_in.port_name(p).unwrap().clone())
+        }
+        Ok(result)
+    }
+    // Lists midi devices that can be used as outputs
+    pub fn get_midi_outputs() -> Result<Vec<String>, Box<dyn Error>> {
+        let midi_out = midir::MidiOutput::new("120 Proof")?;
+        let mut result: Vec<String> = Vec::new();
+        for (_, p) in midi_out.ports().iter().enumerate() {
+            result.push(midi_out.port_name(p).unwrap().clone())
         }
         Ok(result)
     }
