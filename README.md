@@ -30,11 +30,34 @@ Can only be controlled by software
 
 # Tools
 
-Some are built under `RustStuff`
+## rust_tools
 
-## lpx_programmers_mode
+Collection of parts for building the synthesiser
 
-Puts the LPX into "programmer's mode", in which it is most useful 
+The tools are:
+
+* lpx_mode
+* lpx_control
+* lpx_colour
+
+
+### lpx_mode
+
+Sets the mode of the `lpx`.  Most useful mode is `127` "Programmer Mode".
+
+### lpx_control
+
+Runs programmes based on the control pad pressed on the LPX 
+
+Programmes (executable files) are placed in the sub directrory `subs/`.  Each control signal can trigger execution of two programmes in `subs/`.  When a control signal is received (say `29`) programme `subs/ON-CTL.29` is run.  When any other control is received, say `39`, `subs/OFF-CTL.29` is run then `subs/ON-39`.
+
+### lpx_colour
+
+Sets the colour of a pad on the `LPX`.
+
+`./lpx_colour <Pad> <red> <green> <blue>` where `Pad` in `11..98` and `red`, `green`, and `blue` are in `1..127`. 
+
+
 
 # Workflow
 
