@@ -33,3 +33,8 @@ The pads in the first three and last three columns are repeated
 6 7 8 1 2 3 4 5
 1 2 3 4 5 6 7 8
 ```
+
+Input (2): 
+
+1. A string of numbers N in 1..12 inclusive, in ascending order and unique.  This defines the scale.  E.g. The minor pentatonic scale is 1 3 4 5 7
+2. An offset (default 0) for transposing the root note of the scale which is pad row 4, column 4.  If 0 it is middle C.  This can be negative, 0, posative or missing.  If present it is an integer.
