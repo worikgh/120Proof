@@ -1,19 +1,86 @@
 use std::error::Error;
+
+struct SelectPortError;
+struct OutConnError;
+impl std::fmt::Display for SelectPortError {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        f.debug_tuple("SelectPortError").finish()
+    }
+}
+
+impl std::fmt::Debug for SelectPortError {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        f.debug_tuple("SelectPortError").finish()
+    }
+}
+impl std::fmt::Display for OutConnError {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        f.debug_tuple("OutConnError").finish()
+    }
+}
+
+impl std::fmt::Debug for OutConnError {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        f.debug_tuple("OutConnError").finish()
+    }
+}
+impl Error for SelectPortError {}
+impl Error for OutConnError {}
+
+/// From midir/examples return a port
+fn select_port<T: midir::MidiIO>(midi_io: &T, name: &str) -> Result<T::Port, Box<dyn Error>> {
+    let midi_ports = midi_io.ports();
+    let len = name.len();
+    eprintln!("Name: {}", name);
+    for (i, p) in midi_ports.iter().enumerate() {
+        let port_name = midi_io.port_name(p)?;
+        let prefix_port_name = port_name
+            .as_str()
+            .chars()
+            .skip(0)
+            .take(len)
+            .collect::<String>();
+        eprintln!(
+            "port_name({}) prefix_port_name({})",
+            port_name, prefix_port_name
+        );
+        if prefix_port_name == name {
+            // Found port
+            match midi_ports.get(i) {
+                Some(p) => return Ok(p.clone()),
+                None => panic!("????"),
+            };
+        }
+    }
+    Err(Box::new(SelectPortError))
+}
+
 pub struct MIDICommunicator<T: 'static> {
     _in_conn: Option<midir::MidiInputConnection<T>>,
     out_conn: Option<midir::MidiOutputConnection>,
 }
 impl<T: std::fmt::Debug + Send> MIDICommunicator<T> {
+    /// Create a MIDICommunicator.  `other_name` is the device that
+    /// will be connected to.  `this_name` is the device that this
+    /// creates that other devices connect to.  `callback` is passed
+    /// to the input connection to be called with each incoming MIDI
+    /// message.  `data` is passed to `callback` in the third
+    /// parameter. `inout` defines whether to make an incoming,
+    /// outgoing, or bidirectional connection.  If it is 1 make
+    /// incoming, if it is 2 make outgoing, if it is 3 make both.  Any
+    /// other value is an error
     pub fn new<F>(
         other_name: &str,
         this_name: &str,
         callback: F,
         data: T,
+        inout: u8,
     ) -> Result<MIDICommunicator<T>, Box<dyn Error>>
     where
         F: FnMut(u64, &[u8], &mut T) + Send + 'static,
     {
-        match Self::get_midi_connections(other_name, this_name, callback, data) {
+        let connections = Self::get_midi_connections(other_name, this_name, callback, data, inout);
+        match connections {
             Ok((o_conn_in, o_conn_out)) => Ok(MIDICommunicator {
                 out_conn: o_conn_out,
                 _in_conn: o_conn_in,
@@ -22,20 +89,27 @@ impl<T: std::fmt::Debug + Send> MIDICommunicator<T> {
         }
     }
     pub fn send(&mut self, msg: &[u8]) -> Result<(), Box<dyn Error>> {
-        self.out_conn
-            .as_mut()
-            .unwrap()
-            .send(&msg)
-            .unwrap_or_else(|_| println!("Error when forwarding message ..."));
-        Ok(())
+        match self.out_conn.as_mut() {
+            Some(midi_out_conn) => match midi_out_conn.send(&msg) {
+                Ok(()) => Ok(()),
+                Err(err) => Err(Box::new(err)),
+            },
+            None => {
+                eprintln!("Error when forwarding message");
+                Err(Box::new(OutConnError))
+            }
+        }
     }
-    /// Given the name of a device return an input and output connection
-    /// to it
+    /// Given the name of a device return an input and output
+    /// connection to it.  `other_name` is the device that will be
+    /// connected to.  `this_name` is the device that this creates
+    /// that other devices connect to
     fn get_midi_connections<F>(
         other_name: &str,
         this_name: &str,
         callback: F,
         data: T,
+        inout: u8,
     ) -> Result<
         (
             Option<midir::MidiInputConnection<T>>,
@@ -46,79 +120,74 @@ impl<T: std::fmt::Debug + Send> MIDICommunicator<T> {
     where
         F: FnMut(u64, &[u8], &mut T) + Send + 'static,
     {
+        // The values to return
         let mut result_in: Option<midir::MidiInputConnection<T>> = None;
         let mut result_out: Option<midir::MidiOutputConnection> = None;
-        // let copy_name = name.to_string();
-        let source_port = other_name.to_string().into_bytes();
-        let midi_out = midir::MidiOutput::new(this_name)?;
-        let mut midi_in = midir::MidiInput::new(this_name)?;
-        midi_in.ignore(midir::Ignore::None);
 
-        for (index, port) in midi_out.ports().iter().enumerate() {
-            // Each available output port.
-            match midi_out.port_name(port) {
-                Err(_) => continue,
-                Ok(port_name) => {
-                    let port_name = port_name.into_bytes();
-                    let mut accept: bool = true;
-                    for i in 0..port_name.len() {
-                        if i < source_port.len() && source_port[i] != port_name[i] {
-                            accept = false;
-                            break;
-                        }
-                    }
-                    if accept {
-                        // Can build an output connection
-                        let port = midi_out
-                            .ports()
-                            .get(index)
-                            .ok_or("Invalid port number")
-                            .unwrap()
-                            .clone();
-                        result_out =
-                            match midi_out.connect(&port, format!("{}-out", this_name).as_str()) {
-                                Ok(s) => Some(s),
-                                Err(err) => {
-                                    eprintln!("{:?}", err);
-                                    None
+        let source_port = other_name.to_string().into_bytes();
+
+        // if the caller asked for it make a outgoing connection
+        if inout > 1 {
+            let midi_out = midir::MidiOutput::new(this_name)?;
+            if other_name != "" {
+                for (index, port) in midi_out.ports().iter().enumerate() {
+                    // Each available output port.
+                    match midi_out.port_name(port) {
+                        Err(_) => continue,
+                        Ok(port_name) => {
+                            eprintln!("Compare: {} <=> {}", &port_name, &other_name);
+                            let port_name = port_name.into_bytes();
+                            let mut accept: bool = true;
+                            for i in 0..port_name.len() {
+                                if i < source_port.len() && source_port[i] != port_name[i] {
+                                    accept = false;
+                                    break;
                                 }
-                            };
-                        break;
+                            }
+                            if accept {
+                                // Can build an output connection
+                                let port = midi_out
+                                    .ports()
+                                    .get(index)
+                                    .ok_or("Invalid port number")
+                                    .unwrap()
+                                    .clone();
+                                eprintln!("Make MIDI out {} -> {}", this_name, other_name);
+                                result_out = match midi_out
+                                    .connect(&port, format!("{}-out", this_name).as_str())
+                                {
+                                    Ok(s) => Some(s),
+                                    Err(err) => {
+                                        eprintln!("Could not connect {:?}", err);
+                                        None
+                                    }
+                                };
+                                break;
+                            }
+                        }
                     }
                 }
             }
         }
 
-        for (i, p) in midi_in.ports().iter().enumerate() {
-            let port_name = midi_in.port_name(p).unwrap().into_bytes();
-            let mut accept: bool = true;
-            for i in 0..port_name.len() {
-                if i < source_port.len() && source_port[i] != port_name[i] {
-                    accept = false;
-                    break;
+        // `inout` == 2 implies only create an outgoing connection.
+        // So if `inout` is not 2 make incoming connection
+        if inout != 2 {
+            let mut midi_in = midir::MidiInput::new(this_name)?;
+            midi_in.ignore(midir::Ignore::None);
+            let port = select_port(&midi_in, other_name)?;
+            result_in = match midi_in.connect(
+                &port,
+                format!("{}-in", this_name).as_str(),
+                callback,
+                data,
+            ) {
+                Ok(a) => Some(a),
+                Err(err) => {
+                    eprintln!("{:?}", err);
+                    None
                 }
-            }
-            if accept {
-                let port = midi_in
-                    .ports()
-                    .get(i)
-                    .ok_or("Invalid port number")
-                    .unwrap()
-                    .clone();
-                result_in = match midi_in.connect(
-                    &port,
-                    format!("{}-in", this_name).as_str(),
-                    callback,
-                    data,
-                ) {
-                    Ok(a) => Some(a),
-                    Err(err) => {
-                        eprintln!("{:?}", err);
-                        None
-                    }
-                };
-                break;
-            }
+            };
         }
 
         Ok((result_in, result_out))
@@ -156,10 +225,11 @@ mod tests {
     fn test_midi_connections() {
         let port_names = MIDICommunicator::get_midi_inputs().unwrap();
         let midiConnections = MIDICommunicator::new(
-            port_names.first().as_str(),
+            port_names.first().unwrap().as_str(),
             "120-Proof-Test",
             move |_, _, _| (),
             (),
+            3,
         )
         .unwrap();
     }
