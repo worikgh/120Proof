@@ -19,12 +19,7 @@ fn main() -> Result<(), Box<dyn Error>> {
         "120-Proof-1",
         |_, _, _| {},
         (),
-    )?;
-    let _midi_communicator2 = MIDICommunicator::new(
-        "Launchpad X:Launchpad X MIDI 2",
-        "120-Proof-2",
-        |_, _, _| {},
-        (),
+        1,
     )?;
     // This is the MIDI message that puts the LPX into programmer's
     // mode.
