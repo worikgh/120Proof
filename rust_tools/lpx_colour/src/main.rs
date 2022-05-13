@@ -19,9 +19,10 @@ fn main() -> Result<(), Box<dyn Error>> {
                 Ok((red, green, blue)) => {
                     let mut midi_communicator1 = MIDICommunicator::new(
                         "Launchpad X:Launchpad X MIDI 1",
-                        "120-Proof",
+                        "120-Proof-1",
                         |_, _, _| {},
                         (),
+                        1,
                     )?;
                     let msg: [u8; 13] = [240, 0, 32, 41, 2, 12, 3, 3, pad, red, green, blue, 247];
                     // let msg: [u8; 12] = [240, 0, 32, 41, 2, 12, 3, pad, red, green, blue, 247];
