@@ -31,7 +31,7 @@ impl Error for OutConnError {}
 fn select_port<T: midir::MidiIO>(midi_io: &T, name: &str) -> Result<T::Port, Box<dyn Error>> {
     let midi_ports = midi_io.ports();
     let len = name.len();
-    eprintln!("Name: {}", name);
+    // eprintln!("Name: {}", name);
     for (i, p) in midi_ports.iter().enumerate() {
         let port_name = midi_io.port_name(p)?;
         let prefix_port_name = port_name
@@ -40,10 +40,10 @@ fn select_port<T: midir::MidiIO>(midi_io: &T, name: &str) -> Result<T::Port, Box
             .skip(0)
             .take(len)
             .collect::<String>();
-        eprintln!(
-            "port_name({}) prefix_port_name({})",
-            port_name, prefix_port_name
-        );
+        // eprintln!(
+        //     "port_name({}) prefix_port_name({})",
+        //     port_name, prefix_port_name
+        // );
         if prefix_port_name == name {
             // Found port
             match midi_ports.get(i) {
@@ -135,7 +135,7 @@ impl<T: std::fmt::Debug + Send> MIDICommunicator<T> {
                     match midi_out.port_name(port) {
                         Err(_) => continue,
                         Ok(port_name) => {
-                            eprintln!("Compare: {} <=> {}", &port_name, &other_name);
+                            // eprintln!("Compare: {} <=> {}", &port_name, &other_name);
                             let port_name = port_name.into_bytes();
                             let mut accept: bool = true;
                             for i in 0..port_name.len() {
@@ -152,7 +152,7 @@ impl<T: std::fmt::Debug + Send> MIDICommunicator<T> {
                                     .ok_or("Invalid port number")
                                     .unwrap()
                                     .clone();
-                                eprintln!("Make MIDI out {} -> {}", this_name, other_name);
+                                // eprintln!("Make MIDI out {} -> {}", this_name, other_name);
                                 result_out = match midi_out
                                     .connect(&port, format!("{}-out", this_name).as_str())
                                 {
