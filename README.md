@@ -154,3 +154,6 @@ echo -n param_set 2 bass 0.250000| nc -N localhoocalhost 5555
 `sleep 2`
 `./InitialiseMidi`
 
+# Links
+
+https://github.com/sadko4u/lsp-plugins

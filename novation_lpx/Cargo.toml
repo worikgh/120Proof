@@ -4,6 +4,6 @@ members = [
     "lpx_colour",
     "lpx_control",
     "lpx_mode",
-    "lpx_120_proof",
+    "lpx_manager",
     "midi_connection",
 ]
