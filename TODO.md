@@ -1,8 +1,13 @@
 # Build Instruments
 
 **TODO**: A pattern of writing scripts that:
+
 * Set up and tear down JACK connections between MIDI sinks, LV2 plugins, audio input (2-channels), ???, and the output two channels.  Not necessarily stereo.  Just two.
+
+* Make copies of the binaries for the LV2 plugins locally
+
 * Clean the MIDI set up.  (The `midir` library is setting more connections than I ask for when using `lpx_manager`
+
 * Set up and tear down MIDI sinks (Pure Data currently.  More to come)
 
 
@@ -11,6 +16,16 @@
 * Keyboard
 
 * LPX
+
+* Pedal
+
+A three pedal USB keyboard.  Use to configure JACK connections quickly.  Generally takes about 80ms.
+
+**TODO**: Get pedal driver from `ModHostPedal` to work here.
+
+**TODO**: Add ability to pedal to send control signals to LV2 plugins
+
+**TODO**: Calculate how much overhead there is in USB pedal, hence how important it is to move to a better/quicker system
 
 * Audio
 
@@ -22,9 +37,18 @@ The audio inout/output to Pisound is stereo so effectively there are two indepen
 
 ## Processing
 
+## InitialisePd
+
+**TODO** Make `InitialisePd` take a patch argument with or without a ".pd" suffix.  Adjust documentation in `README.md`
+
+## InitialiseMidi
+
+**TODO**: Can the `120.cfg` file be generated automagically?  And/or can `lpx_manager` have a configuration file and write its lines to `120.cfg`
+
+
 ### MIDI Sources
 
-**TODO**: Write a programme that deletes all the MIDI connections that are not desired
+**Done**: Write a programme that deletes all the MIDI connections that are not desired
 
 * LPX
   
@@ -34,21 +58,21 @@ The audio inout/output to Pisound is stereo so effectively there are two indepen
 
     * lpx_control
 	
-	Run scripts based on pressing control pads on the LPX.  This is intended to change configurations when playing live.
+	  Run scripts based on pressing control pads on the LPX.  This is intended to change configurations when playing live.
 	
-      * **TODO**: Ensure that the controls cannot be sent accidentally by not accepting a control withing five (?) seconds of sending a MIDI signal.  Change the colours of the control pads when they are active/inactive.
+    **TODO**: Ensure that the controls cannot be sent accidentally by not accepting a control withing five (?) seconds of sending a MIDI signal.  Change the colours of the control pads when they are active/inactive.
 	
     * lpx_manager
 	
-	Set up LPX buttons for melodic use.Colouring them with three colours: One for root notes, one for notes on scale, and one for all other notes.
+	  Set up LPX buttons for melodic use.Colouring them with three colours: One for root notes, one for notes on scale, and one for all other notes.
 	
-	Assign the pads to MIDI notes so that they are aligned in five columns.  This leads to duplication where pads in three leftmost and rightmost columns play the same notes.
+	  Assign the pads to MIDI notes so that they are aligned in five columns.  This leads to duplication where pads in three leftmost and rightmost columns play the same notes.
 	
-	When a pad is pressed change its colour (to a fourth colour).  Also change the colour of the other pad that can play this note.
+	  When a pad is pressed change its colour (to a fourth colour).  Also change the colour of the other pad that can play this note.
 	
-      * **TODO**: Provide a method of reassigning colours without recompiling
+      **TODO**: Provide a method of reassigning colours without recompiling
 
-      * **TODO**: Provide a method of defining the names of the Launchpad on one side (MIDI source) and the synthesiser on the other (MIDI sink) without recompiling.
+      **Done**: Provide a method of defining the names of the Launchpad on one side (MIDI source) and the synthesiser on the other (MIDI sink) without recompiling.
 	
     * lpx_colour
 	
