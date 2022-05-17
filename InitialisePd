@@ -1,14 +1,22 @@
 #!/usr/bin/perl -w
 use strict;
 
-&set_up_pure_data();
+&set_up_pure_data($ARGV[0]);
 
-sub set_up_pure_data(){
-
+sub set_up_pure_data( $ ){
+    ## Argument is the patch to run
+    my $patch = shift;
+    defined $patch and $patch = "";
+    
     ## If pure data is running warn and quit
     if(`pgrep pd -x`){
-	warn "pd (Pure Data) is running already";
-	return;
+	warn "pd (Pure Data) is running already.  Killing it";
+	`pkill -x pd`;
+	$? and die "pkill failed: $?";
+	`pgrep -x pd` and die "Failed to stop pd";
+	if($patch eq ""){
+	    return;
+	}
     }
     my $sample_rate = "48000";
     my $audio_in_dev = "'1,2'"; # Stero. Standard
@@ -19,14 +27,16 @@ sub set_up_pure_data(){
     my $pd_command = "/usr/local/bin/pd -r $sample_rate " .
 	"-audioindev $audio_in_dev " .
 	"-audiooutdev $audio_out_dev " .
-	"-jack -rt -send \"; pd dsp 1\" " .
+	"-jack -rt " .
+	"-send \"; pd dsp 1\" " . ## Turn on DSP so pd starts making sound
 	"-path $path/pd_patches " .
 	"-path $path/pd_patches/instruments " .
+	# "-nogui " . ## Run headless
 	# "-nostdpath " .
 	"-midiindev $midiindev " .
-	"120Proof.pd " .
+	"$patch " .
 	"";
-    ## print "Run: $pd_command\n";
+    print "Run: $pd_command\n";
     if(fork()){
 	## In parent
     }else{
