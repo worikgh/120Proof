@@ -6,55 +6,144 @@ use strict;
 # Find the midi numbers of the WORLDE, Launchpad X, and Pure Data
 
 sub set_up_midi() {
+
+    ## Read in the midi connections that are wanted from 120.cfg
+    my @connections = ();
+    open(my $cfg, "120.cfg") or die $!;
+    my $flag = 0;
+    while(my $line = <$cfg>){
+	chomp $line;
+	$line =~ /^MIDI_Connections/ and $flag = 1 and next;
+	$line =~ /^\s*$/ and $flag = 0; 
+	$flag or next;
+
+	## In MIDI section
+	$line =~ /^\s*#/ and next;
+	$line =~ /^([^\t]+)\t([^\t]+)$/  or die $line;
+
+	push(@connections, [$1, $2]);
+    }
+
+    ## Get all the connections devices
     my @aconnect_l = `aconnect -l`;
-    # print @aconnect_l;
-    # print scalar(@aconnect_l)." lines\n";
-    my @wdd = grep {defined} map {/^client\s(\d+): 'WORLDE'/; $1} @aconnect_l;
-    @wdd == 0 and die "No MIDI entries found for WORLDE";
-    @wdd == 1 or die "Too many entries for worlde";
-    my $worlde_device = $wdd[0];
-    my @lpd = grep {defined} map {/^client (\d+): 'Launchpad X'/} @aconnect_l;
-    @lpd == 1 or die "Too many entries for Launchpd X";
-    my $launchpad_x_device = $lpd[0];
 
-    my @pdd = grep {defined} map {/^client (\d+): 'Pure Data'/} @aconnect_l;
-    @pdd == 1 or die "Wrong number entries for Pure Data: " . scalar(@pdd);
-    my $pure_data_device = $pdd[0];
+    my @connections_dev = ();
+    foreach my $pair (@connections){
+	@$pair == 2 or die ;
+	my $from = $pair->[0];
+	my $to = $pair->[1];
 
-    print "\$worlde_device $worlde_device. \n\$launchpad_x_device $launchpad_x_device. \n\$pure_data_device $pure_data_device\n";
+	## Find from device
+	$from =~ /^([^:]+):(.+)$/ or die $from;
+	my $from_dev_str = $1;
+	my $from_dev = undef;
+	my $from_port_str = $2;
+	my $from_port = undef;
+	foreach my $ac (@aconnect_l){
+	    if($ac =~ /^client (\d+):\s+'$from_dev_str\s*'\s/){
+		## Found from device
+		$from_dev = $1;
+		next;
+	    }
+	    defined($from_dev) or next;
+	    if($ac =~ /^\s+(\d+)\s+'$from_port_str\s*'/){
+		$from_port = $1;
+		last;
+	    }	    
+	}
 
+	## Got the from device/port
+	defined $from_dev or die;
+	defined $from_port or die;
+
+	## Find to device
+	$to =~ /^([^:]+):(.+)$/ or die $to;
+	my $to_dev_str = $1;
+	my $to_dev = undef;
+	my $to_port_str = $2;
+	my $to_port = undef;
+	foreach my $ac (@aconnect_l){
+	    if($ac =~ /^client (\d+):\s+'$to_dev_str\s*'\s/){
+		## Found to device
+		$to_dev = $1;
+		next;
+	    }
+	    defined($to_dev) or next;
+	    if($ac =~ /^\s+(\d+)\s+'$to_port_str\s*'/){
+		$to_port = $1;
+		last;
+	    }	    
+	}
+
+	## Got the to device/port
+	defined $to_dev or die;
+	defined $to_port or die;
+	push (@connections_dev, ["$from_dev:$from_port", "$to_dev:$to_port"]);
+    }
+    ## Delete all connections not in @connections_dev
     ## Delete connections to and from pure data
     sub del_con( $$ ) {
 	my ($l, $r) = @_;
 	my $cmd = "aconnect -d $l $r";
 	`$cmd`;
-	$? == 0 or warn "Failed $?: $cmd ";
+	print STDERR "del_con($l, $r)\n";
+	$? == 0 or print STDERR "Failed $?: $cmd \n";
+    }
+    my $from_dev = undef;
+    my $to_dev = undef;
+    my $from_port = undef;
+    my $to_port = undef;
+    foreach my $con (@aconnect_l){
+	if($con =~ /^client\s+(\d+)/){
+	    $from_dev = $1;
+	    $from_port = undef;
+	    $to_dev = undef;
+	    $to_port = undef;
+	    next;
+	}
+	if(defined($from_dev) and $con =~ /^\s+(\d+)/){
+	    $from_port = $1;
+	    next;
+	}
+	if($con =~ /Connecting To: (.+)/){
+	    my $connections = $1;
+	    my @c = grep{/\d+:\d+/} split(/[^\d\:]+/, $connections);
+	    my @conn = ();
+	    $from_dev == 0 and next; ##Do not do this one
+	    foreach my $pair (@c) {
+		$pair =~ /(\d+):(\d+)/ or die $pair;
+		my ($to_dev, $to_port) = ($1, $2);
+		print "Push Conn: $from_dev:$from_port $to_dev:$to_port\n";
+		push(@conn, [$to_dev, $to_port]);
+	    }
+	    foreach my $pair (@conn){
+		my ($to_dev, $to_port) = @$pair;
+		if($to_dev != 129 ){
+		    ## Unsure what these are with $to_dev == 129
+		    my $con_from = "$from_dev:$from_port";
+		    my $con_to = "$to_dev:$to_port";
+		    if(!grep{$_->[0] eq $con_from and $_->[1] eq $con_to}
+		       @connections_dev){
+			## This is not a desired connection 
+			&del_con($con_from, $con_to);
+		    }
+		}
+	    }
+	}
     }
 
-    &del_con("$worlde_device:0", "$pure_data_device:0");
-    &del_con("$worlde_device:0", "$pure_data_device:1");
-    &del_con("$launchpad_x_device:0", "$pure_data_device:0");
-    &del_con("$launchpad_x_device:1", "$pure_data_device:0");
-    &del_con("$launchpad_x_device:0", "$pure_data_device:1");
-    &del_con("$launchpad_x_device:1", "$pure_data_device:1");
-    &del_con("$pure_data_device:2", "$launchpad_x_device:0");
-    &del_con("$pure_data_device:2", "$launchpad_x_device:1");
-    &del_con("$pure_data_device:2", "$worlde_device:0");
-
+    ## Now make the connections
     ## Make new connections
     sub make_con( $$ ) {
 	my ($l, $r) = @_;
 	my $cmd = "aconnect $l $r";
 	`$cmd`;
-	$? == 0 or warn "Failed $?: $cmd ";
+	print STDERR "make_con($l, $r)\n";
+	$? == 0 or print STDERR "Failed $?: $cmd \n";
     }
-
-    &make_con("$worlde_device:0", "$pure_data_device:1");
-    &make_con("$launchpad_x_device:0", "$pure_data_device:0");
-    &make_con("$launchpad_x_device:1", "$pure_data_device:0");
-    &make_con("$pure_data_device:2", "$launchpad_x_device:0");
-    &make_con("$pure_data_device:2", "$launchpad_x_device:1");
-    &make_con("$pure_data_device:2", "$worlde_device:0");
+    foreach my $pair (@connections_dev){
+	&make_con($pair->[0], $pair->[1]);
+    }
 }
 
 			  
