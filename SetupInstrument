@@ -2,19 +2,21 @@
 use strict;
 
 my $instrument = shift or die;
-my $fn= "Instruments/$instrument";
--r $fn or die "$!: $fn";
+my $mod_host_cfg= "Instruments/$instrument.mh";
+-r $mod_host_cfg or die "$!: $mod_host_cfg";
 
-open(my $fh, $fn) or die "$!: $fn";
-while(my $line = <$fh>){
-    chomp $line;
 
-    if($line =~ /^mh\s(.+)\s*$/) {
-	## Mod host command
-	my $cmd = $1;
-	my $res = `echo $cmd | nc -N localhost 5555`;
-	print "\$cmd: $cmd\n\$res: $res\n";
+sub set_up_mod_host {
+    open(my $fh_mod_host, $mod_host_cfg) or die "$!: $mod_host_cfg";
+
+    while(my $line = <$fh_mod_host>){
+	chomp $line;
+	
+	if($line =~ /^mh\s(.+)\s*$/) {
+	    ## Mod host command
+	    my $cmd = $1;
+	    my $res = `echo $cmd | nc -N localhost 5555`;
+	    print "\$cmd: $cmd\n\$res: $res\n";
+	}
     }
-
-    
 }
