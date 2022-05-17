@@ -1,15 +1,16 @@
 #!/usr/bin/perl -w
 use strict;
 
-## Initialse the midi connections
+## Initialise the midi connections
 
 # Find the midi numbers of the WORLDE, Launchpad X, and Pure Data
 
-sub set_up_midi() {
-
+sub set_up_midi( $ ) {
+    my $cfg_fn = shift or die;
+    
     ## Read in the midi connections that are wanted from 120.cfg
     my @connections = ();
-    open(my $cfg, "120.cfg") or die $!;
+    open(my $cfg, $cfg_fn) or die $!;
     my $flag = 0;
     while(my $line = <$cfg>){
 	chomp $line;
@@ -147,5 +148,5 @@ sub set_up_midi() {
 }
 
 			  
-
-&set_up_midi();
+my $cfg_fn = shift or die "pass a configuration file";
+&set_up_midi( $cfg_fn );
