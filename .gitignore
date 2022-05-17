@@ -21,3 +21,8 @@ rust_tools/midi_connection/target/
 Documents/MIDI 1.0 Control Change Messages_files/
 rust_tools/lpx_control/src/
 rust_tools/lpx_120_proof/
+lpx_manager
+lpx_pentatonic
+novation_lpx/lpx_control/Cargo.lock
+novation_lpx/lpx_manager/zzz
+novation_lpx/midi_connection/Cargo.lock
