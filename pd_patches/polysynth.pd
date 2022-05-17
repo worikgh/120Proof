@@ -9,6 +9,8 @@
 #X obj 33 12 inlet Midi note;
 #X obj 138 37 inlet Midi velocity;
 #X obj 29 142 clone -s 1 \$1 6;
+#X obj 199 78 loadbang;
+#X obj 199 103 print \$1;
 #X connect 0 0 9 0;
 #X connect 1 0 2 0;
 #X connect 2 0 6 0;
@@ -19,3 +21,4 @@
 #X connect 7 0 4 0;
 #X connect 8 0 4 1;
 #X connect 9 0 3 0;
+#X connect 10 0 11 0;
