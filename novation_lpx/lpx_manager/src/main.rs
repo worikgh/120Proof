@@ -76,7 +76,7 @@ impl Adapter {
         let mut midi_note_to_pads = (0..99)
             .map(|_| (None, None))
             .collect::<Vec<(Option<u8>, Option<u8>)>>();
-        // The middle key in this scheeme is 34.  Middle C is MIDI 60
+        // The middle key in this scheme is 34.  Middle C is MIDI 60
         // So adjustment...
         let adj_note = root_note - 34;
         let mut i: u8 = 11;
@@ -85,7 +85,7 @@ impl Adapter {
                 // `i` is the number for a pad.  No pads 10, 20,... and pads 19, 29,... are control pads
                 let midi_note = d + p + adj_note;
                 // eprintln!("pad({}) -> note({})", i, midi_note); //
-                // Incomming MIDI `i` becomes `pad`.  E.g. MIDI == 32
+                // Incoming MIDI `i` becomes `pad`.  E.g. MIDI == 32
                 // print!("pad({}) i({}) ", pad, i);
                 midi_map[i as usize] = midi_note;
                 let row = i / 10;
@@ -128,37 +128,42 @@ impl Adapter {
     }
 }
 
-// fn find_port<T>(midi_io: &T, device: &str) -> Option<T::Port>
-// where
-//     T: midir::MidiIO,
-// {
-//     let mut device_port: Option<T::Port> = None;
-//     for port in midi_io.ports() {
-//         if let Ok(port_name) = midi_io.port_name(&port) {
-//             println!("Port: {}", &port_name);
-//             if port_name.contains(device) {
-//                 device_port = Some(port);
-//                 break;
-//             }
-//         }
-//     }
-//     device_port
-// }
+/// The names of MIDI devices set up in this.  
+struct DeviceNames {
+    midi_source_lpx: &'static str,
+    midi_source_lpx_120: &'static str,
 
+    midi_sink_lpx: &'static str,
+    midi_sink_lpx_120: &'static str,
+
+    midi_sink_synth: &'static str,
+    midi_sink_synth_120: &'static str,
+}
+impl DeviceNames {
+    fn new() -> DeviceNames {
+        DeviceNames {
+            midi_source_lpx: "Launchpad X:Launchpad X MIDI 2",
+            midi_source_lpx_120: "120-Proof-MIDI-In-LPX",
+
+            midi_sink_lpx: "Launchpad X:Launchpad X MIDI 1",
+            midi_sink_lpx_120: "120-Proof-MIDI-Out-LPX",
+
+            midi_sink_synth: "Pure Data:Pure Data Midi-In 2",
+            midi_sink_synth_120: "120-Proof-MIDI-Out-PD",
+        }
+    }
+}
 fn main() -> Result<(), Box<dyn Error>> {
     let args: Vec<String> = env::args().collect();
-
+    let device_names = DeviceNames::new();
     // This is the scale.  Should be able to pass this in on the command line.
     let scale: Vec<u8>;
     let root_note: u8;
     if args.len() > 0 {
-        // Firtst argument is root note.  The rest of the arguments is scale
-        // eprintln!("args({:?})", &args);
+        // First argument is root note.  The rest of the arguments is scale
         let mut iter = args.iter();
         let root_note_iv = iter.nth(1).unwrap().as_str();
-        // eprintln!("root_note_iv({})", root_note_iv);
         root_note = root_note_iv.parse::<u8>()?;
-        // eprintln!("root_note({})", root_note);
         let mut intermediate_value: Vec<u8> = Vec::new();
         for s in iter {
             // s is &String
@@ -175,16 +180,16 @@ fn main() -> Result<(), Box<dyn Error>> {
     }
 
     let midi_out_synth: MIDICommunicator<()> = MIDICommunicator::new(
-        "Pure Data:Pure Data Midi-In 1",
-        "120-Proof",
+        device_names.midi_sink_synth,
+        device_names.midi_sink_synth_120,
         |_, _, _| {},
         (),
         2,
     )?;
 
     let midi_out_lpx: MIDICommunicator<()> = MIDICommunicator::new(
-        "Launchpad X:Launchpad X MIDI 1",
-        "120-Proof",
+        device_names.midi_sink_lpx,
+        device_names.midi_sink_lpx_120,
         |_, _, _| {},
         (),
         2,
@@ -207,8 +212,8 @@ fn main() -> Result<(), Box<dyn Error>> {
     // The process that listens
 
     let _midi_in: MIDICommunicator<Adapter> = MIDICommunicator::new(
-        "Launchpad X:Launchpad X MIDI 2",
-        "120-Proof-2",
+        device_names.midi_source_lpx,
+        device_names.midi_source_lpx_120,
         |_stamp, message, adapter| {
             // eprintln!("midi_in stamp({:?}) message({:?})", &stamp, &message);
 
