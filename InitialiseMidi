@@ -30,9 +30,12 @@ sub set_up_midi( $ ) {
 
     my @connections_dev = ();
     foreach my $pair (@connections){
+	print ("Connections: $pair->[0] $pair->[1]\n");
 	@$pair == 2 or die ;
 	my $from = $pair->[0];
 	my $to = $pair->[1];
+
+	print STDERR "Connection: $1 -> $2\n";
 
 	## Find from device
 	$from =~ /^([^:]+):(.+)$/ or die $from;
@@ -80,6 +83,7 @@ sub set_up_midi( $ ) {
 	defined $to_dev or die;
 	defined $to_port or die;
 	push (@connections_dev, ["$from_dev:$from_port", "$to_dev:$to_port"]);
+	print STDERR "Connection: $from_dev:$from_port $to_dev:$to_port\n";
     }
     ## Delete all connections not in @connections_dev
     ## Delete connections to and from pure data
