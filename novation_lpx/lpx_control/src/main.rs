@@ -9,7 +9,7 @@ use std::io::stdin;
 use std::process;
 
 fn log(msg: &str) {
-    println!("{}", msg);
+    eprintln!("{}", msg);
 }
 
 // Dispatcher matches a control key to an executable and executes it
@@ -72,7 +72,7 @@ impl Dispatcher {
         }
     }
     fn run_cmd(cmd: &str) {
-        // log(format!("Run down: {}", &cmd).as_str());
+        log(format!("Run down: {}", &cmd).as_str());
         let command = format!(
             "{}/subs/{}",
             env::current_dir()
@@ -154,25 +154,98 @@ use std::sync::Arc;
 use std::sync::Mutex;
 use std::thread;
 use std::thread::sleep;
-use std::thread::JoinHandle;
+//use std::thread::JoinHandle;
+use std::time::Duration;
 struct LpxControl {
-    sleeping: Arc<Mutex<Option<JoinHandle<()>>>>, // Used to put controls to sleep when a MIDI key pressed
+    sleeping: Arc<Mutex<usize>>, // Used to put controls to sleep when a MIDI key pressed    lpx_midi_sink: MIDICommunicator<()>,
+    lpx_enabled: Arc<Mutex<bool>>,
 }
 impl LpxControl {
     fn new() -> LpxControl {
         LpxControl {
-            sleeping: Arc::new(Mutex::new(None)),
+            sleeping: Arc::new(Mutex::new(0)),
+            lpx_enabled: Arc::new(Mutex::new(true)),
         }
     }
+    fn sleeping(&self) -> bool {
+        let g = self.sleeping.lock().unwrap();
+        eprintln!("Sleeping ? ({})", g);
+        *g != 0
+    }
+    fn sleep(&self, s: usize) {
+        let mut g = self.sleeping.lock().unwrap();
+        *g += s;
+        eprintln!("Put to sleep: sleeping({})", g);
+    }
+
+    /// Change the colour of the control pads.  Depending on the parameter
+    /// `enable`.  If `enable` is true the pads are being enabled and are
+    /// coloured green (87) and if !enabled the pads are being disabled
+    /// and are coloured red (5)
+    fn enable_lpx(lpx_enabled: &mut bool, conn_lpx: &mut MIDICommunicator<()>, enable: bool) {
+        if *lpx_enabled != enable {
+            eprintln!("enable_lpx: enable({})", enable);
+            let pad_colour = if enable { 87 } else { 5 };
+            for i in 1..9 {
+                let p = i * 10 + 1; // Pad
+                let out_message_colour_change: [u8; 11] =
+                    [240, 0, 32, 41, 2, 12, 3, 0, p, pad_colour, 247];
+                match conn_lpx.send(&out_message_colour_change) {
+                    Ok(()) => (),
+                    Err(err) => eprintln!("Failed send: {:?}", err),
+                };
+            }
+            *lpx_enabled = enable;
+        }
+    }
+    /// Starts the thread that monitors `sleeping`.  It maintains a
+    /// local counter `c`, wakes up periodically and increments `c`.
+    /// It then compares the value of `c` to `sleeping`.  If `c >
+    /// sleeping` then both `c` and `sleeping` reset to 0 and lpx is
+    /// enabled.  Otherwise the lpx is dissabled.
+    fn start(&self) {
+        let sleeping = self.sleeping.clone();
+        let lpx_enabled = self.lpx_enabled.clone();
+        thread::spawn(move || {
+            let mut c = 0;
+            let mut con_lpx = MIDICommunicator::new(
+                "Launchpad X:Launchpad X MIDI 1",
+                "120-Proof-CTL",
+                move |_, _, _| {},
+                (),
+                2,
+            )
+            .unwrap();
+            loop {
+                sleep(Duration::new(1, 0));
+                c += 1;
+                let mut sleeping_mut = sleeping.lock().unwrap();
+                // sleeping_mut is mutable reference to Mutex
+                // protecting usize counter
+                eprintln!("In thread: c({}) g({})", &c, sleeping_mut);
+                let mut lpx_enabled_mut = lpx_enabled.lock().unwrap();
+                if c > *sleeping_mut {
+                    *sleeping_mut = 0;
+                    c = 0;
+                    LpxControl::enable_lpx(&mut lpx_enabled_mut, &mut con_lpx, true);
+                } else {
+                    LpxControl::enable_lpx(&mut lpx_enabled_mut, &mut con_lpx, false);
+                }
+            }
+        });
+    }
 }
+/// Main loop.  
 fn run(dispatcher: Dispatcher) -> Result<(), Box<dyn Error>> {
     let mut input = String::new();
     let lpx_control = LpxControl::new();
+    lpx_control.start();
+    log("Started lpx_control");
     let _conn_in = MIDICommunicator::new(
         "Launchpad X:Launchpad X MIDI 2",
         "120-Proof-CTL",
         move |stamp, message, dispatcher| {
-            println!(
+            eprintln!(
                 "{}: Msg: {:?} (len = {})",
                 (stamp as f64) / 1_000_000.0,
                 &message,
@@ -180,30 +253,25 @@ fn run(dispatcher: Dispatcher) -> Result<(), Box<dyn Error>> {
             );
 
             if message.len() == 3 {
-                let sleeping = lpx_control.sleeping.try_lock();
-                if let Ok(_) = sleeping {
-                    return;
-                }
-
-                if message[0] == 176 {
-                    let array = <[u8; 3]>::try_from(message).unwrap();
-                    process_message(&array, dispatcher);
-                } else if message[0] == 144 {
-                    // A MIDI note
-                    //    if lpx_control.sleeping
-                    let mut sleeping = lpx_control.sleeping.try_lock();
-                    if let Ok(_) = sleeping {
-                        // A thread is running.  A new execute time is
-                        // needed A counter counting up in the thread
-                        // and once a second checks a value.  If the
-                        // counter eauals the value tyhe thread quits
-                        // and the controls become active again
+                eprintln!(
+                    "Got a message({:?}) sleeping({}) ",
+                    message,
+                    lpx_control.sleeping()
+                );
+                if !lpx_control.sleeping() {
+                    if message[0] == 176 {
+                        let array = <[u8; 3]>::try_from(message).unwrap();
+                        process_message(&array, dispatcher);
+                    } else if message[0] == 144 {
+                        // A MIDI note
+                        //    if lpx_control.sleeping
+                        lpx_control.sleep(3);
                     }
                 }
             }
         },
         dispatcher,
-        3,
+        1,
     )?;
 
     input.clear();
