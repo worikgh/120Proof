@@ -187,7 +187,7 @@ impl LpxControl {
             eprintln!("enable_lpx: enable({})", enable);
             let pad_colour = if enable { 87 } else { 5 };
             for i in 1..9 {
-                let p = i * 10 + 1; // Pad
+                let p = i * 10 + 9; // Pad
                 let out_message_colour_change: [u8; 11] =
                     [240, 0, 32, 41, 2, 12, 3, 0, p, pad_colour, 247];
                 match conn_lpx.send(&out_message_colour_change) {
