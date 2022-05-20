@@ -7,9 +7,79 @@ use strict;
 
 sub set_up_midi( $ ) {
     my $cfg_fn = shift or die;
+
+    ## Map port:device  names to string
+    my %midi_devices_by_num = ();
+    ## Map port:device  string to names 
+    my %midi_devices_by_str = ();
+    
+    ## Get all the connections devices
+    my @aconnect_l = `aconnect -l`;
+
+    ## Store the existing connections in a way that can be passed to
+    ## `aconnect -d`.  Each connection that we to delete is mentioned
+    ## in a "Connecting To" and in a "Connected From" clause.  The
+    ## keys of the HASHs are the strings for `aconnect -d`
+    my %existing_connections_to = ();
+    my %existing_connections_from = ();
+    my $port_str = undef;
+    my $port_num = undef;
+    my $dev_num = undef;
+    my $dev_str =  undef;
+
+    foreach my $ac  (@aconnect_l){
+	chomp $ac;
+	if ($ac =~ /^client (\d+): '([^\']+)'/){
+	    $port_num = $1;
+	    $port_str = $2;
+	    next;
+	}
+	if($ac =~ /^\s+(\d+)\s+'\s*(\S[^']+\S)\s*'/){
+	    $dev_num = $1;
+	    $dev_str =  $2;
+	    $midi_devices_by_str{"$port_str:$dev_str"} = [$port_num, $dev_num];
+	    $midi_devices_by_num{"$port_num:$dev_num"} = [$port_str, $dev_str];
+	    next;
+	}
+	if($ac =~ /^\s+Connecting To: (.+)\s*$/){
+	    my $con_str = $1;
+	    my @con_str = split(/,\s*/, $con_str);
+	    foreach my $pair (map{/^\s*(\d+):(\d+)/; [$1,$2]} @con_str){
+		my $delete_args = "$port_num:$dev_num $$pair[0]:$$pair[1]";
+		# defined($existing_connections_to{$delete_args}) and
+		#     die "\$ac($ac) \$delete_args($delete_args)";
+		$existing_connections_to{$delete_args} = 1;
+	    }
+	    next;
+	}
+	if($ac =~ /^\s+Connected From:\s+(.+)/){
+	    my $con_str = $1;
+	    my @con_str = split(/,\s*/, $con_str);
+	    foreach my $pair (map{/^\s*(\d+):(\d+)/; [$1,$2]} @con_str){
+		my $delete_args = "$$pair[0]:$$pair[1] $port_num:$dev_num";
+# 		defined($existing_connections_to{$delete_args}) and die "$ac: $dele
+# te_args";
+		$existing_connections_from{$delete_args} = 1;
+	    }
+	    next;
+	}	    
+    }
+
+    ## The connections to delete will be in both HASHs
+    my %connections_to_delete = ();
+    foreach my $to (sort keys(%existing_connections_from)){
+	if (defined($existing_connections_to{"$to"})){
+	    $connections_to_delete{$to} = 1;
+	}
+    }
+
+    ## %connections_to_delete the keys are strings to pass to
+    ## %`aconnect -d` and are all MIDI connections
+
+    ## Store the connections requested in the config file
+    my @connections = ();
     
     ## Read in the midi connections that are wanted from 120.cfg
-    my @connections = ();
     open(my $cfg, $cfg_fn) or die $!;
     my $flag = 0;
     while(my $line = <$cfg>){
@@ -25,130 +95,41 @@ sub set_up_midi( $ ) {
 	push(@connections, [$1, $2]);
     }
 
-    ## Get all the connections devices
-    my @aconnect_l = `aconnect -l`;
-
-    my @connections_dev = ();
+    ## Filter %connections_to_delete to remove the ones from the
+    ## configuration file that are to keep
     foreach my $pair (@connections){
-	print ("Connections: $pair->[0] $pair->[1]\n");
-	@$pair == 2 or die ;
-	my $from = $pair->[0];
-	my $to = $pair->[1];
-
-	print STDERR "Connection: $1 -> $2\n";
-
-	## Find from device
-	$from =~ /^([^:]+):(.+)$/ or die $from;
-	my $from_dev_str = $1;
-	my $from_dev = undef;
-	my $from_port_str = $2;
-	my $from_port = undef;
-	foreach my $ac (@aconnect_l){
-	    if($ac =~ /^client (\d+):\s+'$from_dev_str\s*'\s/){
-		## Found from device
-		$from_dev = $1;
-		next;
-	    }
-	    defined($from_dev) or next;
-	    if($ac =~ /^\s+(\d+)\s+'$from_port_str\s*'/){
-		$from_port = $1;
-		last;
-	    }	    
+	my $from_dev = $midi_devices_by_str{"$$pair[0]"};
+	my $to_dev = $midi_devices_by_str{"$$pair[1]"};
+	my $key = join(":", @$from_dev)." ".  join(":", @$to_dev);
+	if(defined($connections_to_delete{"$key"})){
+	    delete($connections_to_delete{"$key"});
 	}
-
-	## Got the from device/port
-	defined $from_dev or die;
-	defined $from_port or die;
-
-	## Find to device
-	$to =~ /^([^:]+):(.+)$/ or die $to;
-	my $to_dev_str = $1;
-	my $to_dev = undef;
-	my $to_port_str = $2;
-	my $to_port = undef;
-	foreach my $ac (@aconnect_l){
-	    if($ac =~ /^client (\d+):\s+'$to_dev_str\s*'\s/){
-		## Found to device
-		$to_dev = $1;
-		next;
-	    }
-	    defined($to_dev) or next;
-	    if($ac =~ /^\s+(\d+)\s+'$to_port_str\s*'/){
-		$to_port = $1;
-		last;
-	    }	    
-	}
-
-	## Got the to device/port
-	defined $to_dev or die;
-	defined $to_port or die;
-	push (@connections_dev, ["$from_dev:$from_port", "$to_dev:$to_port"]);
-	print STDERR "Connection: $from_dev:$from_port $to_dev:$to_port\n";
     }
-    ## Delete all connections not in @connections_dev
-    ## Delete connections to and from pure data
-    sub del_con( $$ ) {
-	my ($l, $r) = @_;
-	my $cmd = "aconnect -d $l $r";
+
+    ## Got all the connections that need to be deleted.
+    my @to_delete =  keys(%connections_to_delete);
+
+    sub del_con( $ ) {
+	my ($l) = @_;
+	my $cmd = "aconnect -d $l";
 	`$cmd`;
-	print STDERR "del_con($l, $r)\n";
+	print STDERR "del_con($l)\n";
 	$? == 0 or print STDERR "Failed $?: $cmd \n";
     }
-    my $from_dev = undef;
-    my $to_dev = undef;
-    my $from_port = undef;
-    my $to_port = undef;
-    foreach my $con (@aconnect_l){
-	if($con =~ /^client\s+(\d+)/){
-	    $from_dev = $1;
-	    $from_port = undef;
-	    $to_dev = undef;
-	    $to_port = undef;
-	    next;
-	}
-	if(defined($from_dev) and $con =~ /^\s+(\d+)/){
-	    $from_port = $1;
-	    next;
-	}
-	if($con =~ /Connecting To: (.+)/){
-	    my $connections = $1;
-	    my @c = grep{/\d+:\d+/} split(/[^\d\:]+/, $connections);
-	    my @conn = ();
-	    $from_dev == 0 and next; ##Do not do this one
-	    foreach my $pair (@c) {
-		$pair =~ /(\d+):(\d+)/ or die $pair;
-		my ($to_dev, $to_port) = ($1, $2);
-		print "Push Conn: $from_dev:$from_port $to_dev:$to_port\n";
-		push(@conn, [$to_dev, $to_port]);
-	    }
-	    foreach my $pair (@conn){
-		my ($to_dev, $to_port) = @$pair;
-		if($to_dev != 129 ){
-		    ## Unsure what these are with $to_dev == 129
-		    my $con_from = "$from_dev:$from_port";
-		    my $con_to = "$to_dev:$to_port";
-		    if(!grep{$_->[0] eq $con_from and $_->[1] eq $con_to}
-		       @connections_dev){
-			## This is not a desired connection 
-			&del_con($con_from, $con_to);
-		    }
-		}
-	    }
-	}
-    }
-
-    ## Now make the connections
-    ## Make new connections
-    sub make_con( $$ ) {
-	my ($l, $r) = @_;
-	my $cmd = "aconnect $l $r";
-	`$cmd`;
-	print STDERR "make_con($l, $r)\n";
-	$? == 0 or print STDERR "Failed $?: $cmd \n";
-    }
-    foreach my $pair (@connections_dev){
-	&make_con($pair->[0], $pair->[1]);
-    }
+    map {&del_con($_)} @to_delete;
+    print("Finished\n");
+    # ## Now make the connections
+    # ## Make new connections
+    # sub make_con( $$ ) {
+    # 	my ($l, $r) = @_;
+    # 	my $cmd = "aconnect $l $r";
+    # 	`$cmd`;
+    # 	print STDERR "make_con($l, $r)\n";
+    # 	$? == 0 or print STDERR "Failed $?: $cmd \n";
+    # }
+    # foreach my $pair (@connections_dev){
+    # 	&make_con($pair->[0], $pair->[1]);
+    # }
 }
 
 			  
