@@ -6,13 +6,14 @@ use strict;
 sub set_up_pure_data( $ ){
     ## Argument is the patch to run
     my $patch = shift;
-    defined $patch and $patch = "";
+    defined $patch or $patch = "";
     
     ## If pure data is running warn and quit
     if(`pgrep pd -x`){
 	warn "pd (Pure Data) is running already.  Killing it";
 	`pkill -x pd`;
 	$? and die "pkill failed: $?";
+	sleep 1; ## Give it a chance to di!
 	`pgrep -x pd` and die "Failed to stop pd";
 	if($patch eq ""){
 	    return;
@@ -29,7 +30,7 @@ sub set_up_pure_data( $ ){
 	"-audiooutdev $audio_out_dev " .
 	"-jack -rt " .
 	"-send \"; pd dsp 1\" " . ## Turn on DSP so pd starts making sound
-	"-path $path/pd_patches " .
+	# "-path $path/pd_patches " .
 	"-path $path/pd_patches/instruments " .
 	# "-nogui " . ## Run headless
 	# "-nostdpath " .
