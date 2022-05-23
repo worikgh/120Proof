@@ -57,21 +57,24 @@ sub set_up_midi( $ ) {
 	    my @con_str = split(/,\s*/, $con_str);
 	    foreach my $pair (map{/^\s*(\d+):(\d+)/; [$1,$2]} @con_str){
 		my $delete_args = "$$pair[0]:$$pair[1] $port_num:$dev_num";
-# 		defined($existing_connections_to{$delete_args}) and die "$ac: $dele
-# te_args";
 		$existing_connections_from{$delete_args} = 1;
 	    }
 	    next;
 	}	    
     }
 
-    ## The connections to delete will be in both HASHs
+    ## The connections to delete will be in both HASHs.  Initialise
+    ## the list of connections to delete to all connections
     my %connections_to_delete = ();
     foreach my $to (sort keys(%existing_connections_from)){
 	if (defined($existing_connections_to{"$to"})){
 	    $connections_to_delete{$to} = 1;
 	}
     }
+
+    ## Connections that are not made are not in connections_to_delete,
+    ## but if they are in the configuration file put them here.
+    my %connections_to_make = ();
 
     ## %connections_to_delete the keys are strings to pass to
     ## %`aconnect -d` and are all MIDI connections
@@ -103,6 +106,9 @@ sub set_up_midi( $ ) {
 	my $key = join(":", @$from_dev)." ".  join(":", @$to_dev);
 	if(defined($connections_to_delete{"$key"})){
 	    delete($connections_to_delete{"$key"});
+	}else{
+	    ## Connection in config but not made
+	    $connections_to_make{"$key"} = 1;
 	}
     }
 
@@ -118,18 +124,19 @@ sub set_up_midi( $ ) {
     }
     map {&del_con($_)} @to_delete;
     print("Finished\n");
-    # ## Now make the connections
-    # ## Make new connections
-    # sub make_con( $$ ) {
-    # 	my ($l, $r) = @_;
-    # 	my $cmd = "aconnect $l $r";
-    # 	`$cmd`;
-    # 	print STDERR "make_con($l, $r)\n";
-    # 	$? == 0 or print STDERR "Failed $?: $cmd \n";
-    # }
-    # foreach my $pair (@connections_dev){
-    # 	&make_con($pair->[0], $pair->[1]);
-    # }
+
+    ## Now make the connections
+    ## Make new connections
+    sub make_con( $ ) {
+	my ($l) = @_;
+	my $cmd = "aconnect $l";
+	`$cmd`;
+	print STDERR "make_con($l)\n";
+	$? == 0 or print STDERR "Failed $?: $cmd \n";
+    }
+    foreach my $l (keys %connections_to_make){
+	&make_con($l);
+    }
 }
 
 			  
