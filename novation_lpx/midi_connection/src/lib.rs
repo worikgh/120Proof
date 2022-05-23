@@ -59,6 +59,11 @@ pub struct MIDICommunicator<T: 'static> {
     _in_conn: Option<midir::MidiInputConnection<T>>,
     out_conn: Option<midir::MidiOutputConnection>,
 }
+impl std::fmt::Debug for MIDICommunicator<()> {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        f.debug_tuple("MIDICommunicator").finish()
+    }
+}
 impl<T: std::fmt::Debug + Send> MIDICommunicator<T> {
     /// Create a MIDICommunicator.  `other_name` is the device that
     /// will be connected to.  `this_name` is the device that this
