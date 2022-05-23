@@ -1,31 +1,29 @@
-// Use the MIDI control keys from the LPX to run programes.
+//! Use the MIDI control keys from the LPX to run programes.
 use midi_connection::MIDICommunicator;
-//use midi_connection::MIDICommunicator;
-
 use std::collections::HashMap;
 use std::env;
 use std::error::Error;
 use std::io::stdin;
 use std::process;
+use std::sync::Arc;
+use std::sync::Mutex;
+use std::thread;
+use std::thread::sleep;
+use std::time::Duration;
 
-fn log(msg: &str) {
-    eprintln!("{}", msg);
-}
-
-// Dispatcher matches a control key to an executable and executes it
+/// Dispatcher matches a control key to an executable and executes it
 struct Dispatcher {
-    // Associate a control value with a command
+    // Associate a control value with a command. When a command runs
+    // the previous command stops
     up_table: HashMap<u8, String>,
     down_table: HashMap<u8, String>,
     last: Option<u8>,
-    // When a command runs the previous command stops
 }
 impl std::fmt::Debug for Dispatcher {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
         write!(f, "")
     }
 }
-
 impl Dispatcher {
     fn new() -> Self {
         // Function tables for control keys on LPX.  Keys are the MIDI
@@ -72,7 +70,7 @@ impl Dispatcher {
         }
     }
     fn run_cmd(cmd: &str) {
-        log(format!("Run down: {}", &cmd).as_str());
+        eprintln!("Run down: {}", &cmd);
         let command = format!(
             "{}/subs/{}",
             env::current_dir()
@@ -88,10 +86,10 @@ impl Dispatcher {
             Ok(out) => {
                 if out.status.success() {
                     let s = String::from_utf8_lossy(&out.stdout);
-                    log(format!("Success: {} and stdout was:\n{}", cmd, s).as_str())
+                    eprintln!("Success: {} and stdout was:\n{}", cmd, s)
                 }
             }
-            Err(err) => log(format!("Failure: cmd {}  Err: {:?}", cmd, err).as_str()),
+            Err(err) => eprintln!("Failure: cmd {}  Err: {:?}", cmd, err),
         }
     }
     /// A control pad has been pressed
@@ -120,84 +118,55 @@ impl Dispatcher {
     }
 }
 
-fn main() {
-    let dispatcher = Dispatcher::new();
-    match run(dispatcher) {
-        Ok(_) => (),
-        Err(err) => log(format!("Error: {}", err).as_str()),
-    }
-}
-
-// Process a MIDI message
-fn process_message(message: &[u8; 3], dispatcher: &mut Dispatcher) {
-    if message[0] == 176 {
-        // A ctl message
-
-        let key = message[1];
-        let vel = message[2];
-        println!("key({}) vel({})", key, vel);
-        if key >= 19 {
-            // There is some noise coming from the LPX with ctl-key 7
-            // The rest are control signals that we want
-            if vel > 0 {
-                // 0 VEL is pad release
-                dispatcher.run_ctl(key);
-            }
-        }
-    } else if message[0] == 144 {
-        // A MIDI note
-        // Turn off for three seconds
-    }
-}
-
-use std::sync::Arc;
-use std::sync::Mutex;
-use std::thread;
-use std::thread::sleep;
-//use std::thread::JoinHandle;
-use std::time::Duration;
+#[derive(Debug)]
 struct LpxControl {
-    sleeping: Arc<Mutex<usize>>, // Used to put controls to sleep when a MIDI key pressed    lpx_midi_sink: MIDICommunicator<()>,
+    // The source of truth for the state of the controls.
     lpx_enabled: Arc<Mutex<bool>>,
+
+    // Used to put controls to sleep when a MIDI key pressed
+    // lpx_midi_sink: MIDICommunicator<()>,
+    sleeping: Arc<Mutex<usize>>,
+    // Change the colours of the LPX to reflect enabled/disabled
+    // state.  Has to be called from the main thread of this class
+    // that controls how long the LPX Ctl pads are inactive after
+    // notes sent
+    lpx_midi: Arc<Mutex<MIDICommunicator<()>>>,
 }
 impl LpxControl {
     fn new() -> LpxControl {
         LpxControl {
             sleeping: Arc::new(Mutex::new(0)),
             lpx_enabled: Arc::new(Mutex::new(true)),
+            lpx_midi: Arc::new(Mutex::new(
+                MIDICommunicator::new(
+                    "Launchpad X:Launchpad X MIDI 1",
+                    "120-Proof-CTL",
+                    move |_, _, _| {},
+                    (),
+                    2,
+                )
+                .unwrap(),
+            )),
         }
     }
     fn sleeping(&self) -> bool {
         let g = self.sleeping.lock().unwrap();
-        eprintln!("Sleeping ? ({})", g);
+        // eprintln!("Sleeping ? ({})", g);
         *g != 0
     }
     fn sleep(&self, s: usize) {
         let mut g = self.sleeping.lock().unwrap();
         *g += s;
-        eprintln!("Put to sleep: sleeping({})", g);
+        let lpx_enabled = self.lpx_enabled.clone();
+        let lpx_midi = self.lpx_midi.clone();
+
+        let mut lpx_midi_mut = lpx_midi.lock().unwrap();
+        let mut lpx_enabled_mut = lpx_enabled.lock().unwrap();
+        enable_lpx(false, &mut lpx_midi_mut, &mut lpx_enabled_mut);
+
+        // eprintln!("Put to sleep: sleeping({})", g);
     }
 
-    /// Change the colour of the control pads.  Depending on the parameter
-    /// `enable`.  If `enable` is true the pads are being enabled and are
-    /// coloured green (87) and if !enabled the pads are being disabled
-    /// and are coloured red (5)
-    fn enable_lpx(lpx_enabled: &mut bool, conn_lpx: &mut MIDICommunicator<()>, enable: bool) {
-        if *lpx_enabled != enable {
-            eprintln!("enable_lpx: enable({})", enable);
-            let pad_colour = if enable { 87 } else { 5 };
-            for i in 1..9 {
-                let p = i * 10 + 9; // Pad
-                let out_message_colour_change: [u8; 11] =
-                    [240, 0, 32, 41, 2, 12, 3, 0, p, pad_colour, 247];
-                match conn_lpx.send(&out_message_colour_change) {
-                    Ok(()) => (),
-                    Err(err) => eprintln!("Failed send: {:?}", err),
-                };
-            }
-            *lpx_enabled = enable;
-        }
-    }
     /// Starts the thread that monitors `sleeping`.  It maintains a
     /// local counter `c`, wakes up periodically and increments `c`.
     /// It then compares the value of `c` to `sleeping`.  If `c >
@@ -206,77 +175,140 @@ impl LpxControl {
     fn start(&self) {
         let sleeping = self.sleeping.clone();
         let lpx_enabled = self.lpx_enabled.clone();
+        let lpx_midi = self.lpx_midi.clone();
+
+        // Initialise
+        {
+            let mut lpx_midi_mut = lpx_midi.lock().unwrap();
+            let mut lpx_enabled_mut = lpx_enabled.lock().unwrap();
+            *lpx_enabled_mut = false; // Force an update
+            enable_lpx(true, &mut lpx_midi_mut, &mut lpx_enabled_mut);
+        }
+
         thread::spawn(move || {
             let mut c = 0;
-            let mut con_lpx = MIDICommunicator::new(
-                "Launchpad X:Launchpad X MIDI 1",
-                "120-Proof-CTL",
-                move |_, _, _| {},
-                (),
-                2,
-            )
-            .unwrap();
             loop {
                 sleep(Duration::new(1, 0));
                 c += 1;
                 let mut sleeping_mut = sleeping.lock().unwrap();
-                // sleeping_mut is mutable reference to Mutex
-                // protecting usize counter
-                eprintln!("In thread: c({}) g({})", &c, sleeping_mut);
+                let mut lpx_midi_mut = lpx_midi.lock().unwrap();
+                // eprintln!("In thread: c({}) g({})", &c, sleeping_mut);
                 let mut lpx_enabled_mut = lpx_enabled.lock().unwrap();
-                if c > *sleeping_mut {
+                if c >= *sleeping_mut {
                     *sleeping_mut = 0;
                     c = 0;
-                    LpxControl::enable_lpx(&mut lpx_enabled_mut, &mut con_lpx, true);
-                } else {
-                    LpxControl::enable_lpx(&mut lpx_enabled_mut, &mut con_lpx, false);
+                    enable_lpx(true, &mut lpx_midi_mut, &mut lpx_enabled_mut);
                 }
             }
         });
     }
 }
+
+#[derive(Debug)]
+struct MidiCommTools {
+    dispatcher: Dispatcher,
+    lpx_control: LpxControl,
+}
+impl MidiCommTools {
+    fn new() -> Self {
+        let dispatcher = Dispatcher::new();
+        let lpx_control = LpxControl::new();
+        lpx_control.start();
+        Self {
+            lpx_control: lpx_control,
+            dispatcher: dispatcher,
+        }
+    }
+}
+
+/// Process a MIDI message
+fn process_message(message: &[u8; 3], dispatcher: &mut Dispatcher) {
+    if message[0] == 176 {
+        // A ctl message
+        // eprintln!("process_message message({:?})", message);
+
+        let key = message[1];
+        let vel = message[2];
+        if key >= 19 {
+            // There is some noise coming from the LPX with ctl-key 7
+            // The rest are control signals that we want
+            if vel > 0 {
+                // 0 VEL is pad release
+                dispatcher.run_ctl(key);
+            }
+        }
+    }
+}
+
+/// Change the colour of the control pads.  Depending on the parameter
+/// `enable`.  If `enable` is true the pads are being enabled and are
+/// coloured green (87) and if !enabled the pads are being disabled
+/// and are coloured red (5)
+fn enable_lpx(enable: bool, lpx_midi: &mut MIDICommunicator<()>, lpx_enabled: &mut bool) {
+    if *lpx_enabled != enable {
+        // eprintln!("enable_lpx: enable({})", enable);
+        let pad_colour = if enable { 87 } else { 5 };
+        for i in 1..9 {
+            let p = i * 10 + 9; // Pad
+            let out_message_colour_change: [u8; 11] =
+                [240, 0, 32, 41, 2, 12, 3, 0, p, pad_colour, 247];
+            match lpx_midi.send(&out_message_colour_change) {
+                Ok(()) => (),
+                Err(err) => eprintln!("Failed send: {:?}", err),
+            };
+        }
+        *lpx_enabled = enable;
+    }
+}
+
 /// Main loop.  
-fn run(dispatcher: Dispatcher) -> Result<(), Box<dyn Error>> {
+fn run() -> Result<(), Box<dyn Error>> {
     let mut input = String::new();
-    let lpx_control = LpxControl::new();
-    lpx_control.start();
-    log("Started lpx_control");
+    eprintln!("Started lpx_control");
+    let midi_comm_tools = MidiCommTools::new();
     let _conn_in = MIDICommunicator::new(
         "Launchpad X:Launchpad X MIDI 2",
         "120-Proof-CTL",
-        move |stamp, message, dispatcher| {
-            eprintln!(
-                "{}: Msg: {:?} (len = {})",
-                (stamp as f64) / 1_000_000.0,
-                &message,
-                message.len()
-            );
+        move |_stamp, message, midi_comm_tools| {
+            // eprintln!(
+            //     "{}: Msg: {:?} (len = {})",
+            //     (stamp as f64) / 1_000_000.0,
+            //     &message,
+            //     message.len()
+            // );
 
             if message.len() == 3 {
-                eprintln!(
-                    "Got a message({:?}) sleeping({}) ",
-                    message,
-                    lpx_control.sleeping()
-                );
-                if !lpx_control.sleeping() {
+                // eprintln!(
+                //     "Got a message({:?}) sleeping({}) ",
+                //     message,
+                //     midi_comm_tools.lpx_control.sleeping()
+                // );
+                if !midi_comm_tools.lpx_control.sleeping() {
                     if message[0] == 176 {
                         let array = <[u8; 3]>::try_from(message).unwrap();
-                        process_message(&array, dispatcher);
+                        process_message(&array, &mut midi_comm_tools.dispatcher);
                     } else if message[0] == 144 {
                         // A MIDI note
                         //    if lpx_control.sleeping
-                        lpx_control.sleep(3);
+                        midi_comm_tools.lpx_control.sleep(3);
                     }
                 }
             }
         },
-        dispatcher,
+        midi_comm_tools,
         1,
     )?;
 
     input.clear();
     stdin().read_line(&mut input)?; // wait for next enter key press
 
-    log(format!("Closing connection").as_str());
+    eprintln!("Closing connection");
     Ok(())
+}
+
+fn main() {
+    match run() {
+        Ok(_) => (),
+        Err(err) => eprintln!("Error: {}", err),
+    }
 }
