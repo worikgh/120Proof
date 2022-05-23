@@ -39,7 +39,7 @@ The audio inout/output to Pisound is stereo so effectively there are two indepen
 
 ## InitialisePd
 
-**TODO** Make `InitialisePd` take a patch argument with or without a ".pd" suffix.  Adjust documentation in `README.md`
+**Done** Make `InitialisePd` take a patch argument with or without a ".pd" suffix.  Adjust documentation in `README.md`
 
 ## InitialiseMidi
 
@@ -60,7 +60,7 @@ The audio inout/output to Pisound is stereo so effectively there are two indepen
 	
 	  Run scripts based on pressing control pads on the LPX.  This is intended to change configurations when playing live.
 	
-    **TODO**: Ensure that the controls cannot be sent accidentally by not accepting a control withing five (?) seconds of sending a MIDI signal.  Change the colours of the control pads when they are active/inactive.
+    **DONE**: Ensure that the controls cannot be sent accidentally by not accepting a control withing five (?) seconds of sending a MIDI signal.  Change the colours of the control pads when they are active/inactive.
 	
     * lpx_manager
 	
@@ -104,4 +104,4 @@ MIDI sinks take MIDI note definitions and output audio to JACK devices.
 
 # Case
 
-**TODO: Build a case!-)
+**TODO**: Build a case!-)
