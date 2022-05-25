@@ -7,9 +7,25 @@ my $d = 3;
 `./lpx_mode 127`;
 
 ## Colour
-my $r = int(rand 128); ## 0-127
-my $g = int(rand 128); ## 0-127
-my $b = int(rand 128); ## 0-127
+my $r = 127;
+my $g = 0;
+my $b = 127;
+my $step = int(127/8);
+for(my $not_g = 0; $not_g <= 8; $not_g++){
+    $g = $not_g * $step;
+    for(my $row = 1; $row <= 8; $row++){
+	for(my $col = 1; $col <= 8; $col++){
+	    my $pad = $row * 10 + $col;
+	    my $_r = $r - $row * $step;
+	    # my $_g = $g - $col * $step;
+	    my $_g = $g;
+	    my $_b = $b - $col * $step;
+	    print sprintf("%d\t%d\t%d\t%d\n", $pad, $_r, $_g, $_b);
+	    `./lpx_colour $pad $_r $_g $b`;
+	}
+    }
+}
+exit;
 my $pad = 54; ## Start here
 while(1){
 
