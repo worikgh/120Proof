@@ -6,7 +6,7 @@ use strict;
 sub set_up_pure_data( $ ){
     ## Argument is the patch to run
     my $patch = shift;
-    defined $patch or $patch = "";
+    defined $patch or die "Must pass a patch";
     
     ## If pure data is running warn and quit
     if(`pgrep pd -x`){
@@ -15,9 +15,6 @@ sub set_up_pure_data( $ ){
 	$? and die "pkill failed: $?";
 	sleep 1; ## Give it a chance to di!
 	`pgrep -x pd` and die "Failed to stop pd";
-	if($patch eq ""){
-	    return;
-	}
     }
     my $sample_rate = "48000";
     my $audio_in_dev = "'1,2'"; # Stero. Standard
