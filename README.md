@@ -209,3 +209,10 @@ The tools are:
 
 https://github.com/sadko4u/lsp-plugins
 https://blokas.io/pisound/docs/specs/#pinout-of-pisound-header/ <-  GPIO pins on Pisound
+
+# Instruments
+
+##  zynaddsubfx
+
+Start headless with Jack audio and Alsa MIDI input.  Auto connect.  Load instrument (-L)
+zynaddsubfx  --no-gui  -O jack -I alsa    -a -L /usr/share/zynaddsubfx/banks/the_mysterious_bank/0021-rock_organ+distorsion.xiz
