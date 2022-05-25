@@ -120,6 +120,10 @@ impl Dispatcher {
 
 #[derive(Debug)]
 struct LpxControl {
+    // The counter the monitoring thread uses.  When puit to sleep
+    // `sleeping` is set to this plus 3
+    counter: Arc<Mutex<usize>>,
+
     // The source of truth for the state of the controls.
     lpx_enabled: Arc<Mutex<bool>>,
 
@@ -147,6 +151,7 @@ impl LpxControl {
                 )
                 .unwrap(),
             )),
+            counter: Arc::new(Mutex::new(0)),
         }
     }
     fn sleeping(&self) -> bool {
@@ -156,7 +161,8 @@ impl LpxControl {
     }
     fn sleep(&self, s: usize) {
         let mut g = self.sleeping.lock().unwrap();
-        *g += s;
+        let c = self.counter.lock().unwrap();
+        *g = *c + s;
         let lpx_enabled = self.lpx_enabled.clone();
         let lpx_midi = self.lpx_midi.clone();
 
@@ -164,7 +170,7 @@ impl LpxControl {
         let mut lpx_enabled_mut = lpx_enabled.lock().unwrap();
         enable_lpx(false, &mut lpx_midi_mut, &mut lpx_enabled_mut);
 
-        // eprintln!("Put to sleep: sleeping({})", g);
+        // eprintln!("Put to sleep: sleeping({})", (*g - *c));
     }
 
     /// Starts the thread that monitors `sleeping`.  It maintains a
@@ -176,7 +182,7 @@ impl LpxControl {
         let sleeping = self.sleeping.clone();
         let lpx_enabled = self.lpx_enabled.clone();
         let lpx_midi = self.lpx_midi.clone();
-
+        let counter = self.counter.clone();
         // Initialise
         {
             let mut lpx_midi_mut = lpx_midi.lock().unwrap();
@@ -185,18 +191,18 @@ impl LpxControl {
             enable_lpx(true, &mut lpx_midi_mut, &mut lpx_enabled_mut);
         }
 
-        thread::spawn(move || {
-            let mut c = 0;
-            loop {
-                sleep(Duration::new(1, 0));
-                c += 1;
+        thread::spawn(move || loop {
+            sleep(Duration::new(1, 0));
+            {
+                let mut c = counter.lock().unwrap();
+                *c += 1;
                 let mut sleeping_mut = sleeping.lock().unwrap();
                 let mut lpx_midi_mut = lpx_midi.lock().unwrap();
                 // eprintln!("In thread: c({}) g({})", &c, sleeping_mut);
                 let mut lpx_enabled_mut = lpx_enabled.lock().unwrap();
-                if c >= *sleeping_mut {
+                if *c >= *sleeping_mut {
                     *sleeping_mut = 0;
-                    c = 0;
+                    *c = 0;
                     enable_lpx(true, &mut lpx_midi_mut, &mut lpx_enabled_mut);
                 }
             }
@@ -264,7 +270,7 @@ fn enable_lpx(enable: bool, lpx_midi: &mut MIDICommunicator<()>, lpx_enabled: &m
 /// Main loop.  
 fn run() -> Result<(), Box<dyn Error>> {
     let mut input = String::new();
-    eprintln!("Started lpx_control");
+    // eprintln!("Started lpx_control");
     let midi_comm_tools = MidiCommTools::new();
     let _conn_in = MIDICommunicator::new(
         "Launchpad X:Launchpad X MIDI 2",
@@ -283,15 +289,14 @@ fn run() -> Result<(), Box<dyn Error>> {
                 //     message,
                 //     midi_comm_tools.lpx_control.sleeping()
                 // );
-                if !midi_comm_tools.lpx_control.sleeping() {
-                    if message[0] == 176 {
+                if message[0] == 176 {
+                    if !midi_comm_tools.lpx_control.sleeping() {
                         let array = <[u8; 3]>::try_from(message).unwrap();
                         process_message(&array, &mut midi_comm_tools.dispatcher);
-                    } else if message[0] == 144 {
-                        // A MIDI note
-                        //    if lpx_control.sleeping
-                        midi_comm_tools.lpx_control.sleep(3);
                     }
+                } else if message[0] == 144 {
+                    // A MIDI note
+                    midi_comm_tools.lpx_control.sleep(3);
                 }
             }
         },
