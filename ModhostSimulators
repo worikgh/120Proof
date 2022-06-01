@@ -1,0 +1,116 @@
+#!/usr/bin/perl -w
+use strict;
+
+my $mod_host_port_p = 5555;
+
+open(my $cmds, "modep_commands.txt") or die $!;
+my @mh = map{chomp; /^mh (.+)\s*$/; $1} grep {/^mh /} <$cmds>;
+print join("\n", @mh);
+
+sub handle_mh_cmd( $$ ) {
+    my ($sock, $cmd) = @_;
+    print $sock "$cmd\n";
+
+    my $result = '';
+    my $r = fhbits($sock);
+    my $res = '';
+    my ($nfound, $timeleft) =
+	select(my $rout = $r, my $wout = undef, my $eout = undef,
+	       0.5);
+    if($nfound){
+	my $os = 0;
+	while(my $c = read($sock, $res, 1)){
+	    if($c != 1 or
+	       ord($res) == 0){
+		last;
+	    }
+	    $result .=  $res;
+	}
+    }
+    if($result =~ /resp ([\-0-9]+)/){
+	# If status is a negative number an error has
+	# occurred. The table below shows the number of each
+	# error.
+	
+	# status 	error
+	# -1 	ERR_INSTANCE_INVALID
+	# -2 	ERR_INSTANCE_ALREADY_EXISTS
+	# -3 	ERR_INSTANCE_NON_EXISTS
+	# -4 	ERR_INSTANCE_UNLICENSED
+	# -101 	ERR_LV2_INVALID_URI
+	# -102 	ERR_LV2_INSTANTIATION
+	# -103 	ERR_LV2_INVALID_PARAM_SYMBOL
+	# -104 	ERR_LV2_INVALID_PRESET_URI
+	# -105 	ERR_LV2_CANT_LOAD_STATE
+	# -201 	ERR_JACK_CLIENT_CREATION
+	# -202 	ERR_JACK_CLIENT_ACTIVATION
+	# -203 	ERR_JACK_CLIENT_DEACTIVATION
+	# -204 	ERR_JACK_PORT_REGISTER
+	# -205 	ERR_JACK_PORT_CONNECTION
+	# -206 	ERR_JACK_PORT_DISCONNECTION
+	# -301 	ERR_ASSIGNMENT_ALREADY_EXISTS
+	# -302 	ERR_ASSIGNMENT_INVALID_OP
+	# -303 	ERR_ASSIGNMENT_LIST_FULL
+	# -304 	ERR_ASSIGNMENT_FAILED
+	# -401 	ERR_CONTROL_CHAIN_UNAVAILABLE
+	# -402 	ERR_LINK_UNAVAILABLE
+	# -901 	ERR_MEMORY_ALLOCATION
+	# -902 	ERR_INVALID_OPERATION
+
+	#     A status zero or positive means that the command was
+	#     executed successfully. In case of the add command,
+	#     the status returned is the instance number. The
+	#     value field currently only exists for the param_get
+	#     command.
+	if($1 < 0 and $1 != -2){
+	    print  STDERR ">> FAIL $cmd >>  $result\n";
+
+	    # Links into `process_modep.pl` which reads STDOUT
+	    print  ">> FAIL $cmd >>  $result\n";
+	}else{
+	    print  ">> SUCCESS $cmd >>  $result\n";
+	}
+    }
+}    
+
+sub mod_host( $ ){
+    my $cmds = shift or die;
+    my @cmds = @$cmds;
+
+    my $remote = "localhost";
+    my $port = $mod_host_port_p;
+
+    my $sock = new IO::Socket::INET( PeerAddr => 'localhost',
+				     PeerPort => $port, 
+				     Proto => 'tcp') or
+	die "$!: Failed to connect to mod-host"; 
+
+    ## Debugging why some effects randomly fail to be added
+    my $failed = 0;
+    
+    foreach my $cmd (@cmds){
+
+	# print STDERR  "mod-host: $cmd\n";
+	&handle_mh_cmd($sock, $cmd);
+	if($failed){
+	    print STDERR "Add failed then: $cmd\n";
+	}
+	## If command was an `add` check the effects got added
+	if($cmd =~ /^add.+\s(\d+)/){
+	    my $jack = grep{/effect_$1/} `jack_lsp`;
+	    if(!$jack){
+		print STDERR "effect_$1 failed\n";
+		$failed = 1;
+		# print STDERR "Retry: $cmd\n";
+		# &handle_mh_cmd($sock, $cmd);
+		# $jack = grep{/effect_$1/} `jack_lsp`;
+		# if(!$jack){
+		#     print STDERR "Failed again\n";
+		# }
+	    }else{
+		$failed = 0;
+		# print STDERR "Got effect_$1\n";
+	    }
+	}
+    }
+}    
