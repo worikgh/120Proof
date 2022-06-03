@@ -29,42 +29,59 @@ sub set_up_midi( $ ) {
 
     foreach my $ac  (@aconnect_l){
 	chomp $ac;
+	# client 24: 'pisound' [type=kernel,card=2]
 	if ($ac =~ /^client (\d+): '([^\']+)'/){
 	    $port_num = $1;
 	    $port_str = $2;
 	    next;
 	}
+
+	#     0 'pisound MIDI PS-0N78HB5'
 	if($ac =~ /^\s+(\d+)\s+'\s*(\S[^']+\S)\s*'/){
 	    $dev_num = $1;
 	    $dev_str =  $2;
+
+	    ## Have port:dev as string and number
 	    $midi_devices_by_str{"$port_str:$dev_str"} = [$port_num, $dev_num];
 	    $midi_devices_by_num{"$port_num:$dev_num"} = [$port_str, $dev_str];
 	    next;
 	}
+	#	Connecting To: 129:0[real:0], 130:0, 131:0
 	if($ac =~ /^\s+Connecting To: (.+)\s*$/){
 	    my $con_str = $1;
 	    my @con_str = split(/,\s*/, $con_str);
+
+	    ## @con_str is an array of port:dev that this device is
+	    ## connectred to
+	    
 	    foreach my $pair (map{/^\s*(\d+):(\d+)/; [$1,$2]} @con_str){
 		my $delete_args = "$port_num:$dev_num $$pair[0]:$$pair[1]";
-		# defined($existing_connections_to{$delete_args}) and
-		#     die "\$ac($ac) \$delete_args($delete_args)";
+
+		# One side of the equation
 		$existing_connections_to{$delete_args} = 1;
 	    }
 	    next;
 	}
+	#	Connected From: 24:0, 28:0, 28:1, 32:0, 129:0
 	if($ac =~ /^\s+Connected From:\s+(.+)/){
 	    my $con_str = $1;
 	    my @con_str = split(/,\s*/, $con_str);
+
+	    ## @con_str is an array of port:dev that connets to this
+	    ## device
+
 	    foreach my $pair (map{/^\s*(\d+):(\d+)/; [$1,$2]} @con_str){
 		my $delete_args = "$$pair[0]:$$pair[1] $port_num:$dev_num";
+
+		# # The otehr side of the equation
 		$existing_connections_from{$delete_args} = 1;
 	    }
 	    next;
 	}	    
     }
 
-    ## The connections to delete will be in both HASHs.  Initialise
-    ## the list of connections to delete to all connections
+    ## The connections that have to be deleted will be in both HASHs.
+    ## Initialise the list of connections to delete to all connections
     my %connections_to_delete = ();
     foreach my $to (sort keys(%existing_connections_from)){
 	if (defined($existing_connections_to{"$to"})){
@@ -82,7 +99,8 @@ sub set_up_midi( $ ) {
     ## Store the connections requested in the config file
     my @connections = ();
     
-    ## Read in the midi connections that are wanted from 120.cfg
+    ## Read in the midi connections that are wanted from the
+    ## configuration file
     open(my $cfg, $cfg_fn) or die $!;
     my $flag = 0;
     while(my $line = <$cfg>){
