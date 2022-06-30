@@ -29,12 +29,12 @@ sub set_up_pure_data( $ ){
 	"-send \"; pd dsp 1\" " . ## Turn on DSP so pd starts making sound
 	# "-path $path/pd_patches " .
 	"-path $path/pd_patches/instruments " .
-	# "-nogui " . ## Run headless
+	"-nogui " . ## Run headless
 	# "-nostdpath " .
 	"-midiindev $midiindev " .
 	"$patch " .
 	"";
-    print "Run: $pd_command\n";
+    # print "Run: $pd_command\n";
     if(fork()){
 	## In parent
     }else{
