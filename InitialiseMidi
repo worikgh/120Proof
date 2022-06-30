@@ -3,7 +3,80 @@ use strict;
 
 ## Initialise the midi connections
 
-# Find the midi numbers of the WORLDE, Launchpad X, and Pure Data
+
+## Find what MIDI connections are needed and wait for them. 
+sub wait_for_midi( $ ) {
+    my $cfg_fn = shift or die;
+    
+    open(my $cfg, $cfg_fn) or die $!;
+
+    ## The keys of %connections are the MIDI devices that must exist,
+    ## and the values are 0 initially and set to 1 if the connection
+    ## found
+    my %connections = ();
+    my $flag = 0;
+    while(my $line = <$cfg>){
+	$line =~ /MIDI_Connections/ and $flag = 1 and next;
+	$line =~ /^\s*#/ and next;
+	$line =~ /^\s*$/ and $flag = 0;
+	if($flag){
+	    my ($c1, $c2) = process_line($line);
+	    $connections{$c1} = 0;
+	    $connections{$c2} = 0;
+	}
+    }
+
+    my $start = time();
+    while(1){
+	my $now = time();
+	$now - $start > 30 and die "Cannot get all connections.  Failed: " .
+	    join(', ', grep{$connections{$_} == 0} keys(%connections));
+	my @aconnect_l = `aconnect -l`;
+	open(my $out, ">>/tmp/ac.txt") or die $!;
+	print $out scalar(localtime())."\n";
+	print $out @aconnect_l;
+	print $out "\n";
+	
+	my $lhs = undef;
+	foreach my $ac (@aconnect_l){
+	    chomp $ac;
+	    ## client 28: 'Launchpad X' [type=kernel,card=3]
+	    if ($ac =~ /^client \d+: '([^\']+)'/){
+		$lhs = $1;
+		next;
+	    }
+	    
+	    ##     0 'Launchpad X MIDI 1'
+	    if($ac =~ /^\s+\d+\s+'\s*(\S[^']+\S)\s*'/){
+		my $rhs = $1;
+		$connections{"$lhs:$rhs"} = 1;
+		next;
+	    }
+
+	    ##      Connecting To: 128:0, 131:0
+	    ##      Connected From: 128:0
+
+	    if($ac =~ /^\s+Conn/){
+		next;
+	    }
+	    die "\"$ac\"";
+	}
+	## Loop exit condition
+	my @disconnected = grep{$connections{$_} == 0} keys(%connections);
+	@disconnected or last;
+	print "Not connected:\n\t".join("\n\t", @disconnected)."\n";
+	sleep 1;
+    }
+}
+
+## Extract the MIDI connections out of the config file
+sub process_line( $ ){
+    my $line = shift or die;
+    chomp $line;
+
+    $line =~ /^([^\t]+)\t([^\t]+)$/  or die $line;
+    return ($1, $2);
+}    
 
 sub set_up_midi( $ ) {
     my $cfg_fn = shift or die;
@@ -88,13 +161,12 @@ sub set_up_midi( $ ) {
 	    $connections_to_delete{$to} = 1;
 	}
     }
+    ## %connections_to_delete the keys are strings to pass to
+    ## %`aconnect -d` and are all MIDI connections
 
     ## Connections that are not made are not in connections_to_delete,
     ## but if they are in the configuration file put them here.
     my %connections_to_make = ();
-
-    ## %connections_to_delete the keys are strings to pass to
-    ## %`aconnect -d` and are all MIDI connections
 
     ## Store the connections requested in the config file
     my @connections = ();
@@ -104,24 +176,29 @@ sub set_up_midi( $ ) {
     open(my $cfg, $cfg_fn) or die $!;
     my $flag = 0;
     while(my $line = <$cfg>){
-	chomp $line;
 	$line =~ /^MIDI_Connections/ and $flag = 1 and next;
-	$line =~ /^\s*$/ and $flag = 0; 
-	$flag or next;
-
-	## In MIDI section
-	$line =~ /^\s*#/ and next;
-	$line =~ /^([^\t]+)\t([^\t]+)$/  or die $line;
-
-	push(@connections, [$1, $2]);
+	$line =~ /^\s*#/ and next; ## Comments
+	if($line =~ /^\s*$/){
+	    $flag = 0;  # End of a section
+	    next;
+	}
+	if($flag){
+	    my ($c1, $c2) = process_line($line);
+	    push(@connections, [$c1, $c2]);
+	}
     }
 
     ## Filter %connections_to_delete to remove the ones from the
     ## configuration file that are to keep
+    my %delt_with = (); ## The same pair can be in @connections more than once
     foreach my $pair (@connections){
 	my $from_dev = $midi_devices_by_str{"$$pair[0]"};
+	defined $from_dev or die "No MIDI device for: $$pair[0]";
 	my $to_dev = $midi_devices_by_str{"$$pair[1]"};
+	defined $to_dev or die "No MIDI device for: $$pair[1]";
 	my $key = join(":", @$from_dev)." ".  join(":", @$to_dev);
+	defined($delt_with{$key}) and next;
+	$delt_with{$key} = 1;
 	if(defined($connections_to_delete{"$key"})){
 	    delete($connections_to_delete{"$key"});
 	}else{
@@ -137,11 +214,11 @@ sub set_up_midi( $ ) {
 	my ($l) = @_;
 	my $cmd = "aconnect -d $l";
 	`$cmd`;
-	print STDERR "del_con($l)\n";
+	# print STDERR "del_con($l)\n";
 	$? == 0 or print STDERR "Failed $?: $cmd \n";
     }
     map {&del_con($_)} @to_delete;
-    print("Finished\n");
+    # print("Finished\n");
 
     ## Now make the connections
     ## Make new connections
@@ -159,4 +236,9 @@ sub set_up_midi( $ ) {
 
 			  
 my $cfg_fn = shift or die "pass a configuration file";
+print "InitialiseMidi: Before waiting\n";
+&wait_for_midi( $cfg_fn );
+print "InitialiseMidi: Before setup\n";
 &set_up_midi( $cfg_fn );
+print "InitialiseMidi: Finished\n";
+
