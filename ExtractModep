@@ -8,7 +8,7 @@ use strict;
 my $modep_command_fn = 'modep_commands.txt';
 
 my $VERBOSE = shift;
-defined $VERBOSE or $VERBOSE  = 1;
+defined $VERBOSE or $VERBOSE  = 0;
 
 ## Where modep puts its pedal definitions
 my $MODEP_PEDALS = "/var/modep/pedalboards";
@@ -454,4 +454,5 @@ foreach my $name (sort keys %control_commands){
     print $collected_commands "NAME $name\n$cmds\n";
     print $collected_commands "ACTIVATE\n";
     print $collected_commands join("\n", map{"mh connect $_"} @{$pedal_commands{$name}})."\n";
+    print $collected_commands "ENDS\n";
 }
