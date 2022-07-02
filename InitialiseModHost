@@ -1,6 +1,24 @@
 #!/bin/bash
 
-pgrep mod-host && exit 1
+## Copy the definitiuons of mod-host simulator's made by modep front
+## end
+./ExtractModep
+
+## Get rid of modep
+sudo service modep-mod-host stop
+sudo pkill mod-host
+if [ pgrep mod-host ] ; then
+    echo "Cannot kill mod-host"
+    exit 1
+fi
+
+## Start our own version of modhost
 export LV2_PATH=/usr/modep/lv2
 ## Start mod-host
 /home/patch/mod-host/mod-host
+
+## Wait for it to get started
+sleep 1
+
+## Create the simulators
+./ModhostSimulators
