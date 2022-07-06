@@ -84,7 +84,8 @@ impl<T: std::fmt::Debug + Send> MIDICommunicator<T> {
     where
         F: FnMut(u64, &[u8], &mut T) + Send + 'static,
     {
-        let connections = Self::get_midi_connections(other_name, this_name, callback, data, inout);
+        let connections =
+            Self::get_midi_connections(other_name, this_name, Some(callback), data, inout);
         match connections {
             Ok((o_conn_in, o_conn_out)) => Ok(MIDICommunicator {
                 out_conn: o_conn_out,
@@ -108,11 +109,14 @@ impl<T: std::fmt::Debug + Send> MIDICommunicator<T> {
     /// Given the name of a device return an input and output
     /// connection to it.  `other_name` is the device that will be
     /// connected to.  `this_name` is the device that this creates
-    /// that other devices connect to
+    /// that other devices connect to.  `callback` is called for any
+    /// data recieved.  `T` is the data passed to the callback, and
+    /// `inout` is a two bit bitfield: 1 => input connection only, 2
+    /// => output connection only, 3 => both
     fn get_midi_connections<F>(
         other_name: &str,
         this_name: &str,
-        callback: F,
+        callback: Option<F>, // TODO: Make this an Option
         data: T,
         inout: u8,
     ) -> Result<
@@ -129,46 +133,48 @@ impl<T: std::fmt::Debug + Send> MIDICommunicator<T> {
         let mut result_in: Option<midir::MidiInputConnection<T>> = None;
         let mut result_out: Option<midir::MidiOutputConnection> = None;
 
-        let source_port = other_name.to_string().into_bytes();
-
-        // if the caller asked for it make a outgoing connection
-        if inout > 1 {
+        // if the caller asked for it make an outgoing connection
+        if inout > 1 && other_name != "" {
+            // An instance of MidiOutput is required for anything
+            // related to MIDI output
             let midi_out = midir::MidiOutput::new(this_name)?;
-            if other_name != "" {
-                for (index, port) in midi_out.ports().iter().enumerate() {
-                    // Each available output port.
-                    match midi_out.port_name(port) {
-                        Err(_) => continue,
-                        Ok(port_name) => {
-                            // eprintln!("Compare: {} <=> {}", &port_name, &other_name);
-                            let port_name = port_name.into_bytes();
-                            let mut accept: bool = true;
-                            for i in 0..port_name.len() {
-                                if i < source_port.len() && source_port[i] != port_name[i] {
-                                    accept = false;
-                                    break;
-                                }
-                            }
-                            if accept {
-                                // Can build an output connection
-                                let port = midi_out
-                                    .ports()
-                                    .get(index)
-                                    .ok_or("Invalid port number")
-                                    .unwrap()
-                                    .clone();
-                                // eprintln!("Make MIDI out {} -> {}", this_name, other_name);
-                                result_out = match midi_out
-                                    .connect(&port, format!("{}-out", this_name).as_str())
-                                {
-                                    Ok(s) => Some(s),
-                                    Err(err) => {
-                                        eprintln!("Could not connect {:?}", err);
-                                        None
-                                    }
-                                };
+
+            let source_port = other_name.to_string().into_bytes();
+            //eprintln!("other_name({})", other_name);
+            for (index, port) in midi_out.ports().iter().enumerate() {
+                // Each available output port.
+                match midi_out.port_name(port) {
+                    Err(_) => continue,
+                    Ok(port_name) => {
+                        // eprintln!("Compare: {} <=> {}", &port_name, &other_name);
+                        let port_name = port_name.into_bytes();
+                        let mut accept: bool = true;
+
+                        for i in 0..port_name.len() {
+                            if i < source_port.len() && source_port[i] != port_name[i] {
+                                accept = false;
                                 break;
                             }
+                        }
+                        if accept {
+                            // Can build an output connection
+                            let port = midi_out
+                                .ports()
+                                .get(index)
+                                .ok_or("Invalid port number")
+                                .unwrap()
+                                .clone();
+                            // eprintln!("Make MIDI out {} -> {}", this_name, other_name);
+                            result_out = match midi_out
+                                .connect(&port, format!("{}-out", this_name).as_str())
+                            {
+                                Ok(s) => Some(s),
+                                Err(err) => {
+                                    eprintln!("Could not connect {:?}", err);
+                                    None
+                                }
+                            };
+                            break;
                         }
                     }
                 }
@@ -184,7 +190,7 @@ impl<T: std::fmt::Debug + Send> MIDICommunicator<T> {
             result_in = match midi_in.connect(
                 &port,
                 format!("{}-in", this_name).as_str(),
-                callback,
+                callback.unwrap(),
                 data,
             ) {
                 Ok(a) => Some(a),
@@ -194,8 +200,42 @@ impl<T: std::fmt::Debug + Send> MIDICommunicator<T> {
                 }
             };
         }
-
-        Ok((result_in, result_out))
+        // Check the results and return
+        match inout {
+            1 =>
+            // Input only
+            {
+                if result_in.is_some() {
+                    Ok((result_in, None))
+                } else {
+                    Err("Input connection failed".into())
+                }
+            }
+            2 =>
+            // Output only
+            {
+                if result_out.is_some() {
+                    Ok((None, result_out))
+                } else {
+                    Err("Output connection failed".into())
+                }
+            }
+            3 =>
+            // Both
+            {
+                if result_in.is_some() && result_out.is_some() {
+                    Ok((result_in, result_out))
+                } else {
+                    match (&result_in, &result_out) {
+                        (Some(_), Some(_)) => Ok((result_in, result_out)),
+                        (None, Some(_)) => Err("Input connection failed.  Output Ok.".into()),
+                        (Some(_), None) => Err("Input connection Ok.  Output Failed.".into()),
+                        (None, None) => Err("Input connection failed.  Output Failed.".into()),
+                    }
+                }
+            }
+            _ => panic!("inout parameter is invalid: {}", inout),
+        }
     }
 
     // Lists midi devices that can be used as inputs

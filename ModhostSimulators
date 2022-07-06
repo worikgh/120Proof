@@ -1,12 +1,121 @@
 #!/usr/bin/perl -w
 use strict;
 
+use IO::Socket::INET;
+
+## Read the output of `ExtractModep` and set up the LV2 simulators,
+## and Jack pipes for the pedal boards defined by Modep.  Also set up
+## the "activation" files in `$pedal_dir` to put the definitions of
+## Jack pipes (and later Modhost control parameters ot control
+## simulators).
+
+
+## The file written by ExtractModep
+my $modep_command_fn = 'modep_commands.txt';
+
+## The directory to write the files that the pedal driver reads to
+## control the simulatons
+my $pedal_dir = "pedal/PEDALS/";
+-d $pedal_dir or die "$!: $pedal_dir";
+-x $pedal_dir or die "$!: $pedal_dir";
+
 my $mod_host_port_p = 5555;
 
-open(my $cmds, "modep_commands.txt") or die $!;
-my @mh = map{chomp; /^mh (.+)\s*$/; $1} grep {/^mh /} <$cmds>;
-print join("\n", @mh);
+## Variables to drive main loop
+my $NAME; # Current pedal board
+my $section; # Two sections 'activation' and 'persistent'
+my @mh_commands = (); # The `mod-host` simulator definitions
+my @jack_commands = (); # The persistent Jack connetions.  Make noiw
 
+# The commands to activate a pedal board. Initialised for each pedal
+# board
+my @activation_commands; 
+
+open(my $cmds, $modep_command_fn) or die $!;
+foreach my $line(<$cmds>){
+    chomp $line;
+
+    ## ignore comments ("#" as first character of line) and blank lines
+    $line =~ /^\s*#/ and next;
+    $line =~ /\S/ or next;
+
+    if($line =~ /^NAME\s+(.+)\s*$/){
+
+	## Got the name of a pedal board and in the section describing
+	## persistent LV2 simulators and Jack connections
+	$NAME = $1;
+	$section = "persistent";
+
+	@activation_commands = ();
+	next;
+    }
+    if($line =~ /^ACTIVATE\s*$/){
+	## The commands to put in the activation filaes, that `driver`
+	## uses to set up and tear downb pedal board simulations in
+	## real time
+
+	## Today 2022-06-01 "set up and tear downb pedal board
+	## simulations" means Jack connections.  But in the future it
+	## will include MIDI connecti9ons and mod-host command.  For
+	## example the plugin FluidOrgans is an LV2 simulator that
+	## takes MIDI as input.  The SooperLooper LV2 plugin has the
+	## normal looper controlls (record, play, reset...) that are
+	## implemenmtyed as `mod-host` `param` commands and should be
+	## assigned to the pedal.
+	$section = "activate";
+	next;
+    }
+    if($line =~ /^ENDS\s*$/){
+	## Write activation file
+	my $fn = $pedal_dir.$NAME;
+	open(my $out, ">$fn") or die "$!: $fn ";
+	print $out join("\n", @activation_commands)."\n";
+	close($out) or die "$!: $fn ";
+	next;
+    }
+
+    ## Got a command for `mod-host` or for Jack
+    $line =~ /^mh (.+)\s*$/ or die "Invalid line: $line";
+
+    my $command = $1;
+    if($command =~ /^connect\s+.+\s*$/){
+	if($section eq 'activate'){
+	    push(@activation_commands, $command);
+	}elsif($section eq 'persistent'){
+	    push(@jack_commands, $command);
+	}
+    }else{
+	push(@mh_commands, $command);
+    }
+}
+# print join("\n", @mh_commands);
+# print join("\n", @jack_commands);
+
+sub handle_jack( $ ){
+    ## Passed a Jack command execute it.  There are two: "connecyt"
+    ## and "disconnect"
+    my $cmd = shift or die;
+    if($cmd =~ /^connect (\S+)\s+(\S+)\s*$/){
+	print STDERR "Connect $1 $2\n";
+	print `jack_connect $1 $2`;
+    }elsif($cmd =~ /^disconnect (\S+)\s+(\S+)\s*$/){
+	print STDERR "Disconnect $1 $2\n";
+	print `jack_disconnect $1 $2`;
+    }
+}
+
+## From select(2) section of perlfunc
+sub fhbits {
+    my @fhlist = @_;
+    my $bits = "";
+    for my $fh (@fhlist) {
+	vec($bits, fileno($fh), 1) = 1;
+    }
+    return $bits;
+}
+
+## `handle_mh_cmd` and `mod_host` set up the LV2 simulators.
+## `mod_host` is passed an array of commands to send to `mod-host`
 sub handle_mh_cmd( $$ ) {
     my ($sock, $cmd) = @_;
     print $sock "$cmd\n";
@@ -72,18 +181,16 @@ sub handle_mh_cmd( $$ ) {
 	}
     }
 }    
-
 sub mod_host( $ ){
     my $cmds = shift or die;
     my @cmds = @$cmds;
 
     my $remote = "localhost";
-    my $port = $mod_host_port_p;
 
     my $sock = new IO::Socket::INET( PeerAddr => 'localhost',
-				     PeerPort => $port, 
+				     PeerPort => $mod_host_port_p, 
 				     Proto => 'tcp') or
-	die "$!: Failed to connect to mod-host"; 
+	die "$!: Failed to connect to mod-host localhost:$mod_host_port_p"; 
 
     ## Debugging why some effects randomly fail to be added
     my $failed = 0;
@@ -101,16 +208,14 @@ sub mod_host( $ ){
 	    if(!$jack){
 		print STDERR "effect_$1 failed\n";
 		$failed = 1;
-		# print STDERR "Retry: $cmd\n";
-		# &handle_mh_cmd($sock, $cmd);
-		# $jack = grep{/effect_$1/} `jack_lsp`;
-		# if(!$jack){
-		#     print STDERR "Failed again\n";
-		# }
 	    }else{
 		$failed = 0;
 		# print STDERR "Got effect_$1\n";
 	    }
 	}
     }
-}    
+}
+&mod_host(\@mh_commands);
+foreach my $jcmd ( @jack_commands ) {
+    &handle_jack( $jcmd );
+}

@@ -1,6 +1,11 @@
 use midi_connection::MIDICommunicator;
 use std::env;
-use std::io::stdin;
+use std::fs::File;
+//use std::io::stdin;
+use std::io::{self, BufRead};
+use std::thread;
+use std::time::Duration;
+//use std::path::Path;
 
 //use std::env;
 // use midir;
@@ -84,7 +89,10 @@ impl Adapter {
             if i % 10 != 0 && i % 10 != 9 {
                 // `i` is the number for a pad.  No pads 10, 20,... and pads 19, 29,... are control pads
                 let midi_note = d + p + adj_note;
-                // eprintln!("pad({}) -> note({})", i, midi_note); //
+                // eprintln!(
+                //     "pad({}) -> note({}): d({}) + p({}) + adj_note({}).  root_note({})",
+                //     i, midi_note, d, p, adj_note, root_note,
+                // );
                 // Incoming MIDI `i` becomes `pad`.  E.g. MIDI == 32
                 // print!("pad({}) i({}) ", pad, i);
                 midi_map[i as usize] = midi_note;
@@ -116,7 +124,7 @@ impl Adapter {
             }
             i += 1;
         }
-
+        //eprintln!("End of Adapter::new");
         Self {
             midi_out_synth: midi_out_synth,
             midi_out_lpx: midi_out_lpx,
@@ -130,66 +138,100 @@ impl Adapter {
 
 /// The names of MIDI devices set up in this.  
 struct DeviceNames {
-    midi_source_lpx: &'static str,
-    midi_source_lpx_120: &'static str,
+    /// The MIDI notes from the LPX.  The source
+    midi_source_lpx: String,
+    /// The MIDI notes from the LPX.  This end
+    midi_source_lpx_120: String,
 
-    midi_sink_lpx: &'static str,
-    midi_sink_lpx_120: &'static str,
+    /// Send MIDI commands to control pad colour on LPX
+    midi_sink_lpx: String,
+    midi_sink_lpx_120: String,
 
-    midi_sink_synth: &'static str,
-    midi_sink_synth_120: &'static str,
+    midi_sink_synth: String,
+    midi_sink_synth_120: String,
 }
+
 impl DeviceNames {
-    fn new() -> DeviceNames {
-        DeviceNames {
-            midi_source_lpx: "Launchpad X:Launchpad X MIDI 2",
-            midi_source_lpx_120: "120-Proof-MIDI-In-LPX",
+    fn new(cfg_fn: &str) -> io::Result<DeviceNames> {
+        // panic!("Unfinished.");
 
-            midi_sink_lpx: "Launchpad X:Launchpad X MIDI 1",
-            midi_sink_lpx_120: "120-Proof-MIDI-Out-LPX",
+        // Read a configuration file for midi_source_lpx, midi_sink_lpx, midi_sink_synth
+        let mut midi_source_lpx = "".to_string(); //"Launchpad X:Launchpad X MIDI 2".to_string();
+        let mut midi_sink_lpx = "".to_string();
+        let mut midi_sink_synth = "".to_string();
 
-            midi_sink_synth: "Pure Data:Pure Data Midi-In 2",
-            midi_sink_synth_120: "120-Proof-MIDI-Out-PD",
+        let file = File::open(cfg_fn)?;
+        let lines = io::BufReader::new(file).lines();
+        for line in lines {
+            if let Ok(l) = line {
+                // `l` is the line
+                if l.starts_with("midi_source_lpx:") {
+                    midi_source_lpx = l.strip_prefix("midi_source_lpx:").unwrap().to_string();
+                } else if l.starts_with("midi_sink_lpx:") {
+                    midi_sink_lpx = l.strip_prefix("midi_sink_lpx:").unwrap().to_string();
+                } else if l.starts_with("midi_sink_synth:") {
+                    midi_sink_synth = l.strip_prefix("midi_sink_synth:").unwrap().to_string();
+                } else {
+                    panic!("{} misunderstood", &l);
+                }
+            }
         }
+        Ok(DeviceNames {
+            midi_source_lpx: midi_source_lpx, //"Launchpad X:Launchpad X MIDI 2",
+            midi_source_lpx_120: "120-Proof-MIDI-In-LPX".to_string(),
+
+            midi_sink_lpx: midi_sink_lpx, //"Launchpad X:Launchpad X MIDI 1".to_string(),
+            midi_sink_lpx_120: "120-Proof-MIDI-Out-LPX".to_string(),
+
+            midi_sink_synth: midi_sink_synth, //"Pure Data:Pure Data Midi-In 2".to_string(),
+            midi_sink_synth_120: "120-Proof-MIDI-Out-PD".to_string(),
+        })
     }
 }
 fn main() -> Result<(), Box<dyn Error>> {
     let args: Vec<String> = env::args().collect();
-    let device_names = DeviceNames::new();
+
     // This is the scale.  Should be able to pass this in on the command line.
     let scale: Vec<u8>;
     let root_note: u8;
-    if args.len() > 0 {
-        // First argument is root note.  The rest of the arguments is scale
-        let mut iter = args.iter();
-        let root_note_iv = iter.nth(1).unwrap().as_str();
-        root_note = root_note_iv.parse::<u8>()?;
-        let mut intermediate_value: Vec<u8> = Vec::new();
-        for s in iter {
-            // s is &String
-            // eprintln!("s({})", s);
-            match s.as_str().parse() {
-                Ok(value) => intermediate_value.push(value),
-                Err(err) => panic!("s({}) err({:?})", s, err),
-            };
-        }
-        scale = intermediate_value;
-    } else {
-        scale = vec![1, 4, 6, 8, 11];
-        root_note = 60;
+    if args.is_empty() {
+        panic!("Need arguments");
     }
+    // First argument is the config file name.  Next the root
+    // note.  The rest of the arguments is scale
+    let mut iter = args.iter();
+    let cfg_fn = iter.nth(1).unwrap().as_str();
+    let root_note_iv = iter.nth(0).unwrap().as_str();
+    // eprintln!("Root note as text: {}", root_note_iv);
+    root_note = root_note_iv.parse::<u8>()?;
 
+    let mut intermediate_value: Vec<u8> = Vec::new();
+    for s in iter {
+        // s is &String
+        // eprintln!("s({})", s);
+        match s.as_str().parse() {
+            Ok(value) => intermediate_value.push(value),
+            Err(err) => panic!("s({}) err({:?})", s, err),
+        };
+    }
+    scale = intermediate_value;
+    // eprintln!(
+    //     "lpx_manager: config file: {} root note: {} scales: {:?}",
+    //     cfg_fn, root_note, scale
+    // );
+
+    let device_names = DeviceNames::new(cfg_fn).unwrap();
     let midi_out_synth: MIDICommunicator<()> = MIDICommunicator::new(
-        device_names.midi_sink_synth,
-        device_names.midi_sink_synth_120,
+        device_names.midi_sink_synth.as_str(),
+        device_names.midi_sink_synth_120.as_str(),
         |_, _, _| {},
         (),
         2,
     )?;
 
     let midi_out_lpx: MIDICommunicator<()> = MIDICommunicator::new(
-        device_names.midi_sink_lpx,
-        device_names.midi_sink_lpx_120,
+        device_names.midi_sink_lpx.as_str(),
+        device_names.midi_sink_lpx_120.as_str(),
         |_, _, _| {},
         (),
         2,
@@ -199,12 +241,20 @@ fn main() -> Result<(), Box<dyn Error>> {
     // Initialise LPX colours
     for i in 11..90 {
         if i % 10 > 0 && i % 10 < 9 {
+            // let ten_millis = Duration::from_millis(100);
+            // thread::sleep(ten_millis);
+
             let colour = adapter.pad_colour(i as u8).unwrap();
             let out_message_colour_change: [u8; 11] = [240, 0, 32, 41, 2, 12, 3, 0, i, colour, 247];
 
             match adapter.midi_out_lpx.send(&out_message_colour_change) {
-                Ok(()) => (),
-                Err(err) => eprintln!("Failed send: {:?}", err),
+                Ok(()) => {
+                    // eprintln!(
+                    //     "Colour: {} Pad: {} Sent: {:?}",
+                    //     &colour, i, &out_message_colour_change
+                    // )
+                }
+                Err(err) => eprintln!("Initialising colours: Failed send: {:?}", err),
             };
         }
     }
@@ -212,10 +262,10 @@ fn main() -> Result<(), Box<dyn Error>> {
     // The process that listens
 
     let _midi_in: MIDICommunicator<Adapter> = MIDICommunicator::new(
-        device_names.midi_source_lpx,
-        device_names.midi_source_lpx_120,
+        device_names.midi_source_lpx.as_str(),
+        device_names.midi_source_lpx_120.as_str(),
         |_stamp, message, adapter| {
-            // eprintln!("midi_in stamp({:?}) message({:?})", &stamp, &message);
+            // eprintln!("midi_in stamp({:?}) message({:?})", &_stamp, &message);
 
             let pad_in = message[1];
             let velocity = message[2];
@@ -232,7 +282,7 @@ fn main() -> Result<(), Box<dyn Error>> {
                         // eprintln!("out_message_midi_note({:?})", &out_message_midi_note);
                         match adapter.midi_out_synth.send(&out_message_midi_note) {
                             Ok(()) => (),
-                            Err(err) => eprintln!("Failed send: {:?}", err),
+                            Err(err) => eprintln!("Sending note: Failed send: {:?}", err),
                         };
 
                         // The key that is pressed, flash it blue(50) as it is
@@ -257,7 +307,9 @@ fn main() -> Result<(), Box<dyn Error>> {
                             // );
                             match adapter.midi_out_lpx.send(&out_message_colour_change) {
                                 Ok(()) => (),
-                                Err(err) => eprintln!("Failed send: {:?}", err),
+                                Err(err) => {
+                                    eprintln!("Press colour change: Failed send: {:?}", err)
+                                }
                             };
                         }
                         if let Some(p) = pads.1 {
@@ -269,14 +321,16 @@ fn main() -> Result<(), Box<dyn Error>> {
                             // );
                             match adapter.midi_out_lpx.send(&out_message_colour_change) {
                                 Ok(()) => (),
-                                Err(err) => eprintln!("Failed send: {:?}", err),
+                                Err(err) => {
+                                    eprintln!("Press colour change(2) : Failed send: {:?}", err)
+                                }
                             };
                         }
                     }
                 }
                 _ => match adapter.midi_out_lpx.send(&[message[0], pad_in, velocity]) {
                     Ok(()) => (),
-                    Err(err) => eprintln!("Failed send: {:?}", err),
+                    Err(err) => eprintln!("Random message(?): Failed send: {:?}", err),
                 },
             };
         },
@@ -284,8 +338,11 @@ fn main() -> Result<(), Box<dyn Error>> {
         1,
     )?;
 
-    let mut input: String = String::new();
-    input.clear();
-    stdin().read_line(&mut input)?; // wait for next enter key press
-    Ok(())
+    // let mut input: String = String::new();
+    // input.clear();
+    // stdin().read_line(&mut input)?; // wait for next enter key press
+    loop {
+        thread::sleep(Duration::from_millis(100));
+    }
+    // Ok(())
 }

@@ -19,7 +19,7 @@ fn main() -> Result<(), Box<dyn Error>> {
         "120-Proof-1",
         |_, _, _| {},
         (),
-        1,
+        3,
     )?;
     // This is the MIDI message that puts the LPX into programmer's
     // mode.

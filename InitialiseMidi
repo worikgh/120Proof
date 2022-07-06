@@ -214,7 +214,7 @@ sub set_up_midi( $ ) {
 	my ($l) = @_;
 	my $cmd = "aconnect -d $l";
 	`$cmd`;
-	# print STDERR "del_con($l)\n";
+	print STDERR "del_con($l)\n";
 	$? == 0 or print STDERR "Failed $?: $cmd \n";
     }
     map {&del_con($_)} @to_delete;

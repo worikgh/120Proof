@@ -7,6 +7,14 @@
 
   The pedals are associated with JACK connections at start up, or when
   signaled, with configuration files from a directory
+
+  There are three pedals.  Each is assigned a character, from left to
+  right, 'A', 'B', and 'C'.  In the configuration directory there are
+  links named 'A', 'B', and 'C' that link to the configuration foles
+  for the pedal.
+
+  
+
 */
 #include <linux/limits.h>
 #include <assert.h>
@@ -32,8 +40,8 @@ jack_client_t *CLIENT;
 // Reset this to exit main loop
 int RUNNING = 1;
 
-// Where PEDALS can be found
-char home_dir[PATH_MAX + 1];
+// Where configuration files are stored
+char config_dir[PATH_MAX + 1];
 
 struct jack_connection;
 struct pedal_config;
@@ -151,6 +159,8 @@ void deimplement_pedal(char * pedal, char * new_pedal){
     return;
   }
   
+  // `*pc` points to configuration for the old pedal to be
+  // deimplemented and `*npc` to the pedal that is replacing it
   struct pedal_config * pc;
   struct pedal_config * npc;
   switch (*pedal) {
@@ -389,7 +399,7 @@ int load_pedal(char p){
     assert(0);
     break;
   }
-  assert(snprintf(scriptname, PATH_MAX, "%s/PEDALS/%c", home_dir, pedal) < PATH_MAX);
+  assert(snprintf(scriptname, PATH_MAX, "%s/%c", config_dir, pedal) < PATH_MAX);
 
   Log( "Opening script: %s\n", scriptname);
   fd = fopen(scriptname, "r");
@@ -467,6 +477,24 @@ int get_foot_pedal_fd(const char * vendor_code, const char * product_code) {
 
 int main(int argc, char * argv[]) {
 
+  if(argc < 2){
+    fprintf(stderr, "Usage: %s <configuration directory>\n", argv[0]);
+    exit(-1);
+  }
+  // The configuration directory is the only argument
+  assert(snprintf(config_dir, PATH_MAX, argv[1]) < PATH_MAX);
+
+  // Check it is a directory
+
+
+  struct stat path_stat;
+  stat(config_dir, &path_stat);
+  if( ! S_ISDIR(path_stat.st_mode) ){
+    fprintf(stderr, "Usage: %s <configuration directory>\n", argv[0]);
+    exit(-1);
+  }
+      
+
   // Defined in jack.h(?)
   jack_status_t status;
 
@@ -479,7 +507,6 @@ int main(int argc, char * argv[]) {
   int retval, res;
   unsigned yalv;//, last_yalv;
   uint8_t key_b[KEY_MAX/8 + 1];
-  char * mi_root;
 
   struct sigaction act;
   memset (&act, 0, sizeof (act));
@@ -488,17 +515,6 @@ int main(int argc, char * argv[]) {
   if (sigaction (SIGHUP, &act, NULL) < 0) {
     perror ("sigaction");
     exit (-1);
-  }
-
-
-  mi_root = getenv("PATH_MI_ROOT");
-  if(!mi_root){
-    mi_root = "/home/patch/ModHostPedal";
-  }
-  assert(snprintf(home_dir, PATH_MAX, "%s", mi_root) <= PATH_MAX);
-  if(chdir(home_dir)){
-    // FIXME An error message
-    assert(0);
   }
 
   // Initialise the definitions of pedals
@@ -651,7 +667,7 @@ int main(int argc, char * argv[]) {
 	// programmes can know what pedal is selected
 	int fd_pedal;
 	char file_name[PATH_MAX];
-	assert(snprintf(file_name, PATH_MAX, "%s/PEDALS/.PEDAL", home_dir) < PATH_MAX);
+	assert(snprintf(file_name, PATH_MAX, "%s/.PEDAL", config_dir) < PATH_MAX);
 	fd_pedal = open(file_name, O_WRONLY); // File must exist
 	if(fd_pedal < 0) {
 	  Log("%s:%d: Failed to open %s. Error %s\n",

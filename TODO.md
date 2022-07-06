@@ -1,15 +1,17 @@
 # Build Instruments
 
+
+**TODO** Integrate `Mistress`, `ModhostSimulators`, `driver`, `Instruments/*/Initialise.sh`, `lpx_control`,
+
 **TODO**: A pattern of writing scripts that:
 
 * Set up and tear down JACK connections between MIDI sinks, LV2 plugins, audio input (2-channels), ???, and the output two channels.  Not necessarily stereo.  Just two.
 
 * Make copies of the binaries for the LV2 plugins locally
 
-* Clean the MIDI set up.  (The `midir` library is setting more connections than I ask for when using `lpx_manager`
+** TODO** Make initialisation scripts work from `systemd` using `systemctl [start|enable]`
 
-* Set up and tear down MIDI sinks (Pure Data currently.  More to come)
-
+* Clean the MIDI set up.  (The `midir` library is setting more connections than I ask for when using `lpx_manager`.  **DONE** `InitialiseMidi` uses a cnfiguration file that specifies exactly what MIDI connections must be present and deletes the rest.
 
 ## Inputs
 
@@ -23,6 +25,8 @@ A three pedal USB keyboard.  Use to configure JACK connections quickly.  General
 
 **TODO**: Get pedal driver from `ModHostPedal` to work here.
 
+**TODO**: Rename the pedal driver.  `driver` is a bad name.
+
 **TODO**: Add ability to pedal to send control signals to LV2 plugins
 
 **TODO**: Calculate how much overhead there is in USB pedal, hence how important it is to move to a better/quicker system
@@ -35,6 +39,8 @@ The audio inout/output to Pisound is stereo so effectively there are two indepen
 
   * Right channel
 
+**TODO** A case and prlugs that make left and right channels available separately. (Asked on the Blokaslabs forum if channels can be treated independently)
+
 ## Processing
 
 ## InitialisePd
@@ -43,7 +49,7 @@ The audio inout/output to Pisound is stereo so effectively there are two indepen
 
 ## InitialiseMidi
 
-**TODO**: Can the `120.cfg` file be generated automagically?  And/or can `lpx_manager` have a configuration file and write its lines to `120.cfg`
+**TODO**: Generate the initialisation file from settings.  Define: Input devices, synthesis systems (including LV2 simulators), output devices (? May use USB sound - Berringer XR18?).  From that generate the MIDI, Jack, and LV2 setup scripts including the pedal control files.  The set of Midi, Jack, and Pedal control files are what is used live.
 
 
 ### MIDI Sources
@@ -98,10 +104,29 @@ MIDI sinks take MIDI note definitions and output audio to JACK devices.
 
 * Pure Data
 
-  Define synthesisers and audio processing
+	Define synthesisers and audio processing.  `InitialisePD` to set it up
   
+* Yoshimi
+
+	Define synthesisers.  `InitialiseYos` to set it up
+
+  * `./InitialiseYos
+  Takes two parameters:
+  
+  1. A name used to define MIDI connections and Jack pipe names.
+  
+  2. A path to an "Instrument" file.  These have a suffix ".xiz" and are supplied with Yoshimi.  Yoshimi can edit them to change their characteristics
+  
+  * LV2 Plugins
+  
+  Several LV2 plugins are synthesisers.  
+	
+
+
 **TODO**: Define more MIDI Sinks
 
 # Case
 
 **TODO**: Build a case!-)
+
+**TODO**: Separate stereo input and stereo output into two mono channels

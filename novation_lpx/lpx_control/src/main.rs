@@ -70,7 +70,7 @@ impl Dispatcher {
         }
     }
     fn run_cmd(cmd: &str) {
-        eprintln!("Run down: {}", &cmd);
+        //eprintln!("Run down: {}", &cmd);
         let command = format!(
             "{}/subs/{}",
             env::current_dir()
@@ -86,7 +86,7 @@ impl Dispatcher {
             Ok(out) => {
                 if out.status.success() {
                     let s = String::from_utf8_lossy(&out.stdout);
-                    eprintln!("Success: {} and stdout was:\n{}", cmd, s)
+                    //eprintln!("Success: {} and stdout was:\n{}", cmd, s)
                 }
             }
             Err(err) => eprintln!("Failure: cmd {}  Err: {:?}", cmd, err),
@@ -307,7 +307,7 @@ fn run() -> Result<(), Box<dyn Error>> {
     input.clear();
     stdin().read_line(&mut input)?; // wait for next enter key press
 
-    eprintln!("Closing connection");
+    //eprintln!("Closing connection");
     Ok(())
 }
 
