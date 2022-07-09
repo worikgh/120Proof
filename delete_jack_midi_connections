@@ -1,0 +1,40 @@
+#!/usr/bin/perl -w
+use strict;
+
+# Disconnect all jack midi connections
+my $command;
+$command = shift or die "$0 list|delete";
+$command eq "list" || $command eq "delete" ||  die "$0 list|delete";
+
+warn "Starting";
+
+my @jack_lsp = `jack_lsp -tc`;
+my $l = ''; # The out put line
+my $device1 = undef;
+my $device2 = undef;
+foreach my $line (@jack_lsp ){
+    chomp $line;
+    
+    if($line =~ /^(\S.+)\s*$/){
+	# Start of device description
+	
+	# # Output the last description being assembled
+	# defined($device1) and defined($device2) and print "$device1, $device2\n";
+	$device1 = $1;
+	$device2 = undef;
+	
+    }elsif($line =~ /^   (\S+.+)/){
+	$device2 = $1;
+    }elsif($line =~ /^\t(\S.+)/){
+	if($line =~ /midi/ and defined ($device1) and defined($device2)){
+	    if($command eq "delete"){
+		warn "Delete: $device1 $device2";
+		print `jack_disconnect "$device1" "$device2"`;
+	    }elsif($command eq "list"){
+		print "\"$device1\" \"$device2\"\n";
+	    }
+	}
+    }
+}
+
+warn "ending";

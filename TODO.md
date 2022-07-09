@@ -13,6 +13,8 @@
 
 * Clean the MIDI set up.  (The `midir` library is setting more connections than I ask for when using `lpx_manager`.  **DONE** `InitialiseMidi` uses a cnfiguration file that specifies exactly what MIDI connections must be present and deletes the rest.
 
+**TODO** Fis `InitialiseMIDI` so it will not disconnect `lpx_controll`.  And make the midi ports `lpx_controll` uses configurable.  Currenyly need to edit the congiguration files `midi.cfg` that `InitialiseMIDI` reads to ensure the connects arte not deleted.
+
 ## Inputs
 
 * Keyboard

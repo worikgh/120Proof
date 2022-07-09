@@ -217,7 +217,11 @@ impl<T: std::fmt::Debug + Send> MIDICommunicator<T> {
                 if result_out.is_some() {
                     Ok((None, result_out))
                 } else {
-                    Err("Output connection failed".into())
+                    let msg: String = format!(
+                        "Output connection failed. inout: 2 this_name: {} other_name: {}",
+                        this_name, other_name
+                    );
+                    Err(msg.into())
                 }
             }
             3 =>

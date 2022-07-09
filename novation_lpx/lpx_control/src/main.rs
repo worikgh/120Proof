@@ -1,9 +1,10 @@
 //! Use the MIDI control keys from the LPX to run programes.
+// use std::io::stdin;
 use midi_connection::MIDICommunicator;
 use std::collections::HashMap;
 use std::env;
 use std::error::Error;
-use std::io::stdin;
+use std::path::Path;
 use std::process;
 use std::sync::Arc;
 use std::sync::Mutex;
@@ -70,32 +71,39 @@ impl Dispatcher {
         }
     }
     fn run_cmd(cmd: &str) {
-        //eprintln!("Run down: {}", &cmd);
-        let command = format!(
-            "{}/subs/{}",
-            env::current_dir()
-                .unwrap()
-                .as_path()
-                .as_os_str()
-                .to_str()
-                .unwrap(),
-            &cmd
-        );
-
+        eprintln!("run_cmd({}) Starts", &cmd);
+        let mut one_20_proof_home: String = "".to_string(); //: String = env::vars().find(|x| x.0 == "Home120Proof").unwrap().1;
+        for (key, value) in env::vars() {
+            if key == "Home120Proof" {
+                one_20_proof_home = value;
+                break;
+            }
+        }
+        let home_dir = format!("{}/subs", &one_20_proof_home);
+        let home_dir = Path::new(home_dir.as_str());
+        env::set_current_dir(&home_dir)
+            .expect(format!("Cannot change directory to: {}", home_dir.display()).as_str());
+        let command = format!("{}/{}", home_dir.display(), &cmd);
+        eprintln!("run_cmd({}) Command: {}", &cmd, &command);
         match process::Command::new(command.as_str()).output() {
             Ok(out) => {
                 if out.status.success() {
                     let s = String::from_utf8_lossy(&out.stdout);
-                    //eprintln!("Success: {} and stdout was:\n{}", cmd, s)
+                    eprintln!("Success: {} and stdout was:\n{}", cmd, s)
+                } else {
+                    let s = String::from_utf8_lossy(&out.stderr);
+                    eprintln!("Not success: {} and stderr was:{}", cmd, s)
                 }
             }
-            Err(err) => eprintln!("Failure: cmd {}  Err: {:?}", cmd, err),
+            Err(err) => eprintln!("Failure: cmd {}  Err: {:?}", command, err),
         }
     }
+
     /// A control pad has been pressed
     /// `ctl` is the pad number
     fn run_ctl(&mut self, ctl: u8) {
         // Shut down the last control used
+        eprintln!("run_ctl({}) Starts", ctl);
         if let Some(x) = self.last {
             match self.down_table.get(&x) {
                 Some(cmd) => {
@@ -111,10 +119,12 @@ impl Dispatcher {
 
         match self.up_table.get(&ctl) {
             Some(cmd) => {
+                eprintln!("run_ctl({}) Run command: {}", ctl, &cmd);
                 Self::run_cmd(cmd.as_str());
             }
             None => (),
         };
+        eprintln!("run_ctl({}) finish", ctl);
     }
 }
 
@@ -229,9 +239,10 @@ impl MidiCommTools {
 
 /// Process a MIDI message
 fn process_message(message: &[u8; 3], dispatcher: &mut Dispatcher) {
+    eprintln!("process_message({:?})", message);
     if message[0] == 176 {
         // A ctl message
-        // eprintln!("process_message message({:?})", message);
+        eprintln!("process_message message({:?})", message);
 
         let key = message[1];
         let vel = message[2];
@@ -270,18 +281,18 @@ fn enable_lpx(enable: bool, lpx_midi: &mut MIDICommunicator<()>, lpx_enabled: &m
 /// Main loop.  
 fn run() -> Result<(), Box<dyn Error>> {
     let mut input = String::new();
-    // eprintln!("Started lpx_control");
+    eprintln!("Started lpx_control");
     let midi_comm_tools = MidiCommTools::new();
     let _conn_in = MIDICommunicator::new(
         "Launchpad X:Launchpad X MIDI 2",
         "120-Proof-CTL",
-        move |_stamp, message, midi_comm_tools| {
-            // eprintln!(
-            //     "{}: Msg: {:?} (len = {})",
-            //     (stamp as f64) / 1_000_000.0,
-            //     &message,
-            //     message.len()
-            // );
+        move |stamp, message, midi_comm_tools| {
+            eprintln!(
+                "{}: Msg: {:?} (len = {})",
+                (stamp as f64) / 1_000_000.0,
+                &message,
+                message.len()
+            );
 
             if message.len() == 3 {
                 // eprintln!(
@@ -292,6 +303,7 @@ fn run() -> Result<(), Box<dyn Error>> {
                 if message[0] == 176 {
                     if !midi_comm_tools.lpx_control.sleeping() {
                         let array = <[u8; 3]>::try_from(message).unwrap();
+                        eprintln!("Got a message({:?})", message,);
                         process_message(&array, &mut midi_comm_tools.dispatcher);
                     }
                 } else if message[0] == 144 {
@@ -305,10 +317,13 @@ fn run() -> Result<(), Box<dyn Error>> {
     )?;
 
     input.clear();
-    stdin().read_line(&mut input)?; // wait for next enter key press
+    loop {
+        sleep(Duration::new(1, 0));
+    }
+    // stdin().read_line(&mut input)?; // wait for next enter key press
 
-    //eprintln!("Closing connection");
-    Ok(())
+    // //eprintln!("Closing connection");
+    // Ok(())
 }
 
 fn main() {
