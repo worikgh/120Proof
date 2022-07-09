@@ -27,3 +27,4 @@ novation_lpx/lpx_control/Cargo.lock
 novation_lpx/lpx_manager/zzz
 novation_lpx/midi_connection/Cargo.lock
 *~
+*.log
