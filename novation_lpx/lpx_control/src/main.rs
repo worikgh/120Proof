@@ -72,7 +72,7 @@ impl Dispatcher {
     }
     fn run_cmd(cmd: &str) {
         eprintln!("run_cmd({}) Starts", &cmd);
-        let mut one_20_proof_home: String = "".to_string(); //: String = env::vars().find(|x| x.0 == "Home120Proof").unwrap().1;
+        let mut one_20_proof_home: String = ".".to_string();
         for (key, value) in env::vars() {
             if key == "Home120Proof" {
                 one_20_proof_home = value;
