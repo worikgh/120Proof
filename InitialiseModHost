@@ -1,5 +1,6 @@
 #!/bin/bash
 
+set -e
 ## Copy the definitiuons of mod-host simulator's made by modep front
 ## end
 ./ExtractModep

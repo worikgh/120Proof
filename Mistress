@@ -24,6 +24,12 @@ warn "Set LPX mode";
 print `$ENV{"Home120Proof"}/delete_jack_midi_connections list`;
 warn "Cleared Jack Midi";
 
+
+## Run ModHost.  This will set up Jack MIDI
+print "Initialise Mod-host\n";
+print `./InitialiseModHost`
+
+
 ## Set up the controls for the LPX
 my $lpx_control_pid = fork();
 if(!$lpx_control_pid){

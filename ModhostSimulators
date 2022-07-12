@@ -6,9 +6,13 @@ use IO::Socket::INET;
 ## Read the output of `ExtractModep` and set up the LV2 simulators,
 ## and Jack pipes for the pedal boards defined by Modep.  Also set up
 ## the "activation" files in `$pedal_dir` to put the definitions of
-## Jack pipes (and later Modhost control parameters ot control
+## Jack pipes (and later Modhost control parameters of control
 ## simulators).
 
+## Get the directory to run in
+my $home_dir = $ENV{"Home120Proof"} or die '$ENV{"Home120Proof"} is not set';
+-d $home_dir or die "\$home_dir($home_dir) not a directory";
+chdir $home_dir or die "$!: Cannot chdir $home_dir";
 
 ## The file written by ExtractModep
 my $modep_command_fn = 'modep_commands.txt';
@@ -66,7 +70,9 @@ foreach my $line(<$cmds>){
 	next;
     }
     if($line =~ /^ENDS\s*$/){
-	## Write activation file
+
+	## The description of the effect has ended, so write
+	## activation file
 	my $fn = $pedal_dir.$NAME;
 	open(my $out, ">$fn") or die "$!: $fn ";
 	print $out join("\n", @activation_commands)."\n";
@@ -78,10 +84,13 @@ foreach my $line(<$cmds>){
     $line =~ /^mh (.+)\s*$/ or die "Invalid line: $line";
 
     my $command = $1;
-    if($command =~ /^connect\s+.+\s*$/){
+    if($command =~ /^connect\s+.+\s*$/){	
 	if($section eq 'activate'){
+	    ## Commands to be used by a pedal to activate an effect
 	    push(@activation_commands, $command);
 	}elsif($section eq 'persistent'){
+	    ## Commands that connect up the simulated pedals that make
+	    ## an effect.
 	    push(@jack_commands, $command);
 	}
     }else{
@@ -90,6 +99,7 @@ foreach my $line(<$cmds>){
 }
 # print join("\n", @mh_commands);
 # print join("\n", @jack_commands);
+
 
 sub handle_jack( $ ){
     ## Passed a Jack command execute it.  There are two: "connecyt"
@@ -219,3 +229,4 @@ sub mod_host( $ ){
 foreach my $jcmd ( @jack_commands ) {
     &handle_jack( $jcmd );
 }
+

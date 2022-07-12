@@ -51,7 +51,7 @@ done
 # /home/patch/120Proof/lpx_mode 127
 
 echo Running lpx_manager >> $LOGFILE
-/home/patch/120Proof/lpx_manager /home/patch/120Proof/Instruments/GhostWalking/lpx_manager.cfg 57 1 4 6 8 11 < /dev/null  2>&1 >> $LOGFILE  &
+/home/patch/120Proof/lpx_manager /home/patch/120Proof/Instruments/GhostWalking/lpx_manager.cfg 57 1 4 6 9 11 < /dev/null  2>&1 >> $LOGFILE  &
 
 # echo GhostWalking: Sleep....
 # sleep 5
