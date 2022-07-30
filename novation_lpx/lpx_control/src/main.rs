@@ -84,7 +84,7 @@ impl Dispatcher {
     /// `run_cmd` is called when the pad/key has been processed.
     /// `cmd` is a path to an executable
     fn run_cmd(cmd: &str) {
-        // eprintln!("run_cmd({}) Starts", &cmd);
+        eprintln!("run_cmd({}) Starts", &cmd);
         let mut one_20_proof_home: String = ".".to_string();
         for (key, value) in env::vars() {
             if key == "Home120Proof" {
@@ -110,7 +110,7 @@ impl Dispatcher {
             }
             Err(err) => eprintln!("Failure: cmd {}  Err: {:?}", command, err),
         }
-        // eprintln!("run_cmd({}) Ends", &cmd);
+        eprintln!("run_cmd({}) Ends", &cmd);
     }
 
     /// A control pad has been pressed

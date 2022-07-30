@@ -1,0 +1,8 @@
+#!/usr/bin/perl -w
+use lib(".");
+use Daemon;
+
+my $cmd = "/home/patch/120Proof/Instruments/GhostWalking/Initialise.sh";
+my $pid = run($cmd);
+print "$pid: $cmd\n";
+

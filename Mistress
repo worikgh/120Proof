@@ -1,9 +1,8 @@
 #!/usr/bin/perl -w
 use strict;
 
-## Mistress is the boss.  She is in charge.
-## She calls the scripts, in the proper order, to set up 120Proof.
-
+## Mistress is the boss.  It is in charge.
+## It calls the scripts, in the proper order, to set up 120Proof.
 
 ## Required to run Jack
 $ENV{"JACK_PROMISCUOUS_SERVER"} = 'jack';
@@ -39,4 +38,15 @@ if(!$lpx_control_pid){
 warn "lpx_control running on pid: $lpx_control_pid";
 
 
+## Run the pedal
+my $pedal_pid = fork();
+if(!$pedal_pid){
+    my $driver_dir = "$ENV{Home120Proof}/pedal";
+    print `$driver_dir/driver $ENV{Home120Proof}/PEDALS/pedal`;
+    exit(0);
+}
+    
 
+
+print "Whoami: " . `whoami`;
+print "Groups: " . `groups`;

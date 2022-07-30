@@ -11,6 +11,7 @@ Set up using `systemctl start 120Proof`
 
 * Delete amidiauto
 
+	It makes MIDI connections without asking.  Very annoying.
 
 ## Instruments
 
@@ -18,15 +19,7 @@ Set up using `systemctl start 120Proof`
 
 	Made by Novation.  A nice grid of LED buttons 
 
-* WORLDE midi keyboard
-
-	Cheap from Ali Express
-
-	Keys work OK
-
-	Pitch bend works
-
-    Controls do not properly work (knobs and sliders)
+* Nektar LX88
 
 * Pedal
 
@@ -42,7 +35,14 @@ Set up using `systemctl start 120Proof`
 
 From https://github.com/Yoshimi/yoshimi.git
 
-yoshimi --no-gui  --no-cmdline  --jack-audio --alsa-midi=Instace_Identifier 
+yoshimi --no-gui  --no-cmdline  --jack-audio --alsa-midi=120Proof
+
+  * `--no-gui` `--no-cmdline` for headless 
+  
+  * `--alsa-midi=1` `--jack-audio` for putting audio through jack and MIDI through alsa. (The RHS of `--alsa-midi=X` seems to be irrelevant.)
+  
+  
+
 
 # Tools
 
@@ -122,9 +122,13 @@ The Jack conections that connect audio input and output into particular pedal bo
 
 Set them up for the audio interface (simulating an effects unit) or for MIDI instruments.
 
-2. Use `ExtractModep` to create a file (modep_commands.txt) that lists the mod-host commands to set up the LV2 simulations, the JACK connections between them, and the JACK connections (TODO: and MIDI connections) to activate that pedal board
+2. Run `./InitialiseModHost` that sets up `mod-host` simulators, Jack
+   pipes and the files (in pedal/PEDALS) to be read by the pedal
+   driver.  It reads `modep_commands.txt`.
 
-3. In the file `modep_commands.txt` each pedal board definition starts with a `NAME ` line
+	* It runs `ExtractModep` to create a file (modep_commands.txt) that lists the mod-host commands to set up the LV2 simulations, the JACK connections between them, and the JACK connections (TODO: and MIDI connections) to activate that pedal board
+
+	* In the file `modep_commands.txt` each pedal board definition starts with a `NAME ` line
 
   1. Each line that starts with a `mh ` is a command for mod-host
 
@@ -134,9 +138,20 @@ Set them up for the audio interface (simulating an effects unit) or for MIDI ins
      It will be an executable so after it is run the instrument is set
      up
 
-4. Run `./InitialiseModHost` that sets up `mod-host` simulators, Jack
-   pipes and the files (in pedal/PEDALS) to be read by the pedal
-   driver.  It reads `modep_commands.txt`.
+	* It then starts a local version or `mod-host`  (at `~/mod-host/mod-host`)
+
+3. `InitialiseModHost` then runs `ModhostSimulators`.  Its job is to set up the LV2 simulators  using `mod-host`,  Jack pipes between them, and the files in `pedal/PEDALS` that the pedal driver will read to change the effects in use.
+
+4. Start `lpx_control`.  This monitors the MIDI control signals from the LPX and runs programmes in response that set up the system for use.  `lpx_control` monitors control signals: 19, 29,...,89.  When one of thos buttons s pressed, say 39, the scipt `subs/ON-CTL.39` is run.  Whe another button, say 59 is pressed, `subs/OFF-CTL.39` is run then `subs/ON-CTL.59`.  In this way configurations can be put up and torn down, and there can be up to eight configurations ready to use, live.
+
+The sorts of jobs that `subs/ON-CTL.N` do are:
+
+  * Set up `lpx_manager` to process NIDI from the LPX.
+  
+  * Set up links in `peal/PEDALS` to establish what effects the pedal controls.
+  
+  * Set up `yoshimi` (or another synthesiser) to with controls and Jack for audio generation
+
 
    This completes the general set up
    
@@ -157,8 +172,8 @@ The two MIDI controllers are:
 1. Lanchpad X.  64 velocity sensitive LED pads.  It appears in the
    MIDI config file as: `Launchpad X:Launchpad X MIDI 2`.
 
-2. WORLDE 24 key keyboard.  It appears in the MIDI config file as:
-   `WORLDE:WORLDE MIDI 1`
+2. Nektar 88 key keyboard.  It appears in the MIDI config file as:
+   `Impact LX88+:Impact LX88+ MIDI 1` and `Impact LX88+:Impact LX88+ MIDI 2`
 
 The two MIDI sinks (that produce audio output into Jack) are:
 
@@ -192,7 +207,9 @@ The inputs appear in the MIDI configuration file as: `Pure Data:Pure Data Midi-I
 
 MIDI devices are specified in a file the path to which is the first argument,  The root note (in MIDI, middle C is 60) and a list of integers between 1 and 12, starting with 1, in ascending order, unique as the remaining arguments defines the scale.
 
+### `mod-host`
 
+`InitialiseModHost` starts a local copy of `mod-host` build from Git in `~/mod-host/` running on port 9116.  This means that `MODEP/mod-host` does not need to be stopped.
 
   <!-- 2. A way to define pedal boards that can be used to assign them to instruments and the audio input -->
 

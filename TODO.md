@@ -1,19 +1,31 @@
 # Build Instruments
 
 
-**TODO** Integrate `Mistress`, `ModhostSimulators`, `driver`, `Instruments/*/Initialise.sh`, `lpx_control`,
+	**TODO** Integrate `Mistress`, `ModhostSimulators`, `driver`, `Instruments/*/Initialise.sh`, `lpx_control`,
 
-**TODO**: A pattern of writing scripts that:
+	**TODO**: A pattern of writing scripts that:
 
-* Set up and tear down JACK connections between MIDI sinks, LV2 plugins, audio input (2-channels), ???, and the output two channels.  Not necessarily stereo.  Just two.
+	* Set up and tear down JACK connections between MIDI sinks, LV2 plugins, audio input (2-channels), ???, and the output two channels.  Not necessarily stereo.  Just two. **DONE** mostly.  Need to use it for a while to plan developments.
+
+
 
 * Make copies of the binaries for the LV2 plugins locally
 
-** TODO** Make initialisation scripts work from `systemd` using `systemctl [start|enable]`
+**TODO** Add code to `ExtractModep` to copy the `LV2` programmes and configuration data into 120Proof tree.
 
-* Clean the MIDI set up.  (The `midir` library is setting more connections than I ask for when using `lpx_manager`.  **DONE** `InitialiseMidi` uses a cnfiguration file that specifies exactly what MIDI connections must be present and deletes the rest.
+**TODO** 
+	** TODO** Make initialisation scripts work from `systemd` using `systemctl [start|enable]` **DONE** `Mistress` is called by `/etc/systemd/system/120Proof`
 
-**TODO** Fis `InitialiseMIDI` so it will not disconnect `lpx_controll`.  And make the midi ports `lpx_controll` uses configurable.  Currenyly need to edit the congiguration files `midi.cfg` that `InitialiseMIDI` reads to ensure the connects arte not deleted.
+	* Clean the MIDI set up.  (The `midir` library is setting more connections than I ask for when using `lpx_manager`.  **DONE** `InitialiseMidi` uses a cnfiguration file that specifies exactly what MIDI connections must be present and deletes the rest.
+
+	**TODO** Fix `InitialiseMidi` so it will not disconnect `lpx_controll`.  And make the midi ports `lpx_controll` uses configurable.  Currenyly need to edit the congiguration files `midi.cfg` that `InitialiseMIDI` reads to ensure the connects arte not deleted. **DONE** Must put:
+
+```
+#lpx_control 
+Launchpad X:Launchpad X MIDI 2	120-Proof-CTL:120-Proof-CTL-in
+120-Proof-CTL:120-Proof-CTL-out	Launchpad X:Launchpad X MIDI 1
+```
+	...in the configuration files for `InitialiseMidi`
 
 ## Inputs
 

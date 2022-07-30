@@ -15,7 +15,7 @@ sub set_up_mod_host {
 	if($line =~ /^mh\s(.+)\s*$/) {
 	    ## Mod host command
 	    my $cmd = $1;
-	    my $res = `echo $cmd | nc -N localhost 5555`;
+	    my $res = `echo $cmd | nc -N localhost 9116`;
 	    print "\$cmd: $cmd\n\$res: $res\n";
 	}
     }

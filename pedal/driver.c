@@ -96,9 +96,10 @@ struct pedal_config * get_pedal_config(const char c) {
 
 /*
   Make the jack connections (from the system input to effect, from
-  effect to system output) that enables an effect. This is done
-  before the old connections for the pedal being replaced is
-  disconnected/deimplemented.
+  effect to system output) that enables an effect.
+
+  Call this before the old connections for the pedal being replaced is
+  disconnected/deimplemented (`deimplement_pedal`) o there is no silence.
 
 */
 void implement_pedal(char * pedal){
@@ -147,10 +148,10 @@ void implement_pedal(char * pedal){
 }
 
 
-// Disconnect the jack pipes that lead into this pedal.  `pedal` is
-// the old pedal being disconnected.  `new_pedal` is the pedal that
-// has replaced it.  Before connecting anything from `pedal` ensure
-// `new_pedal` does not need it too.
+/* Disconnect the jack pipes that lead into this pedal.  `pedal` is */
+/* the old pedal being disconnected.  `new_pedal` is the pedal that */
+/* has replaced it.  Before connecting anything from `pedal` ensure */
+/* `new_pedal` does not need it too. */
 void deimplement_pedal(char * pedal, char * new_pedal){
 #ifdef VERBOSE
   Log( "%s:%d\n", __FILE__, __LINE__);
@@ -283,18 +284,27 @@ static void signal_handler(int sig)
   signaled = 1;
 }
 
-void jack_shutdown (void *arg)
-{
-  exit (1);
-}
+/* void jack_shutdown (void *arg) */
+/* { */
+/*   exit (1); */
+/* } */
 
 // Add a jack connection between `jc1` and `jc2` for a pedal defined
 // in `pedal` into the configuration structure
+
+/*
+ * `add_pedal_effect` is used when setting up. `pedal` is the physical
+ * pedal, a single character.  `jc1` and `jc2` are jack ports.
+ * Connecting them enables the effect.
+ */  
 void add_pedal_effect(char pedal, const char * jc1, const char* jc2){
 
 #ifdef VERBOSE
   Log("add_pedal_effect(%c, %s, %s)\n", pedal, jc1, jc2);
 #endif
+
+  /* TODO: Fix this so the pedal can have more (or less) than three
+     settings */
   struct pedal_config * pc = NULL;
   switch (pedal) {
   case 'A': 
@@ -357,6 +367,7 @@ void process_line(char pedal, char * line){
 
 */
 const char ** ports_to_disconnect;
+
 void clear_jack(){
   ports_to_disconnect =  jack_get_ports(CLIENT, "system",
 					"32 bit float mono audio", 0 );
@@ -435,9 +446,9 @@ int load_pedal(char p){
   return 0;
 }
 
-void jack_error_cb(const char * msg){
-  Log( "JACK ERROR: %s\n", msg);
-}
+/* void jack_error_cb(const char * msg){ */
+/*   Log( "JACK ERROR: %s\n", msg); */
+/* } */
 
 // USB keyboards are linked to from known locations based on the
 // vendor and product codes (hexadecimal values for USB device IDs).
@@ -474,6 +485,95 @@ int get_foot_pedal_fd(const char * vendor_code, const char * product_code) {
   }
   return result;
 }
+
+// Called on set up and when signaled to set up the pedals.  Define
+// what they do
+void initialise_pedals(){
+  pedals.pedal_configA.n_connections = 0;
+  pedals.pedal_configA.connections = NULL;
+  pedals.pedal_configB.n_connections = 0;
+  pedals.pedal_configB.connections = NULL;
+  pedals.pedal_configC.n_connections = 0;
+  pedals.pedal_configC.connections = NULL;
+  load_pedal('A');
+  load_pedal('B');
+  load_pedal('C');
+}
+
+/* Clean up */
+void _destroy_pedal(struct pedal_config *);
+void destroy_pedals() {
+  clear_jack();
+  _destroy_pedal(&pedals.pedal_configA);
+  _destroy_pedal(&pedals.pedal_configB);
+  _destroy_pedal(&pedals.pedal_configC);  
+}
+void _destroy_pedal(struct pedal_config * pc){
+  if(  pc->n_connections > 0) {
+    for(unsigned i = 0; i < pc->n_connections; i++){
+      free_connection(&pc->connections[i]);
+    }
+    free(pc->connections);
+    pc->connections= NULL;
+    pc->n_connections = 0;
+  }
+}
+
+
+void free_connection(struct jack_connection  * jc){
+  if(jc->ports[0]){
+    free(jc->ports[0]);
+    jc->ports[0] = NULL;
+  }
+  if(jc->ports[1]){
+    free(jc->ports[1]);
+    jc->ports[1] = NULL;
+  }
+}
+
+// TODO: Comment this.  Why?  What?
+// `pc_in` is a pedal that is being selected
+// `pc_ret` is the pedal that was selected
+
+// I think the (bad) idesa was to remove in common connections from
+// the old pipe so that when it is dissabled it does not disable pipes
+// in the new connection that have already been made.  This will never
+// work properly as these are beiong removed by editing the pedal
+// configuration that is constant.
+
+// Because a selected pedal is enabled before the previous pedal is
+// disabled this is important if it turns out that they are the same
+// pedal.  Which is possible.  Two pedal configuratiuons can be
+// identical.  But we must find another way to do it.
+void clean_cfg(const struct pedal_config * pc_in,
+	       struct pedal_config * pc_ret){
+  
+  for (unsigned i = 0; i < pc_in->n_connections; i++){
+    // For each connection in the new pedal...
+    char * src_port = pc_in->connections[i].ports[0];
+    char * dst_port = pc_in->connections[i].ports[1];
+    for (unsigned j = 0; j < pc_ret->n_connections; j++){
+      // ...for each connection in the old pedal....
+      char * s = pc_ret->connections[j].ports[0];
+      char * d = pc_ret->connections[j].ports[1];
+
+      if(s && d){
+	if((!strcmp(s, src_port) && !strcmp(d, dst_port)) ||
+	   (!strcmp(d, src_port) && !strcmp(s, dst_port))){
+	  //...this connection, a Jack pipe, is in both
+	  free_connection(&pc_ret->connections[i]);
+	}
+      }else{
+	Log( "%s:%d ports s: %s d: %s %s/%s\n",
+	     __FILE__, __LINE__,
+	     s?" OK ":" NULL ",
+	     d?" OK ":" NULL ",
+	     src_port, dst_port);
+      }
+    }
+  }
+}
+
 
 int main(int argc, char * argv[]) {
 
@@ -792,95 +892,3 @@ void print_pedal(char pedal){
 }
 
 
-// Called on set up and when signaled to set up the pedals.  Define
-// what they do
-void initialise_pedals(){
-  pedals.pedal_configA.n_connections = 0;
-  pedals.pedal_configA.connections = NULL;
-  pedals.pedal_configB.n_connections = 0;
-  pedals.pedal_configB.connections = NULL;
-  pedals.pedal_configC.n_connections = 0;
-  pedals.pedal_configC.connections = NULL;
-  load_pedal('A');
-  load_pedal('B');
-  load_pedal('C');
-}
-
-
-void _destroy_pedal(struct pedal_config * pc){
-  clear_jack();
-  if(  pc->n_connections > 0) {
-    for(unsigned i = 0; i < pc->n_connections; i++){
-      free_connection(&pc->connections[i]);
-      /* if(pc->connections[i].ports[0]){ */
-      /* 	free(pc->connections[i].ports[0]); */
-      /* } */
-      /* if(pc->connections[i].ports[1]){ */
-      /* 	free(pc->connections[i].ports[1]); */
-      /* } */
-    }
-    free(pc->connections);
-    pc->connections= NULL;
-    pc->n_connections = 0;
-  }
-}
-
-void destroy_pedals() {
-  _destroy_pedal(&pedals.pedal_configA);
-  _destroy_pedal(&pedals.pedal_configB);
-  _destroy_pedal(&pedals.pedal_configC);  
-}
-
-void free_connection(struct jack_connection  * jc){
-  if(jc->ports[0]){
-    free(jc->ports[0]);
-    jc->ports[0] = NULL;
-  }
-  if(jc->ports[1]){
-    free(jc->ports[1]);
-    jc->ports[1] = NULL;
-  }
-}
-
-// TODO: Comment this.  Why?  What?
-// `pc_in` is a pedal that is being selected
-// `pc_ret` is the pedal that was selected
-
-// I think the (bad) idesa was to remove in common connections from
-// the old pipe so that when it is dissabled it does not disable pipes
-// in the new connection that have already been made.  This will never
-// work properly as these are beiong removed by editing the pedal
-// configuration that is constant.
-
-// Because a selected pedal is enabled before the previous pedal is
-// disabled this is important if it turns out that they are the same
-// pedal.  Which is possible.  Two pedal configuratiuons can be
-// identical.  But we must find another way to do it.
-void clean_cfg(const struct pedal_config * pc_in,
-	       struct pedal_config * pc_ret){
-  
-  for (unsigned i = 0; i < pc_in->n_connections; i++){
-    // For each connection in the new pedal...
-    char * src_port = pc_in->connections[i].ports[0];
-    char * dst_port = pc_in->connections[i].ports[1];
-    for (unsigned j = 0; j < pc_ret->n_connections; j++){
-      // ...for each connection in the old pedal....
-      char * s = pc_ret->connections[j].ports[0];
-      char * d = pc_ret->connections[j].ports[1];
-
-      if(s && d){
-	if((!strcmp(s, src_port) && !strcmp(d, dst_port)) ||
-	   (!strcmp(d, src_port) && !strcmp(s, dst_port))){
-	  //...this connection, a Jack pipe, is in both
-	  free_connection(&pc_ret->connections[i]);
-	}
-      }else{
-	Log( "%s:%d ports s: %s d: %s %s/%s\n",
-	     __FILE__, __LINE__,
-	     s?" OK ":" NULL ",
-	     d?" OK ":" NULL ",
-	     src_port, dst_port);
-      }
-    }
-  }
-}

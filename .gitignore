@@ -28,3 +28,4 @@ novation_lpx/lpx_manager/zzz
 novation_lpx/midi_connection/Cargo.lock
 *~
 *.log
+lpx_scale

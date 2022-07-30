@@ -5,17 +5,13 @@ use strict;
 ## for mod-host, jack, and midi to implement the modep pedal boards
 
 # The output file
-my $modep_command_fn = 'modep_commands.txt';
+my $modep_command_fn = $ENV{"Home120Proof"}.'/modep_commands.txt';
 
 my $VERBOSE = shift;
 defined $VERBOSE or $VERBOSE  = 0;
 
 ## Where modep puts its pedal definitions
 my $MODEP_PEDALS = "/var/modep/pedalboards";
-
-## Where `control` is to be found
-my $PATH_MI_ROOT = $ENV{PATH_MI_ROOT};
-defined $PATH_MI_ROOT or $PATH_MI_ROOT = "/home/patch/ModHostPedal";
 
 ## Reads the modep configuration files for pedals and sets them all up
 ## in mod-host.  For each pedal it writes a file in the current
@@ -429,7 +425,7 @@ foreach my $name ( sort keys %pedal_settings){
 #     print "\n";
 # }
 
-my $pedal_dir = "$PATH_MI_ROOT/PEDALS";
+my $pedal_dir = "$ENV{Home120Proof}/PEDALS";
 
 -d $pedal_dir or mkdir $pedal_dir or die "$!: Cannot mkdir $pedal_dir";
 

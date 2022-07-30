@@ -23,7 +23,7 @@ my $pedal_dir = "pedal/PEDALS/";
 -d $pedal_dir or die "$!: $pedal_dir";
 -x $pedal_dir or die "$!: $pedal_dir";
 
-my $mod_host_port_p = 5555;
+my $mod_host_port_p = 9116;
 
 ## Variables to drive main loop
 my $NAME; # Current pedal board

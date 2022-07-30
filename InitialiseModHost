@@ -1,25 +1,47 @@
-#!/bin/bash
+#!/usr/bin/perl -w
+use strict;
+use POSIX "setsid";
 
-set -e
+sub run_daemon( $ ) {
+    my $cmd = shift or die "Must pass command";
+    # -e $cmd or die "Must pass executable command";
+
+    warn "\$cmd: $cmd";
+    open(STDIN,  "< /dev/null") or die "can't read /dev/null: $!";
+    open(STDOUT, "> /dev/null") or die "can't write to /dev/null: $!";
+    defined(my $pid = fork())   or die "can't fork: $!";
+    return($pid) if $pid;               # non-zero now means I am the parent
+
+    (setsid() != -1)            or die "Can't start a new session: $!";
+    open(STDOUT, ">/tmp/stdout") or die $!;
+    open(STDERR, ">&STDOUT")    or die "can't dup stdout: $!";
+    `$cmd`;
+}
+
 ## Copy the definitiuons of mod-host simulator's made by modep front
 ## end
-./ExtractModep
+warn "Run ExtractModep";
+print `$ENV{"Home120Proof"}/ExtractModep`;
+warn "Ran ExtractModep";
 
-## Get rid of modep
-sudo service modep-mod-host stop
-sudo pkill mod-host
-if [ pgrep mod-host ] ; then
-    echo "Cannot kill mod-host"
-    exit 1
-fi
 
 ## Start our own version of modhost
-export LV2_PATH=/usr/modep/lv2
 ## Start mod-host
-/home/patch/mod-host/mod-host
+my $pid = fork();
+if(!$pid){
+    warn "Start mod-host";
+    $ENV{LV2_PATH} = '/usr/modep/lv2';
+    &run_daemon("/home/patch/mod-host/mod-host -p 9116");
+    warn "Started mod-host";
+    exit 0;
+}
+
+waitpid($pid, 0);
 
 ## Wait for it to get started
-sleep 1
+sleep 1;
 
 ## Create the simulators
-./ModhostSimulators
+warn "Create simulators";
+print `$ENV{"Home120Proof"}/ModhostSimulators`;
+warn "Created simulators";
