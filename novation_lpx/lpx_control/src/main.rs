@@ -282,6 +282,7 @@ impl LpxControl {
 struct MidiCommTools {
     dispatcher: Dispatcher,
     lpx_control: LpxControl,
+    locking_state: LockingState,
 }
 impl MidiCommTools {
     fn new() -> Self {
@@ -291,8 +292,18 @@ impl MidiCommTools {
         Self {
             lpx_control: lpx_control,
             dispatcher: dispatcher,
+            locking_state: LockingState::Unlocked,
         }
     }
+}
+
+/// Allow the pad to be locked
+#[derive(Debug, Clone, Copy, PartialEq)]
+enum LockingState {
+    Locked,
+    Unlocked,
+    Locking,
+    Unlocking,
 }
 
 /// Maintiain information about the state of the LPX Two important
@@ -307,12 +318,14 @@ impl MidiCommTools {
 struct LPXState {
     last_pad: Option<u8>,
     active: bool,
+    locking_state: LockingState,
 }
 impl LPXState {
     fn new() -> LPXState {
         LPXState {
             last_pad: None,
             active: false,
+            locking_state: LockingState::Unlocked,
         }
     }
 }
@@ -329,18 +342,60 @@ fn process_message(
         // A ctl message
         // eprintln!("process_message message({:?})", message);
 
-        let key = message[1];
+        let pad = message[1];
         let vel = message[2];
-        if key >= 19 {
+        if pad >= 19 && vel > 0 {
             // There is some noise coming from the LPX with ctl-key 7
             // The rest are control signals that we want
-            if vel > 0 {
-                // 0 VEL is pad release.
-                // `dispatcher` will decide if any programmes get run
-                lpx_state.lock().unwrap().last_pad = Some(key);
-                dispatcher.run_ctl(key, lpx_midi);
-                lpx_state.lock().unwrap().last_pad = Some(key);
+            // The locked state of the LPX must be considered here.  Lock
+            // the mode using pads: 91, 92, 93, 94 in succession and
+            // unlock with 94, 93, 92, 91.  If locked reject any control
+            // key but 94 (which starts unlocking).  If locking/unlocking
+            // the pad must be the next in the sequence r state is swiched
+            // to unlocked/locked.
+
+            let lps = &mut lpx_state.lock().unwrap();
+            eprintln!("state({:?}) message({:?})", lps, message);
+            match lps.locking_state {
+                LockingState::Locked => {
+                    if pad == 94 {
+                        lps.locking_state = LockingState::Unlocking;
+                    }
+                }
+
+                LockingState::Unlocked => {
+                    if pad == 91 {
+                        lps.locking_state = LockingState::Locking;
+                    }
+                }
+                LockingState::Locking => {
+                    if lps.last_pad != Some(pad - 1) {
+                        lps.locking_state = LockingState::Unlocked;
+                    } else if pad == 94 {
+                        lps.locking_state = LockingState::Locked;
+                    }
+                }
+                LockingState::Unlocking => {
+                    if lps.last_pad != Some(pad + 1) {
+                        lps.locking_state = LockingState::Locked;
+                    } else if pad == 91 {
+                        lps.locking_state = LockingState::Unlocked;
+                    }
+                }
+            };
+            eprintln!("lps.locking_state({:?}) after block", lps.locking_state);
+
+            // `dispatcher` will decide if any programmes get run
+            lps.last_pad = Some(pad);
+            if lps.locking_state != LockingState::Locked {
+                eprintln!("lps.locking_state({:?})", lps.locking_state);
+                if pad < 91 {
+                    // Do not run for locking pads
+                    dispatcher.run_ctl(pad, lpx_midi);
+                }
             }
+
+            lps.last_pad = Some(pad);
         }
     }
 }
