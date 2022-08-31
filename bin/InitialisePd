@@ -8,12 +8,12 @@ sub set_up_pure_data( $ ){
     my $patch = shift;
     defined $patch or die "Must pass a patch";
     
-    ## If pure data is running warn and quit
+    ## If pure data is running warn and kill it
     if(`pgrep pd -x`){
 	warn "pd (Pure Data) is running already.  Killing it";
 	`pkill -x pd`;
 	$? and die "pkill failed: $?";
-	sleep 1; ## Give it a chance to di!
+	sleep 1; ## Give it a chance to die!
 	`pgrep -x pd` and die "Failed to stop pd";
     }
     my $sample_rate = "48000";

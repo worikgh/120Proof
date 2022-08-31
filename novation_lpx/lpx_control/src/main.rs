@@ -84,7 +84,7 @@ impl Dispatcher {
     /// `run_cmd` is called when the pad/key has been processed.
     /// `cmd` is a path to an executable
     fn run_cmd(cmd: &str) {
-        eprintln!("run_cmd({}) Starts", &cmd);
+        // eprintln!("run_cmd({}) Starts", &cmd);
         let mut one_20_proof_home: String = ".".to_string();
         for (key, value) in env::vars() {
             if key == "Home120Proof" {
@@ -102,7 +102,7 @@ impl Dispatcher {
             Ok(out) => {
                 if out.status.success() {
                     // let s = String::from_utf8_lossy(&out.stdout);
-                    // eprintln!("Success: {} and stdout was:\n{}", cmd, s)
+                    eprintln!("Success: {} ", cmd)
                 } else {
                     let s = String::from_utf8_lossy(&out.stderr);
                     eprintln!("Not success: {} and stderr was:{}", cmd, s)
@@ -110,7 +110,7 @@ impl Dispatcher {
             }
             Err(err) => eprintln!("Failure: cmd {}  Err: {:?}", command, err),
         }
-        eprintln!("run_cmd({}) Ends", &cmd);
+        // eprintln!("run_cmd({}) Ends", &cmd);
     }
 
     /// A control pad has been pressed
@@ -203,6 +203,8 @@ impl LpxControl {
         LpxControl {
             sleeping: Arc::new(Mutex::new(0)),
             lpx_state: Arc::new(Mutex::new(LPXState::new())),
+
+            // For controlling the colours of the control pads
             lpx_midi: Arc::new(Mutex::new(
                 MIDICommunicator::new(
                     "Launchpad X:Launchpad X MIDI 1",
@@ -228,7 +230,8 @@ impl LpxControl {
         // eprint!("sleep({}) start", s);
         let mut g = self.sleeping.lock().unwrap();
         let c = self.counter.lock().unwrap();
-        *g = *c + s;
+        *g = *c + s * 10;
+
         let lpx_state = self.lpx_state.clone();
         let lpx_midi = self.lpx_midi.clone();
 
@@ -258,20 +261,25 @@ impl LpxControl {
         }
 
         thread::spawn(move || loop {
-            thread::sleep(Duration::new(1, 0));
+            // Sleep for 100 milli seconds
+            thread::sleep(Duration::new(0, 100_000_000));
             {
                 // eprintln!("Main sleep monitor loop top");
                 let mut c = counter.lock().unwrap();
                 *c += 1;
                 let mut sleeping_mut = sleeping.lock().unwrap();
-                let mut lpx_midi_mut = lpx_midi.lock().unwrap();
-                let mut lpx_state_mut = lpx_state.lock().unwrap();
+
+                // Check if we need to wake up
                 if *c >= *sleeping_mut {
                     *sleeping_mut = 0;
                     *c = 0;
-
+                    let mut lpx_midi_mut = lpx_midi.lock().unwrap();
+                    let mut lpx_state_mut = lpx_state.lock().unwrap();
                     enable_lpx(true, &mut lpx_midi_mut, &mut lpx_state_mut);
                 }
+
+                // Check the locking buttons
+                // match
                 // eprintln!("Main sleep monitor loop bottom");
             }
         });
@@ -360,35 +368,44 @@ fn process_message(
                 LockingState::Locked => {
                     if pad == 94 {
                         lps.locking_state = LockingState::Unlocking;
+                        return;
                     }
                 }
 
                 LockingState::Unlocked => {
                     if pad == 91 {
                         lps.locking_state = LockingState::Locking;
+                        return;
                     }
                 }
                 LockingState::Locking => {
+                    eprintln!("last_pad({:?}) pad({})", lps.last_pad, pad);
                     if lps.last_pad != Some(pad - 1) {
                         lps.locking_state = LockingState::Unlocked;
+                        return;
                     } else if pad == 94 {
                         lps.locking_state = LockingState::Locked;
+                        eprintln!("Locking");
+                        return;
                     }
                 }
                 LockingState::Unlocking => {
                     if lps.last_pad != Some(pad + 1) {
+                        // A pad other than 91, 92, 93, or 94 in sequence
                         lps.locking_state = LockingState::Locked;
+                        return;
                     } else if pad == 91 {
                         lps.locking_state = LockingState::Unlocked;
+                        return;
                     }
                 }
             };
-            eprintln!("lps.locking_state({:?}) after block", lps.locking_state);
+            // eprintln!("lps.locking_state({:?}) after block", lps.locking_state);
 
             // `dispatcher` will decide if any programmes get run
             lps.last_pad = Some(pad);
             if lps.locking_state != LockingState::Locked {
-                eprintln!("lps.locking_state({:?})", lps.locking_state);
+                // eprintln!("lps.locking_state({:?})", lps.locking_state);
                 if pad < 91 {
                     // Do not run for locking pads
                     dispatcher.run_ctl(pad, lpx_midi);
@@ -442,8 +459,6 @@ fn enable_lpx(enable: bool, lpx_midi: &mut MIDICommunicator<()>, lpx_state: &mut
 /// Listen to the LPX MIDI and if it is a CTL signal process it, and
 /// perhaps run some external programmes
 fn run() -> Result<(), Box<dyn Error>> {
-    // eprintln!("Started lpx_control");
-
     // `midi_comm_tools` handles all communications with the LPX.  It
     // holds a `Dispatcher` and a `LpxControl`.  The `Dispatcher`
     // translates control messages from the LPX into actions on the
@@ -484,7 +499,10 @@ fn run() -> Result<(), Box<dyn Error>> {
                     }
                 } else if message[0] == 144 {
                     // A MIDI note
-                    midi_comm_tools.lpx_control.sleep(SLEEPDURATION);
+                    if midi_comm_tools.locking_state != LockingState::Locked {
+                        // No point in going to sleep if locked
+                        midi_comm_tools.lpx_control.sleep(SLEEPDURATION);
+                    }
                 }
             }
         },

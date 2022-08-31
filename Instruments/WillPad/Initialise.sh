@@ -32,17 +32,22 @@ print $log "echo ----------------------------------------\nStart: $TIME\nStart W
 ## Programmes to use
 my $PD='/usr/local/bin/pd';
 -x $PD or die "$!: $PD";
-my $LPX_SCALE="$HOME/lpx_scale";
+my $LPX_SCALE="$HOME/bin/lpx_scale";
 -x $LPX_SCALE or die "$!: $LPX_SCALE";
 
 ## Programme to kill
-my $LPX_MANAGER="$HOME/lpx_manager";
+my $YOSHIMI="/usr/local/bin/yoshimi";
+-x  $YOSHIMI or die "$!: $YOSHIMI";
+`pgrep -f $YOSHIMI && pkill  -f $YOSHIMI `;
+my $LPX_MANAGER="$HOME/bin/lpx_manager";
 -x $LPX_MANAGER or die "$!: $LPX_MANAGER";
 `pgrep -f $LPX_MANAGER && pkill  -f $LPX_MANAGER `;
 
 ## Kill these if they exist
 `pgrep -f $PD && pkill -f $PD`;
+print $log "Find scale...  " . `pgrep -f $LPX_SCALE` . "\n";
 `pgrep -f $LPX_SCALE && pkill -f $LPX_SCALE`;
+print $log "Find scale???  " . `pgrep -f $LPX_SCALE` . "\n";
 
 while(`pgrep -f $LPX_SCALE`){
     print " Wait for $LPX_SCALE to quit\n";
@@ -66,7 +71,12 @@ while(! `jack_lsp |grep pure_data`){
 print $log "Running lpx_scale\n";
 &run("$LPX_SCALE $HOME/Instruments/WillPad/lpx_scale.cfg 60 1 3 5 6 8 10 12 ");
 
-print $log "Will: Set up MIDI connections\n";
-`/home/patch/120Proof/InitialiseMidi /home/patch/120Proof/Instruments/WillPad/midi.cfg 2>&1 >> $LOGFILE`;
+print $log " WillPad: Keyboard sent to Electric Piano \n";
+print $log `/home/patch/120Proof/bin/InitialiseYos WillPadKeys '/home/patch/120Proof/Instruments/xiz/ElectricPiano.xiz' `;
 
+print $log "Will: Set up MIDI connections\n";
+print $log `/home/patch/120Proof/bin/InitialiseMidi /home/patch/120Proof/Instruments/WillPad/midi.cfg`
+
+    
 print $log " Will set up\n";
+print "Hello, Syslog\n";

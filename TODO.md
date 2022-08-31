@@ -1,3 +1,13 @@
+# Build Tools
+
+Deprecate window systems  with command line replacements
+
+* `jack_lsp` and `aconnect` to replace `qjackcontrol`
+
+* `aseqdump` to relace `pd` and its MIDI window to see what values comming from a device
+
+
+
 # Build Instruments
 
 
@@ -8,6 +18,8 @@
 	* Set up and tear down JACK connections between MIDI sinks, LV2 plugins, audio input (2-channels), ???, and the output two channels.  Not necessarily stereo.  Just two. **DONE** mostly.  Need to use it for a while to plan developments.
 
 
+
+**TODO**  h2player can play hydrogen drum tracks headless.  Needs hacking but link it in
 
 * Make copies of the binaries for the LV2 plugins locally
 

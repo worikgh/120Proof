@@ -27,10 +27,10 @@ done
 echo GhostWalking: Set up >> $LOGFILE
 
 echo GhostWalking: LPX sent to an organ >> $LOGFILE
-/home/patch/120Proof/InitialiseYos  GhostWalkingKeys '/home/patch/120Proof/Instruments/xiz/Hammond Organ.xiz' 2>&1 >> $LOGFILE &
+/home/patch/120Proof/bin/InitialiseYos  GhostWalkingKeys '/home/patch/120Proof/Instruments/xiz/Hammond Organ.xiz' 2>&1 >> $LOGFILE &
 
 echo GhostWalking: Keyboard sent to Rhodes Piano >> $LOGFILE
-/home/patch/120Proof/InitialiseYos GhostWalkingLPX '/home/patch/120Proof/Instruments/xiz/Wide Bass.xiz'  2>&1 >> $LOGFILE  &
+/home/patch/120Proof/bin/InitialiseYos GhostWalkingLPX '/home/patch/120Proof/Instruments/xiz/Wide Bass.xiz'  2>&1 >> $LOGFILE  &
 
 while [ ! `jack_lsp |grep GhostWalkingLPX` ] ;
 do
@@ -51,7 +51,7 @@ done
 # /home/patch/120Proof/lpx_mode 127
 
 echo Running lpx_manager >> $LOGFILE
-/home/patch/120Proof/lpx_manager /home/patch/120Proof/Instruments/GhostWalking/lpx_manager.cfg 69 1 4 6 9 11 < /dev/null  2>&1 >> $LOGFILE  &
+/home/patch/120Proof/bin/lpx_manager /home/patch/120Proof/Instruments/GhostWalking/lpx_manager.cfg 69 1 4 6 9 11 < /dev/null  2>&1 >> $LOGFILE  &
 
 # echo GhostWalking: Sleep....
 # sleep 5

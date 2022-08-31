@@ -12,11 +12,11 @@ print $log "echo ----------------------------------------\n";
 ## Programmes to use
 my $PD='/usr/local/bin/pd';
 -x $PD or die "$!: $PD";
-my $LPX_SCALE="$HOME/lpx_scale";
+my $LPX_SCALE="$HOME/bin/lpx_scale";
 -x $LPX_SCALE or die "$!: $LPX_SCALE";
 ## Kill these if they exist
 `pgrep -f $PD && pkill -f $PD`;
 `pgrep -f $LPX_SCALE && pkill -f $LPX_SCALE`;
-
+print $log "Find scale...  " . `pgrep -f $LPX_SCALE` . "\n";
 
 

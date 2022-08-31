@@ -21,7 +21,7 @@ sub run_daemon( $ ) {
 ## Copy the definitiuons of mod-host simulator's made by modep front
 ## end
 warn "Run ExtractModep";
-print `$ENV{"Home120Proof"}/ExtractModep`;
+print `$ENV{"Home120Proof"}/bin/ExtractModep`;
 warn "Ran ExtractModep";
 
 

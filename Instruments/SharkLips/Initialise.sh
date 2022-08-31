@@ -38,10 +38,10 @@ done
 echo Sharklips: Set up >> $LOGFILE
 
 echo Sharklips: LPX sent to an organ >> $LOGFILE
-/home/patch/120Proof/InitialiseYos SharkLipsLPX '/home/patch/120Proof/Instruments/xiz/Hammond Organ.xiz' 2>&1 >> $LOGFILE &
+/home/patch/120Proof/bin/InitialiseYos SharkLipsLPX '/home/patch/120Proof/Instruments/xiz/Hammond Organ.xiz' 2>&1 >> $LOGFILE &
 
 echo Sharklips: Keyboard sent to Rhodes Piano >> $LOGFILE
-/home/patch/120Proof/InitialiseYos SharkLipsKeys '/usr/share/yoshimi/banks/Rhodes/0004-DX Rhodes 4.xiz'  2>&1 >> $LOGFILE  &
+/home/patch/120Proof/bin/InitialiseYos SharkLipsKeys '/usr/share/yoshimi/banks/Rhodes/0004-DX Rhodes 4.xiz'  2>&1 >> $LOGFILE  &
 
 while [ ! `jack_lsp |grep SharkLipsLPX` ] ;
 do

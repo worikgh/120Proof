@@ -40,11 +40,11 @@ yoshimi --no-gui  --no-cmdline  --jack-audio --alsa-midi=120Proof
   * `--no-gui` `--no-cmdline` for headless 
   
   * `--alsa-midi=1` `--jack-audio` for putting audio through jack and MIDI through alsa. (The RHS of `--alsa-midi=X` seems to be irrelevant.)
-  
-  
-
 
 # Tools
+
+Executable files in the `bin` directory
+
 
 ## InitialisePd
 
@@ -56,7 +56,7 @@ Kills any instances of Pure Data already  running.
 
 Pass the name of a patch (including the `.pd` suffix) as an argument.  No argument just kills Pure Data. 
 
-Example: `./InitialisePd poly_harp~.pd`
+Example: `bin/InitialisePd poly_harp~.pd`
 
 ## InitialiseMidi
 
@@ -70,7 +70,7 @@ Use `aconnect` to ensure that these connections are made and all other cnnection
 
 ### Invocation
 
-`./InitialiseMidi <Config file>`
+`bin/InitialiseMidi <Config file>`
 
 ## lpx_mode
 
@@ -86,19 +86,19 @@ Programmes (executable files) are placed in the sub directrory `subs/`.  Each co
 
 Sets the colour of a pad on the `LPX`.
 
-`./lpx_colour <Pad> <red> <green> <blue>` where `Pad` in `11..98` and `red`, `green`, and `blue` are in `1..127`. 
+`bin/lpx_colour <Pad> <red> <green> <blue>` where `Pad` in `11..98` and `red`, `green`, and `blue` are in `1..127`. 
 
 ## lpx_manager
 
     Sets up LPX buttons for melodic use. Colouring them with three colours: One for root notes, one for notes on scale, and one for all other notes.
 	
-	Assign the pads to MIDI notes so that they are aligned in five columns.  This leads to duplication where pads in three leftmost and rightmost columns play the same notes.
+	Assign the pads to MIDI notes so that they are aligned in five columns.  This leads to duplication where pads in three leftmost and rightmost columns, in adjacent rows, play the same notes.
 	
 	When a pad is pressed change its colour (to a fourth colour).  Also change the colour of the other pad that can play this note.
 
 ### Invocation
 
-`./lpx_manager <Root note MIDI> <[1-12]>`
+`bin/lpx_manager <Path to MIDI configuration> <Root note MIDI> <[1-12]>`
 
 Where `<Root note MIDI>` is the MIDI value for the note the center pad (r4, c5) is assigned to.
 
@@ -106,7 +106,7 @@ Where `<Root note MIDI>` is the MIDI value for the note the center pad (r4, c5) 
 
 * Example
 
-	`./lpx_manager 60 1 4 6 8 11` 
+	`bin/lpx_manager 60 1 4 6 8 11` 
 
 
 # Workflow
@@ -122,7 +122,7 @@ The Jack conections that connect audio input and output into particular pedal bo
 
 Set them up for the audio interface (simulating an effects unit) or for MIDI instruments.
 
-2. Run `./InitialiseModHost` that sets up `mod-host` simulators, Jack
+2. Run `bin/InitialiseModHost` that sets up `mod-host` simulators, Jack
    pipes and the files (in pedal/PEDALS) to be read by the pedal
    driver.  It reads `modep_commands.txt`.
 
@@ -165,7 +165,7 @@ The stereo input/outputs are to be separated into two separate channels, not don
 
 The MIDI interfaces must be defined.  Currently there are two input
 instruments in use, and two possible sinks for MIDI to use to create
-initial audio.  The connections are definied in a file that is read by `./InitialiseMidi` after the audio generators set up.
+initial audio.  The connections are definied in a file that is read by `InitialiseMidi` after the audio generators set up.
 
 The two MIDI controllers are:
 
@@ -177,17 +177,17 @@ The two MIDI controllers are:
 
 The two MIDI sinks (that produce audio output into Jack) are:
 
-1. Pure Data.  Started with `./InitialisePd <instrunent>.pd` where "instrument" defined and is in the file: `pd_patches/instruments/<instrument>.pd`.  For example: `./InitialisePd poly_harp_cello.pd`.   There are two MIDI inputs to Pure Data, and the instrument  can use one or both.  For example `pd_patches/instruments/poly_harp_cello.pd` has two simulated instruments:
+1. Pure Data.  Started with `bin/InitialisePd <instrunent>.pd` where "instrument" defined and is in the file: `pd_patches/instruments/<instrument>.pd`.  For example: `bin/InitialisePd poly_harp_cello.pd`.   There are two MIDI inputs to Pure Data, and the instrument  can use one or both.  For example `pd_patches/instruments/poly_harp_cello.pd` has two simulated instruments:
   1. A harp on input 1
   
   2. A cello on input 2 (17 in Pure Data)
   
 The inputs appear in the MIDI configuration file as: `Pure Data:Pure Data Midi-In 1` and `Pure Data:Pure Data Midi-In 1`
 
-2. Yoshimi.  Started with `./InitialiseYos <name> <path to
+2. Yoshimi.  Started with `bin/InitialiseYos <name> <path to
    instrument>`.  Where "name" is an identifier that will be used to
    connect from MIDI and "path to instrument" is the path to an
-   instrument definition file.  For examle: `./InitialiseYos Midi01
+   instrument definition file.  For examle: `bin/InitialiseYos Midi01
    "/usr/share/yoshimi/banks/Choir_and_Voice/0037-Voiced Synth.xiz"`.
    In this case the MIDI input connection appears in the configuration
    file as: `yoshimi-Midi01:input`.  The Jack output will be (in this
@@ -195,9 +195,9 @@ The inputs appear in the MIDI configuration file as: `Pure Data:Pure Data Midi-I
    
 ### LPX Setup
 
-* Set mode with: `./lpx_mode 127`
+* Set mode with: `bin/lpx_mode 127`
 
-* `./lpx_manager` needs to know three things:
+* `bin/lpx_manager` needs to know three things:
 
 1. What MIDI devices to send controls to, to receive controls from, and send notes to
 
@@ -217,7 +217,7 @@ MIDI devices are specified in a file the path to which is the first argument,  T
 
 `/usr/local/bin/pd  -jack -path /home/patch/120Proof/pd_patches/ -send "; pd dsp 1" -stdpath  -nogui  pd_patches/instruments/HarpPoly.pd &`
 `sleep 2`
-`./InitialiseMidi`
+`bin/bin/InitialiseMidi`
 
 # Source
 
