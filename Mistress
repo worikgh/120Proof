@@ -10,19 +10,18 @@ $ENV{"JACK_PROMISCUOUS_SERVER"} = 'jack';
 ## Required to run 120Proof
 $0 =~ /^(.+)\/[^\/]+$/ or die $0;
 $ENV{"Home120Proof"} = $1;
-print "120Proof's Mistress running rooted at: $ENV{'Home120Proof'}\n";
+warn "120Proof's Mistress running rooted at: $ENV{'Home120Proof'}";
 
 # Kill any old versions of what Mistress will start
 `pgrep lpx_controll` and `pkill lpx_controll`;
-
+warn "Killed";
 # Set the mode of the LPX 
 print `$ENV{"Home120Proof"}/lpx_mode 1`;
 print `$ENV{"Home120Proof"}/lpx_mode 127`;
 warn "Set LPX mode";
 # Remove any nasty Jack MIDI connecvtions
-print `$ENV{"Home120Proof"}/delete_jack_midi_connections list`;
+print `$ENV{"Home120Proof"}/delete_jack_midi_connections delete`;
 warn "Cleared Jack Midi";
-
 
 ## Run ModHost.  This will set up Jack MIDI
 print "Initialise Mod-host\n";
