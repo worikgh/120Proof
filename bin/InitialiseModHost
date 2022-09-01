@@ -42,6 +42,9 @@ waitpid($pid, 0);
 sleep 1;
 
 ## Create the simulators
+warn "Wait for jack";
+`jack_wait -w`;
 warn "Create simulators";
+
 print `$ENV{"Home120Proof"}/ModhostSimulators`;
 warn "Created simulators";

@@ -10,36 +10,39 @@ $ENV{"JACK_PROMISCUOUS_SERVER"} = 'jack';
 ## Required to run 120Proof
 $0 =~ /^(.+)\/bin\/[^\/]+$/ or die $0;
 $ENV{"Home120Proof"} = $1;
-warn "120Proof's Mistress running rooted at: $ENV{'Home120Proof'}";
+print "120Proof's Mistress running rooted at: $ENV{'Home120Proof'}\n";
 
 # Kill any old versions of what Mistress will start
 `pgrep lpx_controll` and `pkill lpx_controll`;
-warn "Killed";
+
 # Set the mode of the LPX 
 print `$ENV{"Home120Proof"}/bin/lpx_mode 1`;
 print `$ENV{"Home120Proof"}/bin/lpx_mode 127`;
-warn "Set LPX mode";
+print "Set LPX mode\n";
 # Remove any nasty Jack MIDI connecvtions
 print `$ENV{"Home120Proof"}/bin/delete_jack_midi_connections delete`;
-warn "Cleared Jack Midi";
+warn "Cleared Jack Midi\n";
 
 ## Run ModHost.  This will set up Jack MIDI
-print "Initialise Mod-host\n";
 print `$ENV{"Home120Proof"}/bin/InitialiseModHost`;
-print "Finished Initialisng mod-host\n";
+print "Initialised mod-host\n";
 
 ## Set up the controls for the LPX
 my $lpx_control_pid = fork();
 if(!$lpx_control_pid){
+    print "Start lpx_control\n";
     print `$ENV{"Home120Proof"}/bin/lpx_controll`;
+    print "lpx_control finished\n";
     exit(0);
 }
-warn "lpx_control running on pid: $lpx_control_pid";
+print "lpx_control running on pid: $lpx_control_pid\n";
 
 
 ## Run the pedal
 my $pedal_pid = fork();
 if(!$pedal_pid){
+    print "In child ($$) creating pedal\n";
+    print "$ENV{Home120Proof}/bin/driver $ENV{Home120Proof}/PEDALS/pedal\n";
     print `$ENV{Home120Proof}/bin/driver $ENV{Home120Proof}/PEDALS/pedal`;
     exit(0);
 }

@@ -51,10 +51,6 @@ impl Adapter {
                     None => 113,
                 },
             };
-            // eprintln!(
-            //     "pad_colour({}) MIDI({}) note: {}  colour: {} scale({:?}",
-            //     pad_in, pad_out, note, colour, self.scale
-            // );
             Some(colour)
         } else {
             // Not a MIDI key
@@ -89,10 +85,7 @@ impl Adapter {
             if i % 10 != 0 && i % 10 != 9 {
                 // `i` is the number for a pad.  No pads 10, 20,... and pads 19, 29,... are control pads
                 let midi_note = d + p + adj_note;
-                // eprintln!(
-                //     "pad({}) -> note({}): d({}) + p({}) + adj_note({}).  root_note({})",
-                //     i, midi_note, d, p, adj_note, root_note,
-                // );
+
                 // Incoming MIDI `i` becomes `pad`.  E.g. MIDI == 32
                 // print!("pad({}) i({}) ", pad, i);
                 midi_map[i as usize] = midi_note;
@@ -116,15 +109,12 @@ impl Adapter {
                 };
 
                 let pads: (Option<u8>, Option<u8>) = (Some(i), f(i));
-                // eprintln!(
-                //     "i({}) midi_note_to_pads[{}] row({}) col({}) = {:?}",
-                //     i, midi_note, row, col, pads
-                // );
+
                 midi_note_to_pads[midi_note as usize] = pads;
             }
             i += 1;
         }
-        //eprintln!("End of Adapter::new");
+
         Self {
             midi_out_synth: midi_out_synth,
             midi_out_lpx: midi_out_lpx,
@@ -202,23 +192,18 @@ fn main() -> Result<(), Box<dyn Error>> {
     let mut iter = args.iter();
     let cfg_fn = iter.nth(1).unwrap().as_str();
     let root_note_iv = iter.nth(0).unwrap().as_str();
-    // eprintln!("Root note as text: {}", root_note_iv);
+
     root_note = root_note_iv.parse::<u8>()?;
 
     let mut intermediate_value: Vec<u8> = Vec::new();
     for s in iter {
         // s is &String
-        // eprintln!("s({})", s);
         match s.as_str().parse() {
             Ok(value) => intermediate_value.push(value),
             Err(err) => panic!("s({}) err({:?})", s, err),
         };
     }
     scale = intermediate_value;
-    // eprintln!(
-    //     "lpx_manager: config file: {} root note: {} scales: {:?}",
-    //     cfg_fn, root_note, scale
-    // );
 
     let device_names = DeviceNames::new(cfg_fn).unwrap();
     let midi_out_synth: MIDICommunicator<()> = MIDICommunicator::new(
@@ -248,12 +233,7 @@ fn main() -> Result<(), Box<dyn Error>> {
             let out_message_colour_change: [u8; 11] = [240, 0, 32, 41, 2, 12, 3, 0, i, colour, 247];
 
             match adapter.midi_out_lpx.send(&out_message_colour_change) {
-                Ok(()) => {
-                    // eprintln!(
-                    //     "Colour: {} Pad: {} Sent: {:?}",
-                    //     &colour, i, &out_message_colour_change
-                    // )
-                }
+                Ok(()) => {}
                 Err(err) => eprintln!("Initialising colours: Failed send: {:?}", err),
             };
         }
@@ -265,11 +245,9 @@ fn main() -> Result<(), Box<dyn Error>> {
         device_names.midi_source_lpx.as_str(),
         device_names.midi_source_lpx_120.as_str(),
         |_stamp, message, adapter| {
-            // eprintln!("midi_in stamp({:?}) message({:?})", &_stamp, &message);
-
             let pad_in = message[1];
             let velocity = message[2];
-            // eprintln!("pad_in({}) velocity({})", pad_in, velocity);
+
             // Send note to synthesiser
             match message[0] {
                 144 => {
@@ -279,7 +257,6 @@ fn main() -> Result<(), Box<dyn Error>> {
                         // note)
                         let midi_note_out: u8 = adapter.adapt(pad_in);
                         let out_message_midi_note = [144, midi_note_out, velocity];
-                        // eprintln!("out_message_midi_note({:?})", &out_message_midi_note);
                         match adapter.midi_out_synth.send(&out_message_midi_note) {
                             Ok(()) => (),
                             Err(err) => eprintln!("Sending note: Failed send: {:?}", err),
@@ -301,10 +278,6 @@ fn main() -> Result<(), Box<dyn Error>> {
                         if let Some(p) = pads.0 {
                             let out_message_colour_change: [u8; 11] =
                                 [240, 0, 32, 41, 2, 12, 3, 0, p, pad_colour, 247];
-                            // eprintln!(
-                            //     "out_message_colour_change({:?})",
-                            //     &out_message_colour_change
-                            // );
                             match adapter.midi_out_lpx.send(&out_message_colour_change) {
                                 Ok(()) => (),
                                 Err(err) => {
@@ -315,10 +288,6 @@ fn main() -> Result<(), Box<dyn Error>> {
                         if let Some(p) = pads.1 {
                             let out_message_colour_change: [u8; 11] =
                                 [240, 0, 32, 41, 2, 12, 3, 0, p, pad_colour, 247];
-                            // eprintln!(
-                            //     "out_message_colour_change({:?})",
-                            //     &out_message_colour_change
-                            // );
                             match adapter.midi_out_lpx.send(&out_message_colour_change) {
                                 Ok(()) => (),
                                 Err(err) => {
