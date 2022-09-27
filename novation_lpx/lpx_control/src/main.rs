@@ -4,6 +4,8 @@ use midi_connection::MIDICommunicator;
 use std::collections::HashMap;
 use std::env;
 use std::error::Error;
+use std::io;
+use std::io::prelude::*;
 use std::path::Path;
 use std::process;
 use std::sync::Arc;
@@ -99,11 +101,12 @@ impl Dispatcher {
 
         match process::Command::new(command.as_str()).output() {
             Ok(out) => {
-                if out.status.success() {
-                } else {
-                    let s = String::from_utf8_lossy(&out.stderr);
-                    eprintln!("Not success: {} and stderr was:{}", cmd, s)
-                }
+                // Pass stout and stderr straight through
+                let s = String::from_utf8_lossy(&out.stderr);
+                eprint!("{}", s);
+                let s = String::from_utf8_lossy(&out.stdout);
+                print!("{}", s);
+                _ = io::stdout().flush().unwrap();
             }
             Err(err) => eprintln!("Failure: cmd {}  Err: {:?}", command, err),
         }

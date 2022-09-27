@@ -4,7 +4,7 @@ use POSIX "setsid";
 
 sub run( $ ) {
     my $cmd = shift or die "Must pass command";
-    
+    print "run($cmd)\n";
     open(STDIN,  "< /dev/null") or die "can't read /dev/null: $!";
     open(STDOUT, "> /dev/null") or die "can't write to /dev/null: $!";
     defined(my $pid = fork())   or die "can't fork: $!";
@@ -75,7 +75,7 @@ print $log " WillPad: Keyboard sent to Electric Piano \n";
 print $log `/home/patch/120Proof/bin/InitialiseYos WillPadKeys '/home/patch/120Proof/Instruments/xiz/ElectricPiano.xiz' `;
 
 print $log "Will: Set up MIDI connections\n";
-print $log `/home/patch/120Proof/bin/InitialiseMidi /home/patch/120Proof/Instruments/WillPad/midi.cfg`
+print $log `/home/patch/120Proof/bin/InitialiseMidi /home/patch/120Proof/Instruments/WillPad/midi.cfg`;
 
     
 print $log " Will set up\n";

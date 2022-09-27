@@ -4,50 +4,110 @@ use strict;
 ## Mistress is the boss.  It is in charge.
 ## It calls the scripts, in the proper order, to set up 120Proof.
 
-## Required to run Jack
-$ENV{"JACK_PROMISCUOUS_SERVER"} = 'jack';
+## What it must do:
+## Set Home120Proof environment variable
+## Set JACK_PROMISCUOUS_SERVER environment variable
+## Set the mode of the LPX to 127
+## Initialise mod-host: IM (66)
+## IM: Kill any previous mod-host on our port
+## IM: Copy the definitions of simulators writen by modep-mod-ui: EM (26)
+## EM: ExtractModep.  A black box for now
+## IM: Start mod-host
+## IM: Start simulators MS (47)
+## MS: Use definion of simulators to set them up
+## MS: Make mod-host simuators
+## MS: Make Jack connetions between simulators
+## Start lpx_control
+## Start pedal driver
+## Delete all Jack MIDI connetions
+## 
 
 ## Required to run 120Proof
 $0 =~ /^(.+)\/bin\/[^\/]+$/ or die $0;
 $ENV{"Home120Proof"} = $1;
+
+warn "$0 ";
+
+use POSIX "setsid";
+
+sub run_daemon( $ ) {
+    my $cmd = shift or die "Must pass command";
+    # -e $cmd or die "Must pass executable command";
+
+    warn "\$cmd: $cmd";
+    open(STDIN,  "< /dev/null") or die "can't read /dev/null: $!";
+    open(STDOUT, "> /dev/null") or die "can't write to /dev/null: $!";
+    defined(my $pid = fork())   or die "can't fork: $!";
+    return($pid) if $pid;               # non-zero now means I am the parent
+
+    (setsid() != -1)            or die "Can't start a new session: $!";
+    open(STDOUT, ">/tmp/stdout") or die $!;
+    open(STDERR, ">&STDOUT")    or die "can't dup stdout: $!";
+    `$cmd`;
+}
+
+
+
+
+## Required to run Jack
+$ENV{"oJACK_PROMISCUOUS_SERVER"} = 'jack';
+
 print "120Proof's Mistress running rooted at: $ENV{'Home120Proof'}\n";
 
-# Kill any old versions of what Mistress will start
-`pgrep lpx_controll` and `pkill lpx_controll`;
-
-# Set the mode of the LPX 
+## Set the mode of the LPX to 127
 print `$ENV{"Home120Proof"}/bin/lpx_mode 1`;
-print `$ENV{"Home120Proof"}/bin/lpx_mode 127`;
-print "Set LPX mode\n";
-# Remove any nasty Jack MIDI connecvtions
-print `$ENV{"Home120Proof"}/bin/delete_jack_midi_connections delete`;
-warn "Cleared Jack Midi\n";
 
-## Run ModHost.  This will set up Jack MIDI
-print `$ENV{"Home120Proof"}/bin/InitialiseModHost`;
-print "Initialised mod-host\n";
+print `$ENV{"Home120Proof"}/bin/lpx_mode 127`;
+
+
+## Initialise mod-host: IM (66)
+## IM: Kill any previous mod-host on our port
+my $PORT = 9116;
+
+## IM: Copy the definitions of simulators writen by modep-mod-ui: EM (26)
+print `$ENV{"Home120Proof"}/bin/ExtractModep`; # A black box for now
+
+
+## IM: Start mod-host
+$ENV{LV2_PATH} = '/usr/modep/lv2';
+
+# warn "Groups " . `groups`;
+# warn "Who am I? " . `whoami`;
+# warn "Jack status: " . `systemctl status jack` . " ";
+# warn "$0 ";
+#print `jack_wait -w`;
+warn "$0 ";
+#print `/usr/bin/mod-host -p $PORT`;
+run_daemon( "/home/patch/mod-host/mod-host -p $PORT ");
+warn "$0 ";
+sleep 1;
+unless(`lsof -i:$PORT`){
+    die "$?: Failed to start mod-host on $PORT";
+}
+warn "$0 ";
+
+
+## IM: Start simulators MS (47)
+warn "Create simulators";
+print `$ENV{"Home120Proof"}/bin/ModhostSimulators`;
+warn "Created simulators";
+warn "$0 ";
 
 ## Set up the controls for the LPX
-my $lpx_control_pid = fork();
-if(!$lpx_control_pid){
-    print "Start lpx_control\n";
-    print `$ENV{"Home120Proof"}/bin/lpx_controll`;
-    print "lpx_control finished\n";
-    exit(0);
-}
+my $lpx_control_pid = run_daemon("$ENV{'Home120Proof'}/bin/lpx_controll");
 print "lpx_control running on pid: $lpx_control_pid\n";
 
 
 ## Run the pedal
-my $pedal_pid = fork();
-if(!$pedal_pid){
-    print "In child ($$) creating pedal\n";
-    print "$ENV{Home120Proof}/bin/driver $ENV{Home120Proof}/PEDALS/pedal\n";
-    print `$ENV{Home120Proof}/bin/driver $ENV{Home120Proof}/PEDALS/pedal`;
-    exit(0);
-}
-    
+my $pedal_pid = run_daemon("$ENV{Home120Proof}/bin/driver $ENV{Home120Proof}/PEDALS/pedal");
+print "Pedal driver at PID: $pedal_pid\n";
 
 
-print "Whoami: " . `whoami`;
-print "Groups: " . `groups`;
+# Remove any nasty Jack MIDI connections
+print `$ENV{"Home120Proof"}/bin/delete_jack_midi_connections delete`;
+## Check that they have been deleted
+`$ENV{"Home120Proof"}/bin/delete_jack_midi_connections list` and die "Failed to delete JACK Midi connections";
+warn "Cleared Jack Midi\n";
+
+
+

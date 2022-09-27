@@ -6,7 +6,6 @@ my $command;
 $command = shift or die "$0 list|delete";
 $command eq "list" || $command eq "delete" ||  die "$0 list|delete";
 
-warn "Starting";
 
 my @jack_lsp = `jack_lsp -tc`;
 my $l = ''; # The out put line
@@ -37,4 +36,3 @@ foreach my $line (@jack_lsp ){
     }
 }
 
-warn "ending";

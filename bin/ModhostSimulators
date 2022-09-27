@@ -12,14 +12,16 @@ use IO::Socket::INET;
 ## Get the directory to run in
 my $home_dir = $ENV{"Home120Proof"} or die '$ENV{"Home120Proof"} is not set';
 -d $home_dir or die "\$home_dir($home_dir) not a directory";
+
+## FIXME  Do not need to do this(??)
 chdir $home_dir or die "$!: Cannot chdir $home_dir";
 
 ## The file written by ExtractModep
-my $modep_command_fn = 'modep_commands.txt';
+my $modep_command_fn = "$home_dir/modep_commands.txt";
 
 ## The directory to write the files that the pedal driver reads to
 ## control the simulatons
-my $pedal_dir = "pedal/PEDALS/";
+my $pedal_dir = "$home_dir/pedal/PEDALS/";
 -d $pedal_dir or die "$!: $pedal_dir";
 -x $pedal_dir or die "$!: $pedal_dir";
 
@@ -36,6 +38,7 @@ my @jack_commands = (); # The persistent Jack connetions.  Make noiw
 my @activation_commands; 
 
 open(my $cmds, $modep_command_fn) or die $!;
+print "$0 1 \n";
 foreach my $line(<$cmds>){
     chomp $line;
 
@@ -99,17 +102,17 @@ foreach my $line(<$cmds>){
 }
 # print join("\n", @mh_commands);
 # print join("\n", @jack_commands);
+print "$0 2 \n";
 
 
 sub handle_jack( $ ){
     ## Passed a Jack command execute it.  There are two: "connecyt"
     ## and "disconnect"
     my $cmd = shift or die;
+    warn $cmd;
     if($cmd =~ /^connect (\S+)\s+(\S+)\s*$/){
-	print STDERR "Connect $1 $2\n";
 	print `jack_connect $1 $2`;
     }elsif($cmd =~ /^disconnect (\S+)\s+(\S+)\s*$/){
-	print STDERR "Disconnect $1 $2\n";
 	print `jack_disconnect $1 $2`;
     }
 }
@@ -187,7 +190,7 @@ sub handle_mh_cmd( $$ ) {
 	    # Links into `process_modep.pl` which reads STDOUT
 	    print  ">> FAIL $cmd >>  $result\n";
 	}else{
-	    print  ">> SUCCESS $cmd >>  $result\n";
+	    # print  ">> SUCCESS $cmd >>  $result\n";
 	}
     }
 }    
@@ -200,7 +203,8 @@ sub mod_host( $ ){
     my $sock = new IO::Socket::INET( PeerAddr => 'localhost',
 				     PeerPort => $mod_host_port_p, 
 				     Proto => 'tcp') or
-	die "$!: Failed to connect to mod-host localhost:$mod_host_port_p"; 
+	die "$!: Failed to connect to mod-host localhost:$mod_host_port_p ".
+	"lsof -i :$mod_host_port_p: ".`lsof -i :$mod_host_port_p` . ' '; 
 
     ## Debugging why some effects randomly fail to be added
     my $failed = 0;
@@ -225,8 +229,11 @@ sub mod_host( $ ){
 	}
     }
 }
+print "$0 3\n";
 &mod_host(\@mh_commands);
+print "$0 4\n";
 foreach my $jcmd ( @jack_commands ) {
     &handle_jack( $jcmd );
 }
+print "$0 5\n";
 

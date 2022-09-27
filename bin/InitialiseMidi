@@ -64,7 +64,7 @@ sub wait_for_midi( $ ) {
 	## Loop exit condition
 	my @disconnected = grep{$connections{$_} == 0} keys(%connections);
 	@disconnected or last;
-	print "Not connected:\n\t".join("\n\t", @disconnected)."\n";
+	warn "Not connected:\n\t".join("\n\t", @disconnected);
 	sleep 1;
     }
 }
@@ -214,7 +214,6 @@ sub set_up_midi( $ ) {
 	my ($l) = @_;
 	my $cmd = "aconnect -d $l";
 	`$cmd`;
-	print STDERR "del_con($l)\n";
 	$? == 0 or print STDERR "Failed $?: $cmd \n";
     }
     map {&del_con($_)} @to_delete;
@@ -226,7 +225,6 @@ sub set_up_midi( $ ) {
 	my ($l) = @_;
 	my $cmd = "aconnect $l";
 	`$cmd`;
-	print STDERR "make_con($l)\n";
 	$? == 0 or print STDERR "Failed $?: $cmd \n";
     }
     foreach my $l (keys %connections_to_make){
@@ -236,9 +234,6 @@ sub set_up_midi( $ ) {
 
 			  
 my $cfg_fn = shift or die "pass a configuration file";
-print "InitialiseMidi: Before waiting\n";
 &wait_for_midi( $cfg_fn );
-print "InitialiseMidi: Before setup\n";
 &set_up_midi( $cfg_fn );
-print "InitialiseMidi: Finished\n";
 
