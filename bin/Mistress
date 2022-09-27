@@ -26,7 +26,6 @@ use strict;
 $0 =~ /^(.+)\/bin\/[^\/]+$/ or die $0;
 $ENV{"Home120Proof"} = $1;
 
-warn "$0 ";
 
 use POSIX "setsid";
 
@@ -34,7 +33,7 @@ sub run_daemon( $ ) {
     my $cmd = shift or die "Must pass command";
     # -e $cmd or die "Must pass executable command";
 
-    warn "\$cmd: $cmd";
+    # warn "\$cmd: $cmd";
     open(STDIN,  "< /dev/null") or die "can't read /dev/null: $!";
     open(STDOUT, "> /dev/null") or die "can't write to /dev/null: $!";
     defined(my $pid = fork())   or die "can't fork: $!";
@@ -71,43 +70,32 @@ print `$ENV{"Home120Proof"}/bin/ExtractModep`; # A black box for now
 ## IM: Start mod-host
 $ENV{LV2_PATH} = '/usr/modep/lv2';
 
-# warn "Groups " . `groups`;
-# warn "Who am I? " . `whoami`;
-# warn "Jack status: " . `systemctl status jack` . " ";
-# warn "$0 ";
-#print `jack_wait -w`;
-warn "$0 ";
 #print `/usr/bin/mod-host -p $PORT`;
 run_daemon( "/home/patch/mod-host/mod-host -p $PORT ");
-warn "$0 ";
-sleep 1;
+
+#sleep 1;
 unless(`lsof -i:$PORT`){
     die "$?: Failed to start mod-host on $PORT";
 }
-warn "$0 ";
 
+warn $0;
 
 ## IM: Start simulators MS (47)
-warn "Create simulators";
 print `$ENV{"Home120Proof"}/bin/ModhostSimulators`;
-warn "Created simulators";
-warn "$0 ";
 
+warn $0;
 ## Set up the controls for the LPX
 my $lpx_control_pid = run_daemon("$ENV{'Home120Proof'}/bin/lpx_controll");
-print "lpx_control running on pid: $lpx_control_pid\n";
 
-
+warn $0;
 ## Run the pedal
 my $pedal_pid = run_daemon("$ENV{Home120Proof}/bin/driver $ENV{Home120Proof}/PEDALS/pedal");
-print "Pedal driver at PID: $pedal_pid\n";
-
 
 # Remove any nasty Jack MIDI connections
 print `$ENV{"Home120Proof"}/bin/delete_jack_midi_connections delete`;
 ## Check that they have been deleted
 `$ENV{"Home120Proof"}/bin/delete_jack_midi_connections list` and die "Failed to delete JACK Midi connections";
-warn "Cleared Jack Midi\n";
+print STDERR "Mistress is finished with you\n";
 
 
 
