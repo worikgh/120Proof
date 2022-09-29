@@ -73,7 +73,7 @@ $ENV{LV2_PATH} = '/usr/modep/lv2';
 #print `/usr/bin/mod-host -p $PORT`;
 run_daemon( "/home/patch/mod-host/mod-host -p $PORT ");
 
-#sleep 1;
+sleep 1;
 unless(`lsof -i:$PORT`){
     die "$?: Failed to start mod-host on $PORT";
 }
