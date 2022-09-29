@@ -13,6 +13,8 @@ use IO::Socket::INET;
 my $home_dir = $ENV{"Home120Proof"} or die '$ENV{"Home120Proof"} is not set';
 -d $home_dir or die "\$home_dir($home_dir) not a directory";
 
+warn "\$home_dir($home_dir) ";
+
 ## FIXME  Do not need to do this(??)
 ## chdir $home_dir or die "$!: Cannot chdir $home_dir";
 
@@ -59,10 +61,15 @@ sub handle_jack( $ ){
     if($cmd =~ /^connect (\S+)\s+(\S+)\s*$/){
 	## Commanded to make a connection.  Check first if it exists
 	## and there is nothing to do
-	print STDERR "connect $1\t$2\n";
-	print `jack_connect $1 $2`;
+	if( ! `$home_dir/bin/testJackConnection $1 $2`){
+	    print STDERR "connect $1\t$2\n";
+	    print `jack_connect $1 $2`;
+	}
     }elsif($cmd =~ /^disconnect (\S+)\s+(\S+)\s*$/){
-	print `jack_disconnect $1 $2`;
+	if(`$home_dir/bin/testConnection $1 $2`){
+	
+	    print `jack_disconnect $1 $2`;
+	}
     }
 }
 
