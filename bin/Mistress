@@ -49,7 +49,7 @@ sub run_daemon( $ ) {
 
 
 ## Required to run Jack
-$ENV{"oJACK_PROMISCUOUS_SERVER"} = 'jack';
+$ENV{"JACK_PROMISCUOUS_SERVER"} = 'jack';
 
 print "120Proof's Mistress running rooted at: $ENV{'Home120Proof'}\n";
 
