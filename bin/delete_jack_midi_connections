@@ -27,7 +27,7 @@ foreach my $line (@jack_lsp ){
     }elsif($line =~ /^\t(\S.+)/){
 	if($line =~ /midi/ and defined ($device1) and defined($device2)){
 	    if($command eq "delete"){
-		warn "Delete: $device1 $device2";
+		# warn "Delete: $device1 $device2";
 		print `jack_disconnect "$device1" "$device2"`;
 	    }elsif($command eq "list"){
 		print "\"$device1\" \"$device2\"\n";
