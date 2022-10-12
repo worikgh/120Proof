@@ -107,6 +107,7 @@ impl Dispatcher {
                 let s = String::from_utf8_lossy(&out.stdout);
                 print!("{}", s);
                 _ = io::stdout().flush().unwrap();
+                _ = io::stderr().flush().unwrap();
             }
             Err(err) => eprintln!("Failure: cmd {}  Err: {:?}", command, err),
         }
