@@ -1,0 +1,29 @@
+#!/usr/bin/perl -w
+use strict;
+
+my @jack_lsp = `jack_lsp -c`;
+
+my $lhs = $ARGV[0];
+my $rhs = $ARGV[1];
+
+my $c_lhs;
+my $c_rhs;
+
+my $result = 0;
+my $state = "";
+foreach my $line (@jack_lsp){
+    chomp $line;
+    if($line =~ /^$lhs$/){
+	$state = $lhs;
+	next;
+    }elsif($line =~ /^\S/){
+	$state = "";
+	next;
+    }elsif($line =~ /^\s+$rhs$/){
+	if($state){
+	    print "1\n";
+	    exit;
+	}
+    }
+}
+print "0\n";
