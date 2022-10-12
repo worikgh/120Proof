@@ -34,15 +34,18 @@ sub run_daemon( $ ) {
     # -e $cmd or die "Must pass executable command";
 
     # warn "\$cmd: $cmd";
-    open(STDIN,  "< /dev/null") or die "can't read /dev/null: $!";
-    open(STDOUT, "> /dev/null") or die "can't write to /dev/null: $!";
+    # open(STDIN,  "< /dev/null") or die "can't read /dev/null: $!";
+    # open(STDOUT, "> /dev/null") or die "can't write to /dev/null: $!";
     defined(my $pid = fork())   or die "can't fork: $!";
-    return($pid) if $pid;               # non-zero now means I am the parent
+    return($pid) if $pid;      
+
+    ## Child
 
     (setsid() != -1)            or die "Can't start a new session: $!";
-    open(STDOUT, ">/tmp/stdout") or die $!;
-    open(STDERR, ">&STDOUT")    or die "can't dup stdout: $!";
+    # open(STDOUT, ">/tmp/stdout") or die $!;
+    # open(STDERR, ">&STDOUT")    or die "can't dup stdout: $!";
     `$cmd`;
+    exit(0);
 }
 
 
