@@ -188,7 +188,7 @@ fn main() -> Result<(), Box<dyn Error>> {
         panic!("Need arguments");
     }
     // First argument is the config file name.  Next the root
-    // note.  The rest of the arguments is scale
+    // note.  The rest of the arguments are the scale
     let mut iter = args.iter();
     let cfg_fn = iter.nth(1).unwrap().as_str();
     let root_note_iv = iter.nth(0).unwrap().as_str();
