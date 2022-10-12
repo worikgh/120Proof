@@ -1,61 +1,39 @@
-#!/bin/sh
-set -e
-LOGFILE=/home/patch/120Proof/Instruments/GhostWalking/run.log
-TIME=`date`
-echo ---------------------------------------- >> $LOGFILE
-echo Start: $TIME >> $LOGFILE
-echo Start GhostWalking
+#!/usr/bin/perl -w
+use strict;
+
+my $time = scalar(localtime());
+print "Start GhostWalking $time\n";
+
+use lib("$ENV{'Home120Proof'}/Perl");
+use One20Proof;
 
 # Must have jack
-jack_wait -w
+`jack_wait -w`;
+if(!$0){
+    die "Failed waiting jack: $0\n";
+}
 
 
 ## Kill these if they exist
-pgrep lpx_manager && pkill lpx_manager
-pgrep yoshimi && pkill yoshimi
+&One20Proof::pkill('lpx_manager');
+&One20Proof::pkill('yoshimi');
+&One20Proof::run_daemon("$ENV{'Home120Proof'}/bin/InitialiseYos  GhostWalkingKeys '$ENV{'Home120Proof'}/Instruments/xiz/Hammond Organ.xiz'");
+&One20Proof::run_daemon("$ENV{'Home120Proof'}/bin/InitialiseYos GhostWalkingLPX '$ENV{'Home120Proof'}/Instruments/xiz/Wide Bass.xiz'");
 
-while [ `pgrep lpx_manager` ] ;
-do
-    echo Wait for lpx_manager to quit
-done
+while (! `jack_lsp |grep GhostWalkingLPX` ){
+    print "Waiting for jack GhostWalkingLPX\n";
+    sleep 1;
+}
 
-while [ `pgrep yoshimi` ] ;
-do
-    echo Wait for yoshimi to quit
-done
+while (! `jack_lsp |grep GhostWalkingKeys` ){
+    print "Waiting for jack GhostWalkingKeys\n";
+    sleep 1;
+}
 
-echo GhostWalking: Set up >> $LOGFILE
+&One20Proof::run_daemon("$ENV{'Home120Proof'}/bin/lpx_manager $ENV{'Home120Proof'}/Instruments/GhostWalking/lpx_manager.cfg 69 1 4 6 9 11 < /dev/null ");
 
-echo GhostWalking: LPX sent to an organ >> $LOGFILE
-/home/patch/120Proof/bin/InitialiseYos  GhostWalkingKeys '/home/patch/120Proof/Instruments/xiz/Hammond Organ.xiz' 2>&1 >> $LOGFILE &
+# TODO: How can it be determined lpx_manager is running?
+sleep 1;
 
-echo GhostWalking: Keyboard sent to Rhodes Piano >> $LOGFILE
-/home/patch/120Proof/bin/InitialiseYos GhostWalkingLPX '/home/patch/120Proof/Instruments/xiz/Wide Bass.xiz'  2>&1 >> $LOGFILE  &
-
-while [ ! `jack_lsp |grep GhostWalkingLPX` ] ;
-do
-    echo Waiting for jack GhostWalkingLPX
-    sleep 1
-done
-
-while [ ! `jack_lsp |grep GhostWalkingKeys` ] ;
-do
-    echo Waiting for jack GhostWalkingKeys
-    sleep 1
-done
-
-## Mistris does this
-# echo lpx_mode 1
-# /home/patch/120Proof/lpx_mode 1
-# echo lpx_mode 127
-# /home/patch/120Proof/lpx_mode 127
-
-echo Running lpx_manager >> $LOGFILE
-/home/patch/120Proof/bin/lpx_manager /home/patch/120Proof/Instruments/GhostWalking/lpx_manager.cfg 69 1 4 6 9 11 < /dev/null  2>&1 >> $LOGFILE  &
-
-# echo GhostWalking: Sleep....
-# sleep 5
-echo GhostWalking: Set up MIDI connections >> $LOGFILE
-/home/patch/120Proof/InitialiseMidi /home/patch/120Proof/Instruments/GhostWalking/midi.cfg 2>&1 >> $LOGFILE
-
-echo GhostWalking set up >> $LOGFILE
+&One20Proof::run_daemon("$ENV{'Home120Proof'}/bin/InitialiseMidi $ENV{'Home120Proof'}/Instruments/GhostWalking/midi.cfg ");
+# TODO: Get a way of of confirming MDI set up correctly
