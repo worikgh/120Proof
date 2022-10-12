@@ -66,24 +66,34 @@ impl Adapter {
     ) -> Self {
         let mut midi_map = [0_u8; 99];
 
-        // `delta` + `p` is a midi signal
-        let p = 10;
+        // Each `delta[n]` is a mapping from a pad on LPX to a MIDI
+        // signal.
         let delta: [u8; 80] = [
-            1, 2, 3, 4, 5, 6, 7, 8, 0, 0, 6, 7, 8, 9, 10, 11, 12, 13, 0, 0, 11, 12, 13, 14, 15, 16,
-            17, 18, 0, 0, 16, 17, 18, 19, 20, 21, 22, 23, 0, 0, 21, 22, 23, 24, 25, 26, 27, 28, 0,
-            0, 26, 27, 28, 29, 30, 31, 32, 33, 0, 0, 31, 32, 33, 34, 35, 36, 37, 38, 0, 0, 36, 37,
-            38, 39, 40, 41, 42, 43, 0, 0,
+            1, 2, 3, 4, 5, 6, 7, 8, 0, 0, //
+            6, 7, 8, 9, 10, 11, 12, 13, 0, 0, //
+            11, 12, 13, 14, 15, 16, 17, 18, 0, 0, //
+            16, 17, 18, 19, 20, 21, 22, 23, 0, 0, //
+            21, 22, 23, 24, 25, 26, 27, 28, 0, 0, //
+            26, 27, 28, 29, 30, 31, 32, 33, 0, 0, //
+            31, 32, 33, 34, 35, 36, 37, 38, 0, 0, //
+            36, 37, 38, 39, 40, 41, 42, 43, 0, 0,
         ];
+
+        // `delta[n]` + `p` is a midi signal.  When a pad `n` is pressed
+        // the MIDI signal is `delta[n] + p`.
+        let p = 10;
+
         let mut midi_note_to_pads = (0..99)
             .map(|_| (None, None))
             .collect::<Vec<(Option<u8>, Option<u8>)>>();
-        // The middle key in this scheme is 34.  Middle C is MIDI 60
-        // So adjustment...
+        // The middle key in this scheme is 34. So adjust the note to
+        // make it proportional for `root_note`.
         let adj_note = root_note - 34;
         let mut i: u8 = 11;
         for d in delta {
             if i % 10 != 0 && i % 10 != 9 {
-                // `i` is the number for a pad.  No pads 10, 20,... and pads 19, 29,... are control pads
+                // `i` is the number for a pad.  No pads 10,
+                // 20,... and pads 19, 29,... are control pads
                 let midi_note = d + p + adj_note;
 
                 // Incoming MIDI `i` becomes `pad`.  E.g. MIDI == 32
@@ -91,7 +101,8 @@ impl Adapter {
                 midi_map[i as usize] = midi_note;
                 let row = i / 10;
                 let col = i % 10;
-                // This function returns the (at most) two pads that emit this note
+                // This function returns the (at most) two pads that
+                // emit this note
                 let f = |p| {
                     if p < 80 && col > 5 && col < 9 {
                         // Not in top row, and in right hand
@@ -106,7 +117,7 @@ impl Adapter {
                     } else {
                         None
                     }
-                };
+                }; //f
 
                 let pads: (Option<u8>, Option<u8>) = (Some(i), f(i));
 
@@ -143,8 +154,6 @@ struct DeviceNames {
 
 impl DeviceNames {
     fn new(cfg_fn: &str) -> io::Result<DeviceNames> {
-        // panic!("Unfinished.");
-
         // Read a configuration file for midi_source_lpx, midi_sink_lpx, midi_sink_synth
         let mut midi_source_lpx = "".to_string(); //"Launchpad X:Launchpad X MIDI 2".to_string();
         let mut midi_sink_lpx = "".to_string();
