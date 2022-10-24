@@ -1,11 +1,12 @@
 package One20Proof;
 use POSIX "setsid";
 
+## Kill any copies of the passed programme owned by this user
 sub pkill( $ ){
     my $prog_name = shift or die;
     
-    if(`pgrep $prog_name`){
-	`pkill $prog_name`;
+    if(`pgrep $prog_name -u $ENV{USER} `){
+	`pkill $prog_name  -u $ENV{USER} `;
 	$? and die "$?: Failed to kill $prog_name\n";
     }
 }
