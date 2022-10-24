@@ -31,6 +31,22 @@ if(!$ENV{"Home120Proof"}){
 use lib("$ENV{'Home120Proof'}/Perl");
 use One20Proof;
 
+## Clean up process space.  If any copies of the pedal driver,
+## lpx_control, or the mod-host are running kill them
+my $pedal_driver = "$ENV{Home120Proof}/bin/120Proofpd";
+my $mod_host = "/home/patch/mod-host/mod-host";
+my $lpx_control = "$ENV{'Home120Proof'}/bin/lpx_controll";
+-x $pedal_driver or die "$!:$pedal_driver is not executable";
+-x $mod_host or die "$!:$mod_host is not executable";
+-x $lpx_control or die "$!:$lpx_control is not executable";
+One20Proof::pkill($pedal_driver);
+One20Proof::pkill($mod_host);
+One20Proof::pkill($lpx_control);
+
+## Clean up the modep commands file that will be written again by ExtractModep
+my $modep_command_fn = "modep_commands.txt";
+-e $modep_command_fn and unlink($modep_command_fn);
+
 ## Required to run Jack
 $ENV{"JACK_PROMISCUOUS_SERVER"} = 'jack';
 
@@ -43,18 +59,17 @@ print `$ENV{"Home120Proof"}/bin/lpx_mode 127`;
 
 
 ## Initialise mod-host: IM (66)
-## IM: Kill any previous mod-host on our port
 my $PORT = 9116;
 
 ## IM: Copy the definitions of simulators writen by modep-mod-ui: EM (26)
-print `$ENV{"Home120Proof"}/bin/ExtractModep`; # A black box for now
+print `$ENV{"Home120Proof"}/bin/ExtractModep $modep_command_fn ORGANS ORGANS_Sweet`; # A black box for now
 
 
 ## IM: Start mod-host
 $ENV{LV2_PATH} = '/usr/modep/lv2';
 
 #print `/usr/bin/mod-host -p $PORT`;
-One20Proof::run_daemon( "/home/patch/mod-host/mod-host -p $PORT ");
+One20Proof::run_daemon( "$mod_host -p $PORT ");
 
 sleep 1;
 unless(`lsof -i:$PORT`){
@@ -68,11 +83,11 @@ print `$ENV{"Home120Proof"}/bin/ModhostSimulators`;
 
 warn $0;
 ## Set up the controls for the LPX
-my $lpx_control_pid = One20Proof::run_daemon("$ENV{'Home120Proof'}/bin/lpx_controll");
+my $lpx_control_pid = One20Proof::run_daemon($lpx_control);
 
 warn $0;
 ## Run the pedal
-my $pedal_pid = One20Proof::run_daemon("$ENV{Home120Proof}/bin/driver $ENV{Home120Proof}/pedal/PEDALS ");
+my $pedal_pid = One20Proof::run_daemon("$pedal_driver $ENV{Home120Proof}/pedal/PEDALS ");
 
 # Remove any nasty Jack MIDI connections
 print `$ENV{"Home120Proof"}/bin/delete_jack_midi_connections delete`;
