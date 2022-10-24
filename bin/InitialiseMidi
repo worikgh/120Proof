@@ -28,9 +28,6 @@ sub wait_for_midi( $ ) {
 
     my $start = time();
     while(1){
-	my $now = time();
-	$now - $start > 30 and die "Cannot get all connections.  Failed: " .
-	    join(', ', grep{$connections{$_} == 0} keys(%connections));
 	my @aconnect_l = `aconnect -l`;
 	open(my $out, ">>/tmp/ac.txt") or die $!;
 	print $out scalar(localtime())."\n";
@@ -65,6 +62,12 @@ sub wait_for_midi( $ ) {
 	my @disconnected = grep{$connections{$_} == 0} keys(%connections);
 	@disconnected or last;
 	warn "Not connected:\n\t".join("\n\t", @disconnected);
+
+	## Failure condition
+	my $now = time();
+	$now - $start > 5 and die "These MIDI endpoints never appeared: " .
+	    join(', ', grep{$connections{$_} == 0} keys(%connections));
+	
 	sleep 1;
     }
 }
