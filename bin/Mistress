@@ -23,33 +23,13 @@ use strict;
 ## 
 
 ## Required to run 120Proof
-$0 =~ /^(.+)\/bin\/[^\/]+$/ or die $0;
-$ENV{"Home120Proof"} = $1;
-
-
-use POSIX "setsid";
-
-sub run_daemon( $ ) {
-    my $cmd = shift or die "Must pass command";
-    # -e $cmd or die "Must pass executable command";
-
-    # warn "\$cmd: $cmd";
-    # open(STDIN,  "< /dev/null") or die "can't read /dev/null: $!";
-    # open(STDOUT, "> /dev/null") or die "can't write to /dev/null: $!";
-    defined(my $pid = fork())   or die "can't fork: $!";
-    return($pid) if $pid;      
-
-    ## Child
-
-    (setsid() != -1)            or die "Can't start a new session: $!";
-    # open(STDOUT, ">/tmp/stdout") or die $!;
-    # open(STDERR, ">&STDOUT")    or die "can't dup stdout: $!";
-    `$cmd`;
-    exit(0);
+if(!$ENV{"Home120Proof"}){
+    $0 =~ /^(.+)\/bin\/[^\/]+$/ or die $0;
+    $ENV{"Home120Proof"} = $1;
 }
 
-
-
+use lib("$ENV{'Home120Proof'}/Perl");
+use One20Proof;
 
 ## Required to run Jack
 $ENV{"JACK_PROMISCUOUS_SERVER"} = 'jack';
@@ -74,7 +54,7 @@ print `$ENV{"Home120Proof"}/bin/ExtractModep`; # A black box for now
 $ENV{LV2_PATH} = '/usr/modep/lv2';
 
 #print `/usr/bin/mod-host -p $PORT`;
-run_daemon( "/home/patch/mod-host/mod-host -p $PORT ");
+One20Proof::run_daemon( "/home/patch/mod-host/mod-host -p $PORT ");
 
 sleep 1;
 unless(`lsof -i:$PORT`){
@@ -88,11 +68,11 @@ print `$ENV{"Home120Proof"}/bin/ModhostSimulators`;
 
 warn $0;
 ## Set up the controls for the LPX
-my $lpx_control_pid = run_daemon("$ENV{'Home120Proof'}/bin/lpx_controll");
+my $lpx_control_pid = One20Proof::run_daemon("$ENV{'Home120Proof'}/bin/lpx_controll");
 
 warn $0;
 ## Run the pedal
-my $pedal_pid = run_daemon("$ENV{Home120Proof}/bin/driver $ENV{Home120Proof}/PEDALS/pedal");
+my $pedal_pid = One20Proof::run_daemon("$ENV{Home120Proof}/bin/driver $ENV{Home120Proof}/pedal/PEDALS ");
 
 # Remove any nasty Jack MIDI connections
 print `$ENV{"Home120Proof"}/bin/delete_jack_midi_connections delete`;
