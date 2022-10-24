@@ -214,7 +214,11 @@ fn main() -> Result<(), Box<dyn Error>> {
     }
     scale = intermediate_value;
 
-    let device_names = DeviceNames::new(cfg_fn).unwrap();
+    let device_names = match DeviceNames::new(cfg_fn) {
+        Ok(dn) => dn,
+        Err(err) => panic!("Cannot make DeviceNames from {}. Err({})", cfg_fn, err),
+    };
+
     let midi_out_synth: MIDICommunicator<()> = MIDICommunicator::new(
         device_names.midi_sink_synth.as_str(),
         device_names.midi_sink_synth_120.as_str(),
