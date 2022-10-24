@@ -29,3 +29,6 @@ novation_lpx/midi_connection/Cargo.lock
 *~
 *.log
 lpx_scale
+bin/mod-host.pid
+get_git_token
+.gitignore
