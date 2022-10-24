@@ -5,10 +5,16 @@ use strict;
 ## for mod-host, jack, and midi to implement the modep pedal boards
 
 # The output file
-my $modep_command_fn = $ENV{"Home120Proof"}.'/modep_commands.txt';
+my $modep_command_fn = shift or die;
 
-my $VERBOSE = shift;
-defined $VERBOSE or $VERBOSE  = 0;
+## Not all boards built by gui are desirable.  So pass the boards to
+## ignore on the command line
+my @ignore_boards = ();
+foreach my $ignored_board (@ARGV){
+    push(@ignore_boards, $ignored_board);
+}
+
+my $VERBOSE = 0;
 
 ## Where modep puts its pedal definitions
 my $MODEP_PEDALS = "/var/modep/pedalboards";
@@ -315,20 +321,22 @@ foreach my $name (sort @names){
     $name =~ /^(\S+)\.pedalboard$/ or die $name;
     my $board = $1;
     $VERBOSE  and print STDERR "board: $board\n";
-    my $fn = &get_board_ttl($MODEP_PEDALS, $name, $board);
-    
-    # print STDERR "Process: $fn\n";
-    my @board_commands = &process_file($prefix, $fn);
-    if(@board_commands){
-	## First element is the name of the pedal board.
-	my $name_line = shift(@board_commands);
-	if($name_line =~ /name:\s(.+)/){
-	    $name = $1;
-	}else{
-	    warn "$name_line \n";
+    if(! grep {/^$board$/} @ignore_boards){
+	my $fn = &get_board_ttl($MODEP_PEDALS, $name, $board);
+	
+	# print STDERR "Process: $fn\n";
+	my @board_commands = &process_file($prefix, $fn);
+	if(@board_commands){
+	    ## First element is the name of the pedal board.
+	    my $name_line = shift(@board_commands);
+	    if($name_line =~ /name:\s(.+)/){
+		$name = $1;
+	    }else{
+		warn "$name_line \n";
+	    }
+	    push(@commands, [$board, \@board_commands]);
+	    $prefix++;
 	}
-	push(@commands, [$board, \@board_commands]);
-	$prefix++;
     }
 }
 
