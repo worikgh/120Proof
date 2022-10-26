@@ -17,6 +17,7 @@ sub run_daemon( $ ) {
     return($pid) if $pid;               # non-zero now means I am the parent
     # (setsid() != -1)            or die "Can't start a new session: $!";
     `$cmd`;
+    exit($?);
 }
 
 
