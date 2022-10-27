@@ -4,8 +4,7 @@ use midi_connection::MIDICommunicator;
 use std::collections::HashMap;
 use std::env;
 use std::error::Error;
-use std::io;
-use std::io::prelude::*;
+// use std::io::prelude::*;
 use std::path::Path;
 use std::process;
 use std::sync::Arc;
@@ -98,19 +97,10 @@ impl Dispatcher {
         env::set_current_dir(&home_dir)
             .expect(format!("Cannot change directory to: {}", home_dir.display()).as_str());
         let command = format!("{}/{}", home_dir.display(), &cmd);
-
-        match process::Command::new(command.as_str()).output() {
-            Ok(out) => {
-                // Pass stout and stderr straight through
-                let s = String::from_utf8_lossy(&out.stderr);
-                eprint!("{}", s);
-                let s = String::from_utf8_lossy(&out.stdout);
-                print!("{}", s);
-                _ = io::stdout().flush().unwrap();
-                _ = io::stderr().flush().unwrap();
-            }
-            Err(err) => eprintln!("Failure: cmd {}  Err: {:?}", command, err),
-        }
+        println!("Run command: {}", command);
+        let mut _child = process::Command::new(command.as_str())
+            .spawn()
+            .expect(format!("Failed to execute {}", command).as_str());
     }
 
     /// A control pad has been pressed
@@ -487,6 +477,7 @@ fn run() -> Result<(), Box<dyn Error>> {
 }
 
 fn main() {
+    println!("Running controll\n");
     match run() {
         Ok(_) => (),
         Err(err) => eprintln!("Error: {}", err),
