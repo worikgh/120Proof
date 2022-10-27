@@ -216,7 +216,8 @@ void deimplement_pedal(char * pedal, char * new_pedal){
       }
       
       // Check that the connection exists before disconnecting it.      
-      if(connected(src_port, dst_port)){
+      
+	   if(connected(src_port, dst_port)){
 	int r = jack_disconnect(CLIENT, src_port, dst_port);  
 	if(r != 0 && r != EEXIST){
 
@@ -360,7 +361,7 @@ void process_line(char pedal, char * line){
 }
 
 /* Disconnect jack pipes to stdin and stdout so the pedal can replace
-   them .  Do it after the new peda has been connected
+   them.  Do it after the new pedal has been connected
 
    So when new pedal selected grab the system jack connections and put
    them here to discomment after new pedal established
@@ -389,7 +390,7 @@ void clear_jack(){
 int load_pedal(char p){
   int i;
   FILE * fd;
-  char  scriptname[PATH_MAX*2];
+  char  scriptname[PATH_MAX + 1];
 
   int ch;
 
@@ -412,7 +413,7 @@ int load_pedal(char p){
   }
   assert(snprintf(scriptname, PATH_MAX, "%s/%c", config_dir, pedal) < PATH_MAX);
 
-  Log( "Opening script: %s\n", scriptname);
+  /* Log( "Opening script: %s\n", scriptname); */
   fd = fopen(scriptname, "r");
   assert(fd);
   i = 0;
@@ -457,10 +458,10 @@ int load_pedal(char p){
 int get_foot_pedal_fd(const char * vendor_code, const char * product_code) {
 
   // Path to the link
-  char device_link_path[PATH_MAX];
+  char device_link_path[PATH_MAX + 1];
 
   // Path to the device
-  char device_path[PATH_MAX];
+  char device_path[PATH_MAX + 1];
 
   assert(snprintf(device_link_path,
 		  PATH_MAX,
@@ -620,9 +621,11 @@ int main(int argc, char * argv[]) {
   // Initialise the definitions of pedals
   // Signal with HUP to change
   initialise_pedals();
-  
+
+  char  pid_fn[PATH_MAX + 1];
+  assert(snprintf(pid_fn, PATH_MAX, "%s/.driver.pid", config_dir) < PATH_MAX);
   pid_t pid = getpid();
-  int fd_pid = open(".driver.pid", O_WRONLY|O_CREAT, 0644);
+  int fd_pid = open(pid_fn, O_WRONLY|O_CREAT, 0644);
   if(fd_pid < 0){
     Log("%s:%d: Error %s\n", __FILE__, __LINE__, strerror(errno));
     exit(fd_pid);
@@ -636,14 +639,14 @@ int main(int argc, char * argv[]) {
   }
 
   int pid_res = dprintf(fd_pid, "%d", pid);
+  assert(pid_res > 0);
 
   if(close(fd_pid) < 0){
     Log("%s:%d: Error %s\n", __FILE__, __LINE__, strerror(errno));
     return -1;
   }	
 
-  Log( "Wrote pid: %d. Error: %s\n", pid, strerror(errno));
-  assert(pid_res > 0);
+  /* Log( "Wrote pid: %d\n", pid, strerror(errno)); */
 
   
 
@@ -672,7 +675,7 @@ int main(int argc, char * argv[]) {
 #ifdef PROFILE
   int loop_limit = 0;
 #endif
-  Log("Starting main loop\n");
+  /* Log("Starting main loop\n"); */
   while(RUNNING == 1){
 #ifdef PROFILE
     if(loop_limit++ > 12){
@@ -766,7 +769,7 @@ int main(int argc, char * argv[]) {
 	// Write a record of the pedal in a known location so other
 	// programmes can know what pedal is selected
 	int fd_pedal;
-	char file_name[PATH_MAX];
+	char file_name[PATH_MAX + 1];
 	assert(snprintf(file_name, PATH_MAX, "%s/.PEDAL", config_dir) < PATH_MAX);
 	fd_pedal = open(file_name, O_WRONLY); // File must exist
 	if(fd_pedal < 0) {
@@ -829,7 +832,7 @@ void Log(char * sp, ...){
   //int fd = open(log_fn, O_APPEND|O_CREAT, 0644); //S_IWUSR|S_IRUSR|S_IRGRP|S_IROTH );
   int fd = open(log_fn,  O_WRONLY | O_CREAT | O_APPEND , 0644);
   if(fd < 0){
-    fprintf(stderr, "%s:%d: Failed to open %s.  Error: %s\n",
+    fprintf(stdout, "%s:%d: Failed to open %s.  Error: %s\n",
 	    __FILE__, __LINE__, log_fn, strerror(errno));
     exit(fd);
   }
