@@ -62,7 +62,7 @@ sub handle_jack( $ ){
 	## Commanded to make a connection.  Check first if it exists
 	## and there is nothing to do
 	if( ! `$home_dir/bin/testJackConnection $1 $2`){
-	    print STDERR "connect $1\t$2\n";
+	    # print STDERR "connect $1\t$2\n";
 	    print `jack_connect $1 $2`;
 	}
     }elsif($cmd =~ /^disconnect (\S+)\s+(\S+)\s*$/){
@@ -158,12 +158,12 @@ sub mod_host( $ ){
     foreach my $cmd (@cmds){
 
 	# print STDERR  "mod-host: $cmd\n";
-	&handle_mh_cmd($sock, $cmd);
-	if($failed){
-	    print STDERR "Add failed then: $cmd\n";
+	if(!$failed){
+	    &handle_mh_cmd($sock, $cmd);
 	}
 	## If command was an `add` check the effects got added
 	if($cmd =~ /^add.+\s(\d+)/){
+	    # print STDERR "$cmd\n";
 	    my $jack = grep{/effect_$1/} `jack_lsp`;
 	    if(!$jack){
 		print STDERR "effect_$1 failed\n";
@@ -243,13 +243,10 @@ foreach my $line(<$cmds>){
 # print join("\n", @mh_commands);
 # print join("\n", @jack_commands);
 
-warn $0;
 &mod_host(\@mh_commands);
-warn $0;
 
 foreach my $jcmd ( @jack_commands ) {
     &handle_jack( $jcmd );
 }
-warn $0;
 
 
