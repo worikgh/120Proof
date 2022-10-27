@@ -1,10 +1,10 @@
 package One20Proof;
-use POSIX "setsid";
+use IPC::Open3;
+#use POSIX "setsid";
 
 ## Kill any copies of the passed programme owned by this user
 sub pkill( $ ){
     my $prog_name = shift or die;
-    
     if(`pgrep $prog_name -u $ENV{USER} `){
 	`pkill $prog_name  -u $ENV{USER} `;
 	$? and die "$?: Failed to kill $prog_name\n";
@@ -13,11 +13,33 @@ sub pkill( $ ){
 
 sub run_daemon( $ ) {
     my $cmd = shift or die "Must pass command";
+
+    ## Prepare command
+    my @cmd = split(/\s+/, $cmd);
+    -x $cmd[0] or die "Must pass an executable.  '$cmd[0]' is nopt";
+    
     defined(my $pid = fork())   or die "can't fork: $!";
     return($pid) if $pid;               # non-zero now means I am the parent
     # (setsid() != -1)            or die "Can't start a new session: $!";
-    `$cmd`;
-    exit($?);
+
+
+    
+    ## Create logs for stderr and stdout
+
+    # Get the name f the command by separating it from the path
+    my $command_file = $cmd[0];
+    $command_file =~ s/^.+\/([^\/]+)$/$1/;
+
+    my $stderr_fn = $ENV{'Home120Proof'}."/output/$command_file.err";
+    my $stdout_fn = $ENV{'Home120Proof'}."/output/$command_file.out";
+    open(my $stderr, ">>", $stderr_fn) or
+	die "$!: Cannot open $stderr_fn for append";
+    open(my $stdout, ">>", $stdout_fn) or
+	die "$!: Cannot open $stdout_fn for append";
+    print $stdout "A line\n";
+    open3(undef, '>&' . fileno($stdout),  '>&' . fileno($stderr), $cmd);
+    sleep(10); # For debgging.  Delete this
+    exit;
 }
 
 
