@@ -353,6 +353,7 @@ void add_pedal_effect(char pedal, const char * jc1, const char* jc2){
 void process_line(char pedal, char * line){
   const char * src_port, * dst_port;
   char * tok = strtok(line, " ");
+  tok = strtok(NULL, " ");
   src_port = tok;
   assert(src_port);
   dst_port = strtok(NULL, " ");
@@ -413,7 +414,9 @@ int load_pedal(char p){
   }
   assert(snprintf(scriptname, PATH_MAX, "%s/%c", config_dir, pedal) < PATH_MAX);
 
-  /* Log( "Opening script: %s\n", scriptname); */
+#ifdef VERBOSE
+  Log( "Opening script: %s\n", scriptname);
+#endif
   fd = fopen(scriptname, "r");
   assert(fd);
   i = 0;
