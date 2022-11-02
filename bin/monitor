@@ -1,0 +1,54 @@
+#!/usr/bin/perl -w
+use strict;
+use FileHandle;
+## Monitor output/*.out and *.err and report on state of system
+
+## Open every file in the output diretctory and monitor the output.
+
+## Encode here knowledge about what 120Proof programmes ouitput.  This is tightly linked.
+
+
+
+use lib("$ENV{'Home120Proof'}/Perl");
+use One20Proof;
+
+
+my $output_dir = "$ENV{'Home120Proof'}/output/";
+opendir(my $dir, $output_dir) or die "$! $output_dir";
+
+# Get all the input files
+my @files = grep {$_ =~ /[a-z]/} grep{$_ !~ /~/} readdir($dir) or die $!;
+
+my %fh = ();
+my $bits = '';
+foreach my $fn (@files){
+    # my $fh = FileHandle->new(
+    open(my $fh, "$output_dir/$fn") or die "$!: $fn ";
+    vec($bits, fileno($fh),  1) = 1;
+
+    ## Associate a file name and file handle
+    $fh{$fn} = $fh;
+}
+
+
+
+while(1){
+    my ($a, $b) = select(my $bytes = $bits, undef, undef, undef);
+    if($a == -1){
+	warn "$! Fail";
+    }else{
+	## Got some data
+	my $buffer;
+	my $length = 1024;
+	foreach my $fn (sort keys %fh){
+	    ## Check each file
+	    my $bytes_read = sysread($fh{$fn}, $buffer, $length);
+	    if($bytes_read > 0){
+		## Got some data.
+		print("$fn: Looped: \$bytes_read: $bytes_read \$buffer: $buffer\n");
+		
+	    }
+
+	}
+    }
+}
