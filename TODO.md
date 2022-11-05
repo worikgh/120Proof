@@ -1,17 +1,30 @@
+# BUGS
+
+## Pedal Driver: `120Proofpd`
+
+* Craches on first pedal press cannot finr PEDAL/.PEDAL.  `Mistress` should test for that file
+
+## Instruments
+
+* Sharklips volume very low
+
+* `lpx_control` needs to display changing colours on LPX whilst setting up everything in background
+
 # Build Tools
+
 
 Deprecate window systems  with command line replacements
 
 * `jack_lsp` and `aconnect` to replace `qjackcontrol`
 
-* `aseqdump` to relace `pd` and its MIDI window to see what values comming from a device
+* `aseqdump` to replace `pd` and its MIDI window to see what values comming from a device
 
 
 
 # Build Instruments
 
 
-	**TODO** Integrate `Mistress`, `ModhostSimulators`, `driver`, `Instruments/*/Initialise.sh`, `lpx_control`,
+**DONE** Integrate `Mistress`, `ModhostSimulators`, `driver`, `Instruments/*/Initialise.sh`, `lpx_control`.  `Mistress` drives them all
 
 	**TODO**: A pattern of writing scripts that:
 
