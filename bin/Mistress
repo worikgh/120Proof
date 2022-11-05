@@ -83,7 +83,7 @@ print `$ENV{"Home120Proof"}/bin/lpx_mode 1`;
 
 print `$ENV{"Home120Proof"}/bin/lpx_mode 127`;
 
-warn $0;
+
 ## Initialise mod-host: IM (66)
 my $PORT = 9116;
 
@@ -98,7 +98,7 @@ if(`lsof -i:$PORT`){
     die "$?:  mod-host already on $PORT";
 }
 
-print "Run: /usr/bin/mod-host -p $PORT\n";
+
 &One20Proof::run_daemon( "$mod_host -p $PORT ");
 
 sleep 1;
@@ -111,7 +111,7 @@ unless(`lsof -i:$PORT`){
 print `$ENV{"Home120Proof"}/bin/ModhostSimulators`;
 
 ## Set up the controls for the LPX
-warn "Start control";
+
 my $lpx_control_pid = One20Proof::run_daemon($lpx_control);
 sleep 1;
 
@@ -119,12 +119,12 @@ sleep 1;
 my $pedal_pid = One20Proof::run_daemon("$pedal_driver $ENV{Home120Proof}/pedal/PEDALS ");
 
 # Remove any nasty Jack MIDI connections
-warn $0;
+
 print `$ENV{"Home120Proof"}/bin/delete_jack_midi_connections delete`;
-warn $0;
+
 ## Check that they have been deleted
 `$ENV{"Home120Proof"}/bin/delete_jack_midi_connections list` and die "Failed to delete JACK Midi connections";
-warn $0;
+
 print STDERR "Mistress is finished with you\n";
 
 

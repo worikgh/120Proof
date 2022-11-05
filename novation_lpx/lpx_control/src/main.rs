@@ -85,6 +85,7 @@ impl Dispatcher {
     /// `run_cmd` is called when the pad/key has been processed.
     /// `cmd` is a path to an executable
     fn run_cmd(cmd: &str) {
+        // TODO:  Make this a statement that dies if Home120Proof not in environment.
         let mut one_20_proof_home: String = ".".to_string();
         for (key, value) in env::vars() {
             if key == "Home120Proof" {

@@ -30,15 +30,17 @@ sub run_daemon( $ ) {
     my $command_file = $cmd[0];
     $command_file =~ s/^.+\/([^\/]+)$/$1/;
 
+    # Turn on autoflush
+    
     my $stderr_fn = $ENV{'Home120Proof'}."/output/$command_file.err";
     my $stdout_fn = $ENV{'Home120Proof'}."/output/$command_file.out";
     open(my $stderr, ">>", $stderr_fn) or
 	die "$!: Cannot open $stderr_fn for append";
     open(my $stdout, ">>", $stdout_fn) or
 	die "$!: Cannot open $stdout_fn for append";
-    print $stdout "A line\n";
+
     open3(undef, '>&' . fileno($stdout),  '>&' . fileno($stderr), $cmd);
-    sleep(10); # For debgging.  Delete this
+    $|++;
     exit;
 }
 
@@ -81,7 +83,7 @@ sub wait_for_jack {
 	if($counter > $loops){
 	    return 0;
 	}else{
-	    if(`jack_lsp |grep GhostWalkingKeys`){
+	    if(`jack_lsp |grep $jack_name`){
 		return 1;
 	    }
 	}

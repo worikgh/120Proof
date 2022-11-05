@@ -13,7 +13,6 @@ use IO::Socket::INET;
 my $home_dir = $ENV{"Home120Proof"} or die '$ENV{"Home120Proof"} is not set';
 -d $home_dir or die "\$home_dir($home_dir) not a directory";
 
-warn "\$home_dir($home_dir) ";
 
 ## FIXME  Do not need to do this(??)
 ## chdir $home_dir or die "$!: Cannot chdir $home_dir";

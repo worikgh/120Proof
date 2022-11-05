@@ -29,10 +29,6 @@ sub wait_for_midi( $ ) {
     my $start = time();
     while(1){
 	my @aconnect_l = `aconnect -l`;
-	open(my $out, ">>/tmp/ac.txt") or die $!;
-	print $out scalar(localtime())."\n";
-	print $out @aconnect_l;
-	print $out "\n";
 	
 	my $lhs = undef;
 	foreach my $ac (@aconnect_l){

@@ -420,18 +420,6 @@ foreach my $name ( sort keys %pedal_settings){
 	}
     }
 }
-# print "Run now: ".join ("\n",
-# 			map {"$_\n\t" . join("\n\t\t",
-# 					     @{$control_commands{$_}})."\n"}
-#     sort keys %control_commands) . "\n";
-# print "Pedals:\n\t";
-# foreach my $name (sort keys %pedal_commands){
-#     print "$name\n\t\t";
-#     foreach my $cmd (@{$pedal_commands{$name}}){
-# 	print "$cmd\n\t\t";
-#     }
-#     print "\n";
-# }
 
 my $pedal_dir = "$ENV{Home120Proof}/PEDALS";
 
