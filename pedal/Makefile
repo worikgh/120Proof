@@ -1,6 +1,6 @@
 EXE_NAME=120Proofpd # pd => pedal driver.  The string 120ProofPedalDriver makes pgrep fail.  It is tooo long, I think
 
-build: zip install
+build: kill zip install
 
 driver: driver.c 
 	gcc -D VERBOSE -Wall -o ${EXE_NAME} -O0 -g3 driver.c -lm -ljack
@@ -22,7 +22,5 @@ profile: driver.c
 install:
 	cp ${EXE_NAME} ../bin/${EXE_NAME}
 
-# # Does not work as expected.  Allways fails
-# # pgrep status is 0 if a match found, but still always fails.
-# kill:
-# 	pgrep ${EXE_NAME} -u ${USER} || pkill ${EXE_NAME} -u ${USER}
+kill:
+	(pgrep ${EXE_NAME} -u ${USER} && pkill ${EXE_NAME} -u ${USER}) || true
