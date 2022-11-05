@@ -7,10 +7,14 @@ $command = shift or die "$0 list|delete";
 $command eq "list" || $command eq "delete" ||  die "$0 list|delete";
 
 
+
 my @jack_lsp = `jack_lsp -tc`;
 my $l = ''; # The out put line
 my $device1 = undef;
 my $device2 = undef;
+
+my %devices_to_delete = ();
+
 foreach my $line (@jack_lsp ){
     chomp $line;
     
@@ -27,8 +31,13 @@ foreach my $line (@jack_lsp ){
     }elsif($line =~ /^\t(\S.+)/){
 	if($line =~ /midi/ and defined ($device1) and defined($device2)){
 	    if($command eq "delete"){
-		# warn "Delete: $device1 $device2";
-		print `jack_disconnect "$device1" "$device2"`;
+		my $key;
+		if($device1 le $device2){
+		    $key = "'$device1' '$device2'";
+		}else{		    
+		    $key = "'$device2' '$device1'";
+		}
+		$devices_to_delete{$key} = 1;
 	    }elsif($command eq "list"){
 		print "\"$device1\" \"$device2\"\n";
 	    }
@@ -36,3 +45,7 @@ foreach my $line (@jack_lsp ){
     }
 }
 
+
+foreach my $devices (keys %devices_to_delete){
+    print `jack_disconnect $devices `;
+}    
