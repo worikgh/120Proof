@@ -33,5 +33,4 @@ bin/mod-host.pid
 get_git_token
 .gitignore
 output/
-bin/
 TAGS
