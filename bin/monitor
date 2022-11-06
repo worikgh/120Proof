@@ -56,8 +56,9 @@ while(1){
 	    }
 	    if($bytes_read > 0){
 		## Got some data.
+		my @lines = split(/\n/, $buffer);
 		if($fn eq "lpx_controll.out"){
-		    my @lines = split(/\n/, $buffer);
+
 		    my @running =
 			map{/subs\/ON-(\S+)/ and $1}
 			grep {/Run command: $ENV{Home120Proof}\/subs\/\S+$/} @lines;
@@ -71,12 +72,23 @@ while(1){
 		    }
 		}
 		# print("$fn: Looped: \$bytes_read: $bytes_read \n");
-		
+
+		## Check for xruns
+		if(grep {/xrun reported/} @lines){
+		    $state{xrun} = time();
+		}
 	    }
 
 	}
     }
 
     ## Output state (This is where ncurese can be useful)
-    print "\r".(defined($state{running}) ? $state{running} : "    ")."           ";
+    my $running = defined($state{running}) ? $state{running} : "    "; 
+    my $xrun_time = "";
+    if(defined $state{xrun}){
+	my $last_xrun = $state{xrun};
+	$xrun_time = time() - $last_xrun;
+	$xrun_time .= " seconds since last xrun";
+    }
+    print "\r$running\t $xrun_time           ";
 }
