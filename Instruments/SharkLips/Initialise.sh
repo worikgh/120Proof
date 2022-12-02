@@ -23,10 +23,10 @@ if(!`pgrep lpx_control`){
 }
 
 my $jack_name = 'SharkLipsKeys';
-my $midi_name =  'yoshimi-SharkLipsKeys';
+my $midi_name =  "yoshimi-$jack_name";
 
 
-&One20Proof::run_daemon("$ENV{'Home120Proof'}/bin/InitialiseYos  SharkLipsKeys '$ENV{'Home120Proof'}/Instruments/xiz/Hammond Organ.xiz'");
+&One20Proof::run_daemon("$ENV{'Home120Proof'}/bin/InitialiseYos  $jack_name '$ENV{'Home120Proof'}/Instruments/xiz/Hammond Organ.xiz'");
 &One20Proof::wait_for_jack($jack_name) or die "Jack: $jack_name not found";
 &One20Proof::wait_for_midi($midi_name) or die "$midi_name not found";
 
