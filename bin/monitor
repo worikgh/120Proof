@@ -37,8 +37,8 @@ my %state  = ();
 ## $length is the amount of data to read at a tmime from file handle
 ## If missing data from file $bytes_read will be == $length.
 ## So increase $length
-my $length = 1;
-# my $length = 4096;
+##my $length = 1;
+my $length = 4096;
 while(1){
     my ($a, $b) = select(my $bytes = $bits, undef, undef, undef);
     if($a == -1){
@@ -57,19 +57,15 @@ while(1){
 	    if($bytes_read > 0){
 		## Got some data.
 		my @lines = split(/\n/, $buffer);
-		if($fn eq "lpx_controll.out"){
 
-		    my @running =
-			map{/subs\/ON-(\S+)/ and $1}
-			grep {/Run command: $ENV{Home120Proof}\/subs\/\S+$/} @lines;
-		    # warn " Run command:$ENV{Home120Proof}\/subs\/(\S+) ";
-		    # warn "'$lines[0]'";
-		    if(@running){
-			if(scalar(@running) > 1){
-			    warn "\@running too long: ".join(", ", @running);
-			}
-			$state{running} = $running[$#running];
-		    }
+		if($fn =~ /^(.+).err$/){
+		    # All the errors
+		    print join("", map{"$1 e $_\n"} @lines);
+		}elsif($fn =~ /^(.+).out$/){
+		    # All the stdout
+		    print join("", map{"$1 o $_\n"} @lines);
+		}else{
+		    print "$fn\n";
 		}
 		# print("$fn: Looped: \$bytes_read: $bytes_read \n");
 
@@ -81,14 +77,4 @@ while(1){
 
 	}
     }
-
-    ## Output state (This is where ncurese can be useful)
-    my $running = defined($state{running}) ? $state{running} : "    "; 
-    my $xrun_time = "";
-    if(defined $state{xrun}){
-	my $last_xrun = $state{xrun};
-	$xrun_time = time() - $last_xrun;
-	$xrun_time .= " seconds since last xrun";
-    }
-    print "\r$running\t $xrun_time           ";
 }
