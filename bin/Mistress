@@ -75,12 +75,13 @@ if(defined($arg)){
 
 ## Required to run Jack
 $ENV{"JACK_PROMISCUOUS_SERVER"} = 'jack';
+## TODO There is an environment variable that stops Jack from needing
+## Dbus so this whole thing can be run headless
 
 print "120Proof's Mistress running rooted at: $ENV{'Home120Proof'} ".(scalar(localtime()))."\n";
 
 ## Set the mode of the LPX to 127
 print `$ENV{"Home120Proof"}/bin/lpx_mode 1`;
-
 print `$ENV{"Home120Proof"}/bin/lpx_mode 127`;
 
 
