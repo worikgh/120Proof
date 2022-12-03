@@ -2,6 +2,16 @@ package One20Proof;
 use IPC::Open3;
 #use POSIX "setsid";
 
+BEGIN {
+    require Exporter;
+    our @ISA = qw(Exporter);
+    our @EXPORT_OK = qw | $MODEP_PEDALS |;
+}
+
+## Constants
+## Where modep puts its pedal definitions
+our $MODEP_PEDALS = "/var/modep/pedalboards";
+
 ## Kill any copies of the passed programme owned by this user
 sub pkill( $ ){
     my $prog_name = shift or die;

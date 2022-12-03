@@ -1,13 +1,16 @@
 #!/usr/bin/perl -w
 use strict;
 
+use lib("$ENV{'Home120Proof'}/Perl");
+use One20Proof qw | $MODEP_PEDALS |;
+
 ## Read the files that modep writes and write out the set of commands
 ## for mod-host, jack, and midi to implement the modep pedal boards
 
 # The output file
 my $modep_command_fn = shift or die;
 
-## Not all boards built by gui are desirable.  So pass the boards to
+## Not all boards built by GUI are desirable.  So pass the boards to
 ## ignore on the command line
 my @ignore_boards = ();
 foreach my $ignored_board (@ARGV){
@@ -16,8 +19,8 @@ foreach my $ignored_board (@ARGV){
 
 my $VERBOSE = 0;
 
-## Where modep puts its pedal definitions
-my $MODEP_PEDALS = "/var/modep/pedalboards";
+## Where to find pedal definitions
+my $PEDAL_DEF_DIR = $One20Proof::MODEP_PEDALS;
 
 ## Reads the modep configuration files for pedals and sets them all up
 ## in mod-host.  For each pedal it writes a file in the current
@@ -311,7 +314,7 @@ my $prefix = 'a';
 
 ## All directories with a ".pedalboard" suffix have a pedal board
 ## definition
-opendir(my $dir, $MODEP_PEDALS) or die $!;
+opendir(my $dir, $PEDAL_DEF_DIR) or die $!;
 my @names = grep { /\.pedalboard$/ } readdir($dir);
 
 ## For each pedalboard directory, collect the mod-host command strings
@@ -322,7 +325,7 @@ foreach my $name (sort @names){
     my $board = $1;
     $VERBOSE  and print STDERR "board: $board\n";
     if(! grep {/^$board$/} @ignore_boards){
-	my $fn = &get_board_ttl($MODEP_PEDALS, $name, $board);
+	my $fn = &get_board_ttl($PEDAL_DEF_DIR, $name, $board);
 	
 	# print STDERR "Process: $fn\n";
 	my @board_commands = &process_file($prefix, $fn);
