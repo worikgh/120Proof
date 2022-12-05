@@ -2,16 +2,16 @@
 use strict;
 
 use lib("$ENV{'Home120Proof'}/Perl");
-use One20Proof qw | $MODEP_PEDALS |;
+use One20Proof qw | $MODEP_PEDALS $PEDAL_DIR |;
 
 ## Read the files that modep writes and write out the set of commands
 ## for mod-host, jack, and midi to implement the modep pedal boards
-
-# The output file
+##
+## The frst argument is the command file.
+## The rest of the arguments are boards to ignore, Not all boards built by GUI are desirable.
+##
+## E.g: $ENV{"Home120Proof"}/bin/ExtractModep $modep_command_fn Looper Harp_Sweetner ORGANS ORGANS_Sweet
 my $modep_command_fn = shift or die;
-
-## Not all boards built by GUI are desirable.  So pass the boards to
-## ignore on the command line
 my @ignore_boards = ();
 foreach my $ignored_board (@ARGV){
     push(@ignore_boards, $ignored_board);
@@ -23,7 +23,7 @@ my $VERBOSE = 0;
 my $PEDAL_DEF_DIR = $One20Proof::MODEP_PEDALS;
 
 ## Reads the modep configuration files for pedals and sets them all up
-## in mod-host.  For each pedal it writes a file in the current
+## in mod-host.  For each pedal it writes a file in the appropriate
 ## directory to implement the pedal by connecting jack IO
 
 ## Keyed by the name of a effect, values are the instance number 
@@ -262,6 +262,8 @@ sub process_file( $$ ) {
 	my $instance_number = "$prefix:$e";
 
 	# Later these will be used to assign integers > 0 
+	$VERBOSE and
+	    print STDERR "Initialise '$instance_number' in effect_name_instance\n";
 	$effect_name_instance{$instance_number} = -1;
 
 	my $_e1 = $effects{$e};
@@ -324,7 +326,8 @@ foreach my $name (sort @names){
     $name =~ /^(\S+)\.pedalboard$/ or die $name;
     my $board = $1;
     $VERBOSE  and print STDERR "board: $board\n";
-    if(! grep {/^$board$/} @ignore_boards){
+    if(!grep {/^$board$/} @ignore_boards){
+
 	my $fn = &get_board_ttl($PEDAL_DEF_DIR, $name, $board);
 	
 	# print STDERR "Process: $fn\n";
@@ -352,7 +355,7 @@ foreach my $key (sort keys %effect_name_instance){
     $effect_name_instance{$key} = $inst++;
 }
 
-## Now have propper instance numbers.  Apply them
+## Now have propper instance numbers for each effect.  Apply them
 
 ## The commands to set up pedal boards indexed by board name
 my %pedal_settings = ();
@@ -424,7 +427,7 @@ foreach my $name ( sort keys %pedal_settings){
     }
 }
 
-my $pedal_dir = "$ENV{Home120Proof}/PEDALS";
+my $pedal_dir = $One20Proof::PEDAL_DIR;
 
 -d $pedal_dir or mkdir $pedal_dir or die "$!: Cannot mkdir $pedal_dir";
 
