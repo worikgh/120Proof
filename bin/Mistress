@@ -29,7 +29,7 @@ if(!$ENV{"Home120Proof"}){
 }
 
 use lib("$ENV{'Home120Proof'}/Perl");
-use One20Proof;
+use One20Proof qw | $MODHOST_PORT |;
 
 # &One20Proof::run_daemon( "$ENV{Home120Proof}/bin/hello_world");
 # sleep 3;
@@ -52,7 +52,7 @@ One20Proof::pkill($lpx_control_name);
 One20Proof::pkill($lpx_scale_name);
 
 ## Clean up the modep commands file that will be written again by ExtractModep
-my $modep_command_fn = "modep_commands.txt";
+my $modep_command_fn = "$ENV{Home120Proof}/modep_commands.txt";
 -e $modep_command_fn and unlink($modep_command_fn);
 
 ## Cleanup the output directory where sub programmes write output
@@ -81,15 +81,15 @@ $ENV{"JACK_PROMISCUOUS_SERVER"} = 'jack';
 print "120Proof's Mistress running rooted at: $ENV{'Home120Proof'} ".(scalar(localtime()))."\n";
 
 ## Set the mode of the LPX to 127
-print `$ENV{"Home120Proof"}/bin/lpx_mode 1`;
-print `$ENV{"Home120Proof"}/bin/lpx_mode 127`;
+&One20Proof::run_daemon("$ENV{'Home120Proof'}/bin/lpx_mode 1");
+&One20Proof::run_daemon("$ENV{Home120Proof}/bin/lpx_mode 127");
 
 
 ## Initialise mod-host: IM (66)
-my $PORT = 9116;
+my $PORT = $One20Proof::MODHOST_PORT;
 
 ## IM: Copy the definitions of simulators writen by modep-mod-ui: EM (26)
-print `$ENV{"Home120Proof"}/bin/ExtractModep $modep_command_fn Looper Harp_Sweetner ORGANS ORGANS_Sweet`; # A black box for now
+&One20Proof::run_daemon("$ENV{Home120Proof}/bin/ExtractModep $modep_command_fn Cello_Boaster Looper Harp_Sweetner ORGANS ORGANS_Sweet");
 
 
 ## IM: Start mod-host
@@ -109,19 +109,19 @@ unless(`lsof -i:$PORT`){
 
 
 ## IM: Start simulators MS (47)
-print `$ENV{"Home120Proof"}/bin/ModhostSimulators`;
+&One20Proof::run_daemon("$ENV{Home120Proof}/bin/ModhostSimulators");
 
 ## Set up the controls for the LPX
 
-my $lpx_control_pid = One20Proof::run_daemon($lpx_control);
+One20Proof::run_daemon($lpx_control);
 sleep 1;
 
 ## Run the pedal
-my $pedal_pid = One20Proof::run_daemon("$pedal_driver $ENV{Home120Proof}/pedal/PEDALS ");
+&One20Proof::run_daemon("$pedal_driver $ENV{Home120Proof}/pedal/PEDALS ");
 
 # Remove any nasty Jack MIDI connections
 
-print `$ENV{"Home120Proof"}/bin/delete_jack_midi_connections delete`;
+&One20Proof::run_daemon("$ENV{Home120Proof}/bin/delete_jack_midi_connections delete");
 
 ## Check that they have been deleted
 `$ENV{"Home120Proof"}/bin/delete_jack_midi_connections list` and die "Failed to delete JACK Midi connections";
