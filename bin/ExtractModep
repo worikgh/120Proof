@@ -442,7 +442,7 @@ foreach my $file (@files){
     unlink $df or die "$!: $file";
 }
 
-open(my $collected_commands, ">$modep_command_fn") or die $!;
+open(my $collected_commands, ">$modep_command_fn") or die "$!: Couldnot open $modep_command_fn to write";
 
 foreach my $name (sort keys %control_commands){
 
