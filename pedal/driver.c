@@ -102,19 +102,25 @@ struct pedal_config * get_pedal_config(const char c) {
   disconnected/deimplemented (`deimplement_pedal`) o there is no silence.
 
 */
-void implement_pedal(char * pedal){
+int implement_pedal(char * pedal){
 #ifdef VERBOSE
-  Log( "%s:%d implement_pedal %c\n",
+  Log( "%s:%d implement_pedal Pedal: %c\n",
        __FILE__, __LINE__, *pedal);
 #endif
   if ( pedal == NULL ) {
     // TODO Is this possible? Should this be a crash?
-    return;
+    return -1;
   }
   
   // Get the configuration data for the old and new pedal
   struct pedal_config * pc = get_pedal_config(*pedal);
-
+#ifdef VERBOSE
+  Log( "%s:%d implement_pedal Pedal Config pointer %p\n",
+       __FILE__, __LINE__, pc);
+#endif
+  if(pc == NULL){
+    return -1;
+  }
   // Connect the new pedal
   for (unsigned i = 0; i < pc->n_connections; i++){
     char * src_port = pc->connections[i].ports[0];
@@ -136,8 +142,8 @@ void implement_pedal(char * pedal){
 #ifdef VERBOSE
 	print_connections();
 #endif
-	// Bail out after an error
-	exit(-1);
+
+	return -1;
       }
     }
   }
@@ -145,6 +151,7 @@ void implement_pedal(char * pedal){
   Log( "%s:%d END implement_pedal %c\n",
        __FILE__, __LINE__,  *pedal);
 #endif
+  return 1;
 }
 
 
@@ -358,6 +365,9 @@ void process_line(char pedal, char * line){
   assert(src_port);
   dst_port = strtok(NULL, " ");
   assert(dst_port);
+#ifdef VERBOSE
+  Log("%s:%d: Load pedal: %c %s %s\n", __FILE__, __LINE__, pedal, src_port, dst_port);
+#endif
   add_pedal_effect(pedal, src_port, dst_port);
 }
 
@@ -403,9 +413,7 @@ int load_pedal(char p){
   pedal = p;
   switch (p){
   case 'A':
-    break;
   case 'B':
-    break;
   case 'C':
     break;
   default:
@@ -418,7 +426,15 @@ int load_pedal(char p){
   Log( "Opening script: %s\n", scriptname);
 #endif
   fd = fopen(scriptname, "r");
-  assert(fd);
+#ifdef VERBOSE
+  Log( "Result: %i\n", fd);
+#endif
+  if(fd == 0){
+#ifdef VERBOSE
+    Log("Failed to open: %s\n", scriptname); 
+#endif
+   return -1;
+  }
   i = 0;
   while((ch = fgetc(fd)) != EOF && i < LINE_MAX){  /* while(!feof(fd)){ */
     
@@ -493,12 +509,13 @@ int get_foot_pedal_fd(const char * vendor_code, const char * product_code) {
 // Called on set up and when signaled to set up the pedals.  Define
 // what they do
 void initialise_pedals(){
-  pedals.pedal_configA.n_connections = 0;
-  pedals.pedal_configA.connections = NULL;
-  pedals.pedal_configB.n_connections = 0;
-  pedals.pedal_configB.connections = NULL;
-  pedals.pedal_configC.n_connections = 0;
-  pedals.pedal_configC.connections = NULL;
+  memset(&pedals, 0, sizeof(pedals));
+  /* pedals.pedal_configA.n_connections = 0; */
+  /* pedals.pedal_configA.connections = NULL; */
+  /* pedals.pedal_configB.n_connections = 0; */
+  /* pedals.pedal_configB.connections = NULL; */
+  /* pedals.pedal_configC.n_connections = 0; */
+  /* pedals.pedal_configC.connections = NULL; */
   load_pedal('A');
   load_pedal('B');
   load_pedal('C');
@@ -729,31 +746,33 @@ int main(int argc, char * argv[]) {
 	/* the bit is set in the key state */
 	if(last_yalv != yalv){
 	  /* Only when it changes */
-	  char * old_pedal = current_pedal;
-
+	  
+	  char * selected_pedal = 0;
 	  if(yalv == 0x1e){
-	    current_pedal = &A;
+	    selected_pedal = &A;
 	  }else if(yalv == 0x30){
-	    current_pedal = &B;
+	    selected_pedal = &B;
 	  }else if(yalv == 0x2e){
-	    current_pedal = &C;
+	    selected_pedal = &C;
 	  }	    
 	  last_yalv = yalv;
 	  struct timeval a, b, c;
 
 	  gettimeofday(&a, NULL);
 
-	  implement_pedal(current_pedal);
+	  if(implement_pedal(selected_pedal) < 0){
+	    /* Failed to  set new pedal */
+	    continue;
+	  }
+	  
+	  /* Succeeded impementing new pedal. */
+
+	  char * old_pedal = current_pedal;
+	  current_pedal = selected_pedal;
 
 	  gettimeofday(&b, NULL);
 
 	  deimplement_pedal(old_pedal, current_pedal);
-/* #ifdef VERBOSE */
-/* 	  Log("%s:%d implement pedal: %c", */
-/* 	      __FILE__, __LINE__, current_pedal); */
-/* 	  struct pedal_config * pc = get_pedal_config(*current_pedal); */
-/* 	  assert(pc->connections[0].ports); */
-/* #endif */
 
 	  gettimeofday(&c, NULL);
 
@@ -768,7 +787,6 @@ int main(int argc, char * argv[]) {
 	  Log("Total: %ld\n", ((c.tv_sec - a.tv_sec) * 1000000) +
 	      (c.tv_usec - a.tv_usec));
 	}
-
 	// Write a record of the pedal in a known location so other
 	// programmes can know what pedal is selected
 	int fd_pedal;
@@ -825,35 +843,20 @@ int main(int argc, char * argv[]) {
 
 void Log(char * sp, ...){
 
-  const char * log_fn = "/tmp/driver.log";
+  /* const char * log_fn = "/tmp/driver.log"; */
   const unsigned MAX_LOG = 2048;
   char LOGBUFFER[MAX_LOG];
 
   va_list argptr;
   va_start(argptr, sp);
   vsnprintf(LOGBUFFER, MAX_LOG, sp, argptr);
-  //int fd = open(log_fn, O_APPEND|O_CREAT, 0644); //S_IWUSR|S_IRUSR|S_IRGRP|S_IROTH );
-  int fd = open(log_fn,  O_WRONLY | O_CREAT | O_APPEND , 0644);
-  if(fd < 0){
-    fprintf(stdout, "%s:%d: Failed to open %s.  Error: %s\n",
-	    __FILE__, __LINE__, log_fn, strerror(errno));
-    exit(fd);
-  }
+  //open(log_fn,  O_WRONLY | O_CREAT | O_APPEND , 0644);
+  /* int fd = fileno(stderr);  */
 
 
-  int res = dprintf(fd, LOGBUFFER);
-  if(res != strlen(LOGBUFFER)){
-    fprintf(stderr, "%s:%d: Failed to write log %s d: %d fd: %d Message: %s\n",
-	    __FILE__, __LINE__, strerror(errno), res, fd, LOGBUFFER);
-    exit(-1);
-  }
+  int res = fprintf(stderr, "%s", LOGBUFFER);
+  /* fprintf(stdout, "Logging\n"); */
 
-  if(close(fd)){
-    fprintf(stderr, "%s:%d: Failed to close log  %s\n",
-	    __FILE__, __LINE__, strerror(errno));
-    exit(-1);
-  }
-  fprintf(stderr, LOGBUFFER);
 }
 
 void print_connections() {
