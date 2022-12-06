@@ -5,12 +5,18 @@ use IPC::Open3;
 BEGIN {
     require Exporter;
     our @ISA = qw(Exporter);
-    our @EXPORT_OK = qw | $MODEP_PEDALS |;
+    our @EXPORT_OK = qw | $MODEP_PEDALS $PEDAL_DIR $MODHOST_PORT |;
 }
 
 ## Constants
 ## Where modep puts its pedal definitions
 our $MODEP_PEDALS = "/var/modep/pedalboards";
+
+## Where the files for the foot pedal are
+our $PEDAL_DIR = "$ENV{'Home120Proof'}/pedal/PEDALS";
+
+## The port 120Proof's mod-host smulator runs on
+our $MODHOST_PORT = 9116;
 
 ## Kill any copies of the passed programme owned by this user
 sub pkill( $ ){
@@ -22,21 +28,19 @@ sub pkill( $ ){
 }
 
 sub run_daemon( $ ) {
-    my $cmd = shift or die "Must pass command";
+    my $cmd = shift;
 
     ## Prepare command
     my @cmd = split(/\s+/, $cmd);
-    -x $cmd[0] or die "Must pass an executable.  '$cmd[0]' is nopt";
+    -x $cmd[0] or die "Must pass an executable.  '$cmd[0]' is not";
+
     
     defined(my $pid = fork())   or die "can't fork: $!";
     return($pid) if $pid;               # non-zero now means I am the parent
-    # (setsid() != -1)            or die "Can't start a new session: $!";
-
-
     
     ## Create logs for stderr and stdout
 
-    # Get the name f the command by separating it from the path
+    # Get the name of the command by separating it from the path
     my $command_file = $cmd[0];
     $command_file =~ s/^.+\/([^\/]+)$/$1/;
 
@@ -49,8 +53,15 @@ sub run_daemon( $ ) {
     open(my $stdout, ">>", $stdout_fn) or
 	die "$!: Cannot open $stdout_fn for append";
 
-    open3(undef, '>&' . fileno($stdout),  '>&' . fileno($stderr), $cmd);
+    select($stdout);
     $|++;
+    select($stderr);
+    $|++;
+
+    open3(undef, '>&' . fileno($stdout),  '>&' . fileno($stderr), $cmd);
+
+
+    exec(@cmd);
     exit;
 }
 
