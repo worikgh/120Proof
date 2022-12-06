@@ -17,7 +17,7 @@ my $output_dir = "$ENV{'Home120Proof'}/output/";
 opendir(my $dir, $output_dir) or die "$! $output_dir";
 
 # Get all the input files
-my @files = grep {$_ =~ /[a-z]/} grep{$_ !~ /~/} readdir($dir) or die $!;
+my @files = grep {$_ =~ /[a-z]/} grep{$_ !~ /~/} readdir($dir) or die "$!: Failed to read from $output_dir";
 
 my %fh = ();
 my $bits = '';
@@ -34,13 +34,13 @@ foreach my $fn (@files){
 ## The state of 120Proof.  
 my %state  = ();
 
-## $length is the amount of data to read at a tmime from file handle
+## $length is the amount of data to read at a time from file handle
 ## If missing data from file $bytes_read will be == $length.
 ## So increase $length
 ##my $length = 1;
 my $length = 4096;
 while(1){
-    my ($a, $b) = select(my $bytes = $bits, undef, undef, undef);
+    my ($a, $b) = select(my $bytes = $bits, undef, undef, 0.1);
     if($a == -1){
 	warn "$! Fail";
     }else{
@@ -77,4 +77,5 @@ while(1){
 
 	}
     }
+    sleep(0.1);
 }
