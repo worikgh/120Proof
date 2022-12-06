@@ -3,6 +3,9 @@ use strict;
 
 use IO::Socket::INET;
 
+use lib("$ENV{'Home120Proof'}/Perl");
+use One20Proof qw | $PEDAL_DIR $MODHOST_PORT |;
+
 ## Read the output of `ExtractModep` and set up the LV2 simulators,
 ## and Jack pipes for the pedal boards defined by Modep.  Also set up
 ## the "activation" files in `$pedal_dir` to put the definitions of
@@ -22,11 +25,11 @@ my $modep_command_fn = "$home_dir/modep_commands.txt";
 
 ## The directory to write the files that the pedal driver reads to
 ## control the simulatons
-my $pedal_dir = "$home_dir/pedal/PEDALS/";
+my $pedal_dir = "$One20Proof::PEDAL_DIR/";
 -d $pedal_dir or die "$!: $pedal_dir";
 -x $pedal_dir or die "$!: $pedal_dir";
 
-my $mod_host_port_p = 9116;
+my $mod_host_port_p = $One20Proof::MODHOST_PORT;
 
 ## Variables to drive main loop
 my $NAME; # Current pedal board
@@ -196,17 +199,17 @@ foreach my $line(<$cmds>){
 	next;
     }
     if($line =~ /^ACTIVATE\s*$/){
-	## The commands to put in the activation filaes, that `driver`
-	## uses to set up and tear downb pedal board simulations in
+	## The commands to put in the activation files, that `driver`
+	## uses to set up and tear down pedal board simulations in
 	## real time
 
-	## Today 2022-06-01 "set up and tear downb pedal board
+	## Today 2022-06-01 "set up and tear down pedal board
 	## simulations" means Jack connections.  But in the future it
-	## will include MIDI connecti9ons and mod-host command.  For
-	## example the plugin FluidOrgans is an LV2 simulator that
+	## will include MIDI connections and mod-host command.  For
+	## example the plugin Fluid Organs is an LV2 simulator that
 	## takes MIDI as input.  The SooperLooper LV2 plugin has the
-	## normal looper controlls (record, play, reset...) that are
-	## implemenmtyed as `mod-host` `param` commands and should be
+	## normal looper controls (record, play, reset...) that are
+	## implemented as `mod-host` `param` commands and should be
 	## assigned to the pedal.
 	$section = "activate";
 	next;
