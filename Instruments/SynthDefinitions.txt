@@ -1,0 +1,8 @@
+# Hard piano
+/usr/share/yoshimi/banks/Rhodes/0004-DX Rhodes 4.xiz
+
+# Sharp organ
+/usr/share/zynaddsubfx/banks/olivers-100/0124-Simple Clonewheel.xiz
+
+# Hammond organ
+/home/patch/120Proof/Instruments/xiz/Hammond Organ.xiz

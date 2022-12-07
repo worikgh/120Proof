@@ -49,4 +49,4 @@ $midi_name =  'yoshimi-GhostWalkingKeys';
 
 #&One20Proof::run_daemon("$ENV{'Home120Proof'}/bin/InitialiseMidi $ENV{'Home120Proof'}/Instruments/GhostWalking/midi.cfg ");
 print `$ENV{'Home120Proof'}/bin/InitialiseMidi $ENV{'Home120Proof'}/Instruments/GhostWalking/midi.cfg`;
-# TODO: Get a way of of confirming MDI set up correctly
+# TODO: Get a way of of confirming MIDI set up correctly
