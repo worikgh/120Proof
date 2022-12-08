@@ -56,9 +56,16 @@ $xiz_file = '0004-DX\ Rhodes\ 4';
 my $midi_lpx_to_manager = 'Launchpad X:Launchpad X MIDI 2	120-Proof-MIDI-In-LPX:120-Proof-MIDI-In-LPX-in';
 
 ## Send LPX MIDI to Yoshimi 
+
 my $midi_manager_to_yoshimi = '120-Proof-MIDI-Out-PD:120-Proof-MIDI-Out-PD-out	'.$midi_name_lpx.':input';
 
 ## Send control MIDI from 120Proof to LPX
 my $midi_manager_lpx = '120-Proof-MIDI-Out-LPX:120-Proof-MIDI-Out-LPX-out	Launchpad X:Launchpad X MIDI 1';
+
+my $midi_keys_manager = 'Impact LX88+:Impact LX88+ MIDI 1'."\t".$midi_name_keys.':input';
+
+# lpx_control: Send MIDI notes to manager for translation
+my $midi_lpx_to_control = 'Launchpad X:Launchpad X MIDI 2	120-Proof-CTL:120-Proof-CTL-in';
+my $midi_control_to_lpx = '120-Proof-CTL:120-Proof-CTL-out	Launchpad X:Launchpad X MIDI 1';
 
 &One20Proof::run_daemon("$ENV{'Home120Proof'}/bin/InitialiseMidi $ENV{'Home120Proof'}/Instruments/$instrument_name/midi.cfg ");
