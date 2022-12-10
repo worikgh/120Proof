@@ -1,5 +1,8 @@
 #!/usr/bin/perl -w
 use strict;
+use lib("$ENV{'Home120Proof'}/Perl");
+use One20Proof;
+
 
 ## Initialise the midi connections
 
@@ -10,9 +13,9 @@ sub wait_for_midi( $ ) {
     
     open(my $cfg, $cfg_fn) or die $!;
 
-    ## The keys of %connections are the MIDI devices that must exist,
-    ## and the values are 0 initially and set to 1 if the connection
-    ## found
+    ## The keys of %connections are the MIDI devices that must exist
+    ## becaue they are in the configuration file.  The values are 0
+    ## initially and set to 1 if the connection is found
     my %connections = ();
     my $flag = 0;
     while(my $line = <$cfg>){
@@ -69,6 +72,7 @@ sub wait_for_midi( $ ) {
 }
 
 ## Extract the MIDI connections out of the config file
+## Each line is two parts separated by a TAB
 sub process_line( $ ){
     my $line = shift or die;
     chomp $line;
@@ -231,8 +235,138 @@ sub set_up_midi( $ ) {
     }
 }
 
-			  
-my $cfg_fn = shift or die "pass a configuration file";
-&wait_for_midi( $cfg_fn );
-&set_up_midi( $cfg_fn );
+## Parse output of aconnect -l to make a list of all MIDI connections  that
+## 120Proof can use.  There is no accessible documentation for the format
+## of this output.
 
+## Use multiple passes of the data:
+
+## The data is divided into client records.
+## Each client record starts with /^client (\d+):[^\[]+\[([^\]]+)\]$/
+## The client number is $1.
+## $2 is an array.  The first entry is "type=<type>". Types can be kernel,
+## or user.  If there is a second argument it is "pid=<PID>" where the
+## process that owns this is PID, or "card=<Card number>" which matches a
+## device attached to the computer.
+
+## The client records are divided into port records.
+## Each port record starts with /^\s+(\d+)\s\'([^\']+)$/.
+## $1 is the port number.  The deviceID is "<device number>:<port number>"
+## uniquely describe one end of a MIDI connection.
+
+## Each port record has 0, 1, or 2 lines /^\s+Connected From: \[(.+)\]/ or
+## /^\s+Connecting To: \[(.+)\]/.
+## $1 are devices "<device number>:<port number>".  For device "128:0"
+## sometimes it is: "128:0[real:0]".
+
+
+## Parse 1.  Build an array of port records for clients with a PID or card. .  (Just the connecting To lines will be enough).  In each record store device number, port number, PID or card, and connecting to line.  Subsequent parses are over this array
+
+## Parse 2: Get the devceID of every client record with a PID or card number.
+## Put these in @device_ids 
+
+## Parse 3: For every port record with a deviceID $prID where $prID is in  @device_ids, evry deviceID in the ConectingTo line, $clID, if $clID is in @deviceIDs then "$prID $clID" is a connection that 120Proof cares about.
+
+
+sub delete_all(){
+    my @all_midi = &One20Proof::list_all_midi();
+    foreach my $midi_desc (@all_midi){
+	my $disconnect_string =
+	    "aconnect -d $$midi_desc[0]:$$midi_desc[1] $$midi_desc[2]:$$midi_desc[3]"; 
+	print `$disconnect_string`;
+    }
+}
+
+sub list_all_midi {
+
+    my @aconnect_l = `aconnect -l`;
+    ## Store the existing connections in a way that can be passed to
+    ## `aconnect -d`.  Each connection that we to delete is mentioned
+    ## in a "Connecting To" and in a "Connected From" clause.  The
+    ## keys of the HASHs are the strings for `aconnect -d`
+    my %existing_connections_to = ();
+    my %existing_connections_from = ();
+
+    ## Map port:device  names to string
+    my %midi_devices_by_num = ();
+    ## Map port:device  string to names 
+    my %midi_devices_by_str = ();
+    
+
+    my $port_str = undef;
+    my $port_num = undef;
+    my $dev_num = undef;
+    my $dev_str =  undef;
+
+    foreach my $ac  (@aconnect_l){
+	chomp $ac;
+	# client 24: 'pisound' [type=kernel,card=2]
+	if ($ac =~ /^client (\d+): '([^\']+)'/){
+	    $port_num = $1;
+	    $port_str = $2;
+	    next;
+	}
+
+	#     0 'pisound MIDI PS-0N78HB5'
+	if($ac =~ /^\s+(\d+)\s+'\s*(\S[^']+\S)\s*'/){
+	    $dev_num = $1;
+	    $dev_str =  $2;
+
+	    ## Have port:dev as string and number
+	    $midi_devices_by_str{"$port_str:$dev_str"} = [$port_num, $dev_num];
+	    $midi_devices_by_num{"$port_num:$dev_num"} = [$port_str, $dev_str];
+	    next;
+	}
+	#	Connecting To: 129:0[real:0], 130:0, 131:0
+	if($ac =~ /^\s+Connecting To: (.+)\s*$/){
+	    my $con_str = $1;
+	    my @con_str = split(/,\s*/, $con_str);
+
+	    ## @con_str is an array of port:dev that this device is
+	    ## connectred to
+	    
+	    foreach my $pair (map{/^\s*(\d+):(\d+)/; [$1,$2]} @con_str){
+		my $delete_args = "$port_num:$dev_num $$pair[0]:$$pair[1]";
+
+		# One side of the equation
+		$existing_connections_to{$delete_args} = 1;
+	    }
+	    next;
+	}
+	#	Connected From: 24:0, 28:0, 28:1, 32:0, 129:0
+	if($ac =~ /^\s+Connected From:\s+(.+)/){
+	    my $con_str = $1;
+	    my @con_str = split(/,\s*/, $con_str);
+
+	    ## @con_str is an array of port:dev that connets to this
+	    ## device
+
+	    foreach my $pair (map{/^\s*(\d+):(\d+)/; [$1,$2]} @con_str){
+		my $delete_args = "$$pair[0]:$$pair[1] $port_num:$dev_num";
+
+		# # The otehr side of the equation
+		$existing_connections_from{$delete_args} = 1;
+	    }
+	    next;
+	}	    
+    }
+    
+    my @ret = ();
+    push(@ret, keys(%existing_connections_to));
+    push(@ret, keys(%existing_connections_from));
+    return @ret;
+}
+			  
+my $arg = shift or die "pass an argument";
+
+if($arg eq "list"){
+    ## List all alsa NIDI  connections
+    print join("\n", &list_all_midi)."\n";
+}elsif($arg eq "delete"){
+    &delete_all();
+}else{
+    my $cfg_fn = $arg;
+    -r $cfg_fn or die "Pass a readable configuration file";
+    &wait_for_midi( $cfg_fn );
+    &set_up_midi( $cfg_fn );
+}

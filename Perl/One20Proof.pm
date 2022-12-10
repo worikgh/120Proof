@@ -27,6 +27,92 @@ sub pkill( $ ){
     }
 }
 
+## Parse output of aconnect -l to make a list of all MIDI connections  that
+## 120Proof can use.  There is no accessible documentation for the format
+## of this output.
+
+
+## Output is an array of all connections:
+## [<from device>, <from port>, <to device>, <to port>,
+## <from device name>, <from port name> from type, PID or Card id]
+## E.g: [32,0,130,1,'Launchpad X','Launchpad X MIDI 1','card',4]
+
+sub list_all_midi {
+
+    my @aconnect_l = `aconnect -l`;
+
+    my @states = qw | find.port find.connections |;
+    my $state = $states[0];
+
+    my $card = undef;
+    my $device = undef;
+    my $device_name = undef;
+    my $pid = undef;
+    my $port = undef;
+    my $port_name = undef;
+    ## Lines like "Connected To: 32:1" as [$device, $port, 32, 1]
+    my @connections = ();
+    while(my $ac = shift(@aconnect_l)){
+	chomp $ac;
+	# client 132: 'yoshimi-UltimatePartyKeys' [type=user,pid=17053]
+	if($ac =~ /^client (\d+):\s\'(.+)\'\s\[type=\S+,pid=(\d+)\]$/){
+	    $card = undef;
+	    $device = $1;
+	    $device_name = $2;
+	    $pid = $3;
+	    $port = undef;
+	    $port_name = undef;
+	    next;
+	}
+	
+	if($ac =~ /^client (\d+):\s\'(.+)\'\s\[type=\S+,card=(\d+)\]$/){
+	    $card = $3;
+	    $device = $1;
+	    $device_name = $2;
+	    $pid = undef;
+	    $port = undef;
+	    $port_name = undef;
+	    next;
+	}
+	if($ac =~ /^client/){
+	    $card = undef;
+	    $device = undef;
+	    $device_name = undef;
+	    $pid = undef;
+	    $port = undef;
+	    $port_name = undef;
+	    next;
+	}
+	defined($device_name) or next;
+	
+	# 0 'Launchpad X MIDI 1'
+	if($ac =~ /^\s+(\d+)\s\'(.+)\'$/){
+	    defined($card) or defined($pid) or die $ac;
+	    defined($device) or die $ac;
+	    $device_name or die $ac;
+	    $port = $1;
+	    $port_name = $2;
+	    next;
+	}
+	# Connecting To: 128:0[real:0], 130:1
+	if($ac =~ /^\s+Connecting To: (.+)/){
+	    my @targets = split(/,/, $1);
+
+	    ## Filter outy the perverse target "128:0[real:0]"
+	    @targets = map{s/\s//g; $_} grep{/^\s*[\d\:]+$/} @targets;
+	    foreach my $t (@targets){
+		my @t = split(/\:/, $t);
+		scalar(@t) == 2 or die $ac;
+		push(@connections, [$device, $port, $t[0], $t[1],
+				    $device_name, $port_name,
+				    defined($card) ? "card" : "programme",
+				    defined($card) ? $card : $pid]);
+	    }
+	}
+    }
+    return @connections;
+}
+
 sub run_daemon( $ ) {
     my $cmd = shift;
 
