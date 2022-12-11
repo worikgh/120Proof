@@ -31,18 +31,63 @@ sub pkill( $ ){
 ## 120Proof can use.  There is no accessible documentation for the format
 ## of this output.
 
+## Output is Hash keyed by deviceID
+sub all_midi_devices {
+    my %result = ();
+    my @aconnect_l = `aconnect -l`;
+
+    my $card = undef;
+    my $device = undef;
+    my $device_name = undef;
+    my $port = undef;
+    my $port_name = undef;
+    ## Lines like "Connected To: 32:1" as [$device, $port, 32, 1]
+
+    while(my $ac = shift(@aconnect_l)){
+	chomp $ac;
+	# client 132: 'yoshimi-UltimatePartyKeys' [type=user,pid=17053]
+
+	if($ac =~ /^client (\d+):\s\'(.+)\'\s\[type=\S+,(.+)\]$/){
+	    $card = $3;
+	    $device = $1;
+	    $device_name = $2;
+	    $port = undef;
+	    $port_name = undef;
+	    next;
+	}
+	if($ac =~ /^client/){
+	    $card = undef;
+	    $device = undef;
+	    $device_name = undef;
+	    $port = undef;
+	    $port_name = undef;
+	    next;
+	}
+	defined($device_name) or next;
+	
+	# 0 'Launchpad X MIDI 1'
+	if($ac =~ /^\s+(\d+)\s\'(.+)\'$/){
+	    defined($card) or die $ac;
+	    defined($device) or die $ac;
+	    $device_name or die $ac;
+	    $port = $1;
+	    $port_name = $2;
+	    $result{"$device:$port"} = "$device_name/$port_name $card";
+	}
+    }
+
+    return %result;
+}
 
 ## Output is an array of all connections:
 ## [<from device>, <from port>, <to device>, <to port>,
 ## <from device name>, <from port name> from type, PID or Card id]
 ## E.g: [32,0,130,1,'Launchpad X','Launchpad X MIDI 1','card',4]
 
-sub list_all_midi {
+sub list_all_midi_connections {
 
     my @aconnect_l = `aconnect -l`;
 
-    my @states = qw | find.port find.connections |;
-    my $state = $states[0];
 
     my $card = undef;
     my $device = undef;
@@ -99,10 +144,16 @@ sub list_all_midi {
 	    my @targets = split(/,/, $1);
 
 	    ## Filter outy the perverse target "128:0[real:0]"
-	    @targets = map{s/\s//g; $_} grep{/^\s*[\d\:]+$/} @targets;
+	    @targets = map{s/\s//g; $_} grep{_ !~ /128:0]+$/} @targets;
 	    foreach my $t (@targets){
+		my $real = undef;
+		$t  =~ s/\[(.+)\:.+\]// and $real = $1; 
 		my @t = split(/\:/, $t);
 		scalar(@t) == 2 or die $ac;
+
+		## FIXME What is device 128? (0-127 is MIDI range)
+		$t[0] == 128 and next;
+		
 		push(@connections, [$device, $port, $t[0], $t[1],
 				    $device_name, $port_name,
 				    defined($card) ? "card" : "programme",
