@@ -23,7 +23,7 @@ sub pkill( $ ){
     my $prog_name = shift or die;
     if(`pgrep $prog_name -u $ENV{USER} `){
 	`pkill $prog_name  -u $ENV{USER} `;
-	$? and die "$?: Failed to kill $prog_name\n";
+	$? and die "$?: Failed to kill $prog_name";
     }
 }
 
@@ -164,15 +164,16 @@ sub list_all_midi_connections {
     return @connections;
 }
 
-sub run_daemon( $ ) {
+sub run_daemon( $;$ ) {
     my $cmd = shift;
-
+    my $wait = shift or 0;
     ## Prepare command
     my @cmd = split(/\s+/, $cmd);
     -x $cmd[0] or die "Must pass an executable.  '$cmd[0]' is not";
 
     
     defined(my $pid = fork())   or die "can't fork: $!";
+    $wait and waitpid($pid, 0);
     return($pid) if $pid;               # non-zero now means I am the parent
     
     ## Create logs for stderr and stdout
