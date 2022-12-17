@@ -31,25 +31,34 @@ if(!$ENV{"Home120Proof"}){
 use lib("$ENV{'Home120Proof'}/Perl");
 use One20Proof qw | $MODHOST_PORT |;
 
-# &One20Proof::run_daemon( "$ENV{Home120Proof}/bin/hello_world");
-# sleep 3;
-# exit;
 ## Clean up process space.  If any copies of the pedal driver,
-## lpx_control, or the mod-host are running kill them
-my $pedal_driver_name = "120Proofpd";
-my $pedal_driver = "$ENV{Home120Proof}/bin/$pedal_driver_name";
+## lpx_control, lpx_scale, or the mod-host are running kill them
+
+my $lpx_control_name = "lpx_controll";
+my $lpx_control = "$ENV{'Home120Proof'}/bin/$lpx_control_name";
+
+my $lpx_scale_name = "lpx_scale";
+my $lpx_scale = "$ENV{'Home120Proof'}/bin/$lpx_scale_name";
+
 my $mod_host_name = "mod-host";
 my $mod_host = "/usr/bin/$mod_host_name";
-my $lpx_control_name = "lpx_controll";
-my $lpx_scale_name = "lpx_scale";
-my $lpx_control = "$ENV{'Home120Proof'}/bin/$lpx_control_name";
--x $pedal_driver or die "$!:$pedal_driver is not executable";
--x $mod_host or die "$!:$mod_host is not executable";
+
+my $pedal_driver_name = "120Proofpd";
+my $pedal_driver = "$ENV{Home120Proof}/bin/$pedal_driver_name";
+
 -x $lpx_control or die "$!:$lpx_control is not executable";
-One20Proof::pkill($pedal_driver_name);
-One20Proof::pkill($mod_host_name);
-One20Proof::pkill($lpx_control_name);
-One20Proof::pkill($lpx_scale_name);
+-x $lpx_scale or die "$!:$lpx_scale is not executable";
+-x $mod_host or die "$!:$mod_host is not executable";
+-x $pedal_driver or die "$!:$pedal_driver is not executable";
+
+One20Proof::pkill($lpx_control);
+One20Proof::pkill($lpx_scale);
+One20Proof::pkill($mod_host);
+One20Proof::pkill($pedal_driver);
+
+## Set up the LPX into programmer mode
+&One20Proof::run_daemon("$ENV{'Home120Proof'}/bin/lpx_mode 1", 1);
+&One20Proof::run_daemon("$ENV{Home120Proof}/bin/lpx_mode 127", 1);
 
 ## Clean up the modep commands file that will be written again by ExtractModep
 my $modep_command_fn = "$ENV{Home120Proof}/modep_commands.txt";
@@ -80,10 +89,6 @@ $ENV{"JACK_PROMISCUOUS_SERVER"} = 'jack';
 
 print "120Proof's Mistress running rooted at: $ENV{'Home120Proof'} ".(scalar(localtime()))."\n";
 
-## Set the mode of the LPX to 127
-&One20Proof::run_daemon("$ENV{'Home120Proof'}/bin/lpx_mode 1");
-&One20Proof::run_daemon("$ENV{Home120Proof}/bin/lpx_mode 127");
-
 
 ## Initialise mod-host: IM (66)
 my $PORT = $One20Proof::MODHOST_PORT;
@@ -95,6 +100,7 @@ my $PORT = $One20Proof::MODHOST_PORT;
 ## IM: Start mod-host
 $ENV{LV2_PATH} = '/usr/modep/lv2';
 
+&One20Proof::kill_port($PORT);
 if(`lsof -i:$PORT`){
     die "$?:  mod-host already on $PORT";
 }
@@ -112,7 +118,6 @@ unless(`lsof -i:$PORT`){
 &One20Proof::run_daemon("$ENV{Home120Proof}/bin/ModhostSimulators");
 
 ## Set up the controls for the LPX
-
 One20Proof::run_daemon($lpx_control);
 sleep 1;
 
@@ -124,9 +129,7 @@ sleep 1;
 &One20Proof::run_daemon("$ENV{Home120Proof}/bin/delete_jack_midi_connections delete");
 
 ## Check that they have been deleted
-`$ENV{"Home120Proof"}/bin/delete_jack_midi_connections list` and die "Failed to delete JACK Midi connections";
+my @jack_con = `$ENV{"Home120Proof"}/bin/delete_jack_midi_connections list`;
+@jack_con and warn "Failed to delete JACK Midi connections:\n\t".join("\n\t", @jack_con)."\n";
 
 print STDERR "Mistress is finished with you\n";
-
-
-
