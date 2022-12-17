@@ -7,11 +7,9 @@ use FileHandle;
 
 ## Encode here knowledge about what 120Proof programmes ouitput.  This is tightly linked.
 
-
 $|++; #Flush
 use lib("$ENV{'Home120Proof'}/Perl");
 use One20Proof;
-
 
 my $output_dir = "$ENV{'Home120Proof'}/output/";
 opendir(my $dir, $output_dir) or die "$! $output_dir";
@@ -65,7 +63,7 @@ while(1){
 		    # All the stdout
 		    print join("", map{"$1 o $_\n"} @lines);
 		}else{
-		    print "$fn\n";
+		    print "-- $fn\n";
 		}
 		# print("$fn: Looped: \$bytes_read: $bytes_read \n");
 
