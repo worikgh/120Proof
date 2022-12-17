@@ -47,5 +47,7 @@ foreach my $line (@jack_lsp ){
 
 
 foreach my $devices (keys %devices_to_delete){
+    # print STDERR "Disconnect $devices\n";
     print `jack_disconnect $devices `;
+    $? and warn "$?: Failed to delete: $devices";
 }    

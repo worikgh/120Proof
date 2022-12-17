@@ -1,22 +1,21 @@
 #!/usr/bin/perl -w
+use lib("$ENV{'Home120Proof'}/Perl");
+use One20Proof;
 
-my $HOME='/home/patch/120Proof/';
+my $HOME=$ENV{One20Home};
 -d $HOME or die "$!: $HOME";
 
-my $LOGFILE="$HOME/Instruments/WillPad/run.log";
-open(my $log, ">>$LOGFILE") or die "$!: $LOGFILE";
 my $TIME=scalar(localtime());
-print $log "$TIME\nStopping WillPad\n";
-print $log "echo ----------------------------------------\n";
+print  "$TIME\nStopping WillPad\n";
 
 ## Programmes to use
-my $PD='/usr/local/bin/pd';
--x $PD or die "$!: $PD";
-my $LPX_SCALE="$HOME/bin/lpx_scale";
--x $LPX_SCALE or die "$!: $LPX_SCALE";
+my $pd='pd';
+my $lpx_scale='lpx_scale';
+
 ## Kill these if they exist
-`pgrep -f $PD && pkill -f $PD`;
-`pgrep -f $LPX_SCALE && pkill -f $LPX_SCALE`;
-print $log "Find scale...  " . `pgrep -f $LPX_SCALE` . "\n";
+One20Proof::pkill($pd);
+One20Proof::pkill($lpx_scale);
+print "Killed $lpx_scale: ";
+print `pgrep lpx_scale` ? "True\n" : "False\n";
 
 

@@ -359,9 +359,65 @@ sub list_all_midi {
 			  
 my $arg = shift or die "pass an argument";
 
+    
 if($arg eq "list"){
     ## List all alsa NIDI  connections
-    print join("\n", &list_all_midi)."\n";
+    my %devices = &One20Proof::all_midi_devices;
+    
+    my $sort = sub {
+	## Sort by PID if possible
+	## Sort lexicographically otherwise
+	## Records with PIDs go first
+	## client 28: 'Launchpad X' [type=kernel,card=3]
+	## client 28: 'Launchpad X' [type=user,PID=332]
+	my $va = $devices{$a};
+	my $vb = $devices{$b};
+	my $pida = 0;
+	my $pidb = 0;
+	$va =~ /pid=(\d+)/ and $pida = $1;
+	$vb =~ /pid=(\d+)/ and $pidb = $1;
+	if($pida and !$pidb){
+	    # $va has pid but not $vb
+	    return -1;
+	}
+	if(!$pida and $pidb){
+	    # $vb has pid but not $va
+	    return 1;
+	}
+	if($pida && $pidb){
+	    $pida <  $pidb and return -1;
+	    $pida >  $pidb and return 1;
+	}
+	## Neither $va nor $vb have PID or $pida == $pidb
+	return $va cmp $vb;
+    };
+    
+    foreach my $key (sort $sort keys(%devices)){
+	# perl -e '$t = <>; $t =~ s/.+\/([^\/]+)/$1/; print $t;'`;
+	my $line = $devices{$key};
+	if($line =~ /pid=(\d+)/){
+	    my $pid = $1;
+	    # 27209 pts/6    Sl+    0:00 /home/patch/120Proof/bin/lpx_controll
+	    #  9061 ?        SLl  119:03 /usr/local/bin/pd -jack -path /home/patch/120Proof/pd_patches/ -send ; pd dsp 1 -stdpath -nogui /home/patch/120Proof/pd_patches/instruments/HarpPoly.pd
+
+	    my $name;
+	    my $_name;
+	    if($_name = join "", map{/$ENV{'Home120Proof'}\/bin\/(\S+)/ and $1} grep{/$pid/} `ps x`
+	       or
+	       $_name = join "", map{/usr\/local\/bin\/(\S+)/ and $1} grep{/$pid/} `ps x`){
+		$name = $_name;
+	    }else{
+		$name = "???";
+	    }
+	    $line .= " $name";
+	}
+	print "$key\t$line\n";
+    }
+    my @connections = &One20Proof::list_all_midi_connections; 
+    foreach my $c (@connections){
+	
+	print join("\t", @$c)."\n";
+    }
 }elsif($arg eq "delete"){
     &delete_all();
 }else{

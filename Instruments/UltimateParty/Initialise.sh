@@ -53,6 +53,8 @@ $xiz_file = '0004-DX\ Rhodes\ 4';
 ## Set up MIDI
 
 ## MIDI notes to 120Proof from LPX
+
+
 my $midi_lpx_to_manager = 'Launchpad X:Launchpad X MIDI 2	120-Proof-MIDI-In-LPX:120-Proof-MIDI-In-LPX-in';
 
 ## Send LPX MIDI to Yoshimi 
