@@ -18,11 +18,33 @@ our $PEDAL_DIR = "$ENV{'Home120Proof'}/pedal/PEDALS";
 ## The port 120Proof's mod-host smulator runs on
 our $MODHOST_PORT = 9116;
 
+sub stack_trace {
+    my $frame = 0;
+    my @frames = ();
+    while(1){
+	my @frame = caller($frame++);
+	if(!@frame or @frame == 0 or $frame > 100){
+	    last;
+	}
+	push(@frames, "$frame[3] \@ $frame[1]:$frame[2]");
+    }
+    wantarray and return @frames;
+    return join("\n", @frames)."\n";
+}
+
+## Kill whatsoever process holds a port.  If it is owned by us
+sub kill_port( $ ) {
+    my $port = shift or die;
+    my @lsof = `lsof -i :$port`;
+    my @pids = grep{$_->[1] eq $ENV{USER} } grep{defined} map{/^.{10}(\d+)\s+(\S+)/ ? [$1, $2] : undef} @lsof;
+    print join "", map{`kill $_->[0]`} @pids;
+}
+
 ## Kill any copies of the passed programme owned by this user
 sub pkill( $ ){
     my $prog_name = shift or die;
-    if(`pgrep $prog_name -u $ENV{USER} `){
-	`pkill $prog_name  -u $ENV{USER} `;
+    if(`pgrep -f $prog_name -u $ENV{USER} `){
+	`pkill -f $prog_name  -u $ENV{USER} `;
 	$? and die "$?: Failed to kill $prog_name";
     }
 }
@@ -35,6 +57,7 @@ sub pkill( $ ){
 sub all_midi_devices {
     my %result = ();
     my @aconnect_l = `aconnect -l`;
+
 
     my $card = undef;
     my $device = undef;
@@ -168,8 +191,9 @@ sub run_daemon( $;$ ) {
     my $cmd = shift;
     my $wait = shift or 0;
     ## Prepare command
-    my @cmd = split(/\s+/, $cmd);
-    -x $cmd[0] or die "Must pass an executable.  '$cmd[0]' is not";
+    $cmd =~ /^(\S+)/ or die "Invalid command: '$cmd'";
+    my $_x = $1;
+    -x $_x or die "Must pass an executable.  '$_x' is not";
 
     
     defined(my $pid = fork())   or die "can't fork: $!";
@@ -179,7 +203,7 @@ sub run_daemon( $;$ ) {
     ## Create logs for stderr and stdout
 
     # Get the name of the command by separating it from the path
-    my $command_file = $cmd[0];
+    my $command_file = $_x;
     $command_file =~ s/^.+\/([^\/]+)$/$1/;
 
     # Turn on autoflush
@@ -199,7 +223,7 @@ sub run_daemon( $;$ ) {
     open3(undef, '>&' . fileno($stdout),  '>&' . fileno($stderr), $cmd);
 
 
-    exec(@cmd);
+    `$cmd`;
     exit;
 }
 
@@ -242,7 +266,8 @@ sub wait_for_jack {
 	if($counter > $loops){
 	    return 0;
 	}else{
-	    if(`jack_lsp |grep $jack_name`){
+	    warn "MARK $counter";
+	    if(grep{/$jack_name/} `jack_lsp`){
 		return 1;
 	    }
 	}
