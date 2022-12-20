@@ -35,17 +35,63 @@ sub stack_trace {
 ## Kill whatsoever process holds a port.  If it is owned by us
 sub kill_port( $ ) {
     my $port = shift or die;
-    my @lsof = `lsof -i :$port`;
-    my @pids = grep{$_->[1] eq $ENV{USER} } grep{defined} map{/^.{10}(\d+)\s+(\S+)/ ? [$1, $2] : undef} @lsof;
-    print join "", map{`kill $_->[0]`} @pids;
+    my @lsof = `lsof -i :$port -F`;
+    my @pids = ();
+    foreach my $l (@lsof){
+	chomp $l;
+	$l =~ /^p(\d+)/ or next;
+	my $pid = $1;
+	push(@pids, $pid);
+    }
+	    
+    foreach my $pid (@pids){
+	my $cmd = "kill $pid";
+	my $output = `$cmd`;
+	if($?){
+	    ## `kill` failed
+	    die "$output: $!: Could not kill $pid";
+	}
+    }
 }
 
 ## Kill any copies of the passed programme owned by this user
 sub pkill( $ ){
     my $prog_name = shift or die;
+
+    ## The prog_name must be the complete path to the executable
+    -x $prog_name or die "The argument to `pkill` ($prog_name) must be the complete path to the executable: " . scalar(One20Proof::stack_trace) . " ";
+    
     if(`pgrep -f $prog_name -u $ENV{USER} `){
 	`pkill -f $prog_name  -u $ENV{USER} `;
-	$? and die "$?: Failed to kill $prog_name";
+	if($?){
+
+	    ## Could not kill the programme.  Do some diagnostics
+	    my $die_msg = "$?: Failed to kill $prog_name: ".scalar(stack_trace());
+
+
+            #  0 dev      device number of filesystem
+            #  1 ino      inode number
+            #  2 mode     file mode  (type and permissions)
+            #  3 nlink    number of (hard) links to the file
+            #  4 uid      numeric user ID of file's owner
+            #  5 gid      numeric group ID of file's owner
+            #  6 rdev     the device identifier (special files only)
+            #  7 size     total size of file, in bytes
+            #  8 atime    last access time in seconds since the epoch
+            #  9 mtime    last modify time in seconds since the epoch
+            # 10 ctime    inode change time in seconds since the epoch (*)
+            # 11 blksize  preferred I/O size in bytes for interacting with the
+            #             file (may vary from file to file)
+            # 12 blocks   actual number of system-specific blocks allocated
+            #             on disk (often, but not always, 512 bytes each)
+
+	    
+	    my @stat = stat($prog_name);
+	    my $owner = ${getpwuid($stat[4])}[0];
+	    $die_msg .= " Owner: $owner "; 
+
+	    die $die_msg;
+	}
     }
 }
 
