@@ -61,10 +61,11 @@ sub pkill( $ ){
     ## The prog_name must be the complete path to the executable
     -x $prog_name or die "The argument to `pkill` ($prog_name) must be the complete path to the executable: " . scalar(One20Proof::stack_trace) . " ";
     
+    my @pgrep = `pgrep -f $prog_name -u $ENV{USER} `;
     if(`pgrep -f $prog_name -u $ENV{USER} `){
 	`pkill -f $prog_name  -u $ENV{USER} `;
 	if($?){
-
+	    warn join("\n", @pgrep);
 	    ## Could not kill the programme.  Do some diagnostics
 	    my $die_msg = "$?: Failed to kill $prog_name: ".scalar(stack_trace());
 
@@ -88,8 +89,11 @@ sub pkill( $ ){
 	    
 	    my @stat = stat($prog_name);
 	    my $owner = ${getpwuid($stat[4])}[0];
-	    $die_msg .= " Owner: $owner "; 
-
+	    if($owner){
+		$die_msg .= " Owner: $owner ";
+	    }else{
+		$die_msg .= " No stat data for $prog_name";
+	    }
 	    die $die_msg;
 	}
     }
@@ -240,37 +244,41 @@ sub run_daemon( $;$ ) {
     $cmd =~ /^(\S+)/ or die "Invalid command: '$cmd'";
     my $_x = $1;
     -x $_x or die "Must pass an executable.  '$_x' is not";
-
     
     defined(my $pid = fork())   or die "can't fork: $!";
     $wait and waitpid($pid, 0);
-    return($pid) if $pid;               # non-zero now means I am the parent
-    
-    ## Create logs for stderr and stdout
+    if (!$pid){ 
+	
+	## Create logs for stderr and stdout
 
-    # Get the name of the command by separating it from the path
-    my $command_file = $_x;
-    $command_file =~ s/^.+\/([^\/]+)$/$1/;
+	# Get the name of the command by separating it from the path
+	my $command_file = $_x;
+	$command_file =~ s/^.+\/([^\/]+)$/$1/;
+	
+	# Turn on autoflush
+	
+	my $stderr_fn = $ENV{'Home120Proof'}."/output/$command_file.err";
+	$stderr_fn =~ /\/\.err$/ and
+	    die "No file name for err: \$cmd: '$cmd' ".
+	    join("\n", stack_trace());
+	my $stdout_fn = $ENV{'Home120Proof'}."/output/$command_file.out";
+	$stdout_fn =~ /\/\.out$/ and
+	    die "No file name for out: \$cmd: '$cmd' ".
+	    join("\n", stack_trace());
+	open(my $stderr, ">>", $stderr_fn) or
+	    die "$!: Cannot open $stderr_fn for append";
+	open(my $stdout, ">>", $stdout_fn) or
+	    die "$!: Cannot open $stdout_fn for append";
 
-    # Turn on autoflush
-    
-    my $stderr_fn = $ENV{'Home120Proof'}."/output/$command_file.err";
-    my $stdout_fn = $ENV{'Home120Proof'}."/output/$command_file.out";
-    open(my $stderr, ">>", $stderr_fn) or
-	die "$!: Cannot open $stderr_fn for append";
-    open(my $stdout, ">>", $stdout_fn) or
-	die "$!: Cannot open $stdout_fn for append";
+	select($stdout);
+	$|++;
+	select($stderr);
+	$|++;
 
-    select($stdout);
-    $|++;
-    select($stderr);
-    $|++;
-
-    open3(undef, '>&' . fileno($stdout),  '>&' . fileno($stderr), $cmd);
-
-
-    `$cmd`;
-    exit;
+	open3(undef, '>&' . fileno($stdout),  '>&' . fileno($stderr), $cmd);
+	exit;
+    }
+    return $pid;
 }
 
 
