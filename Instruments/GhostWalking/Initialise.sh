@@ -7,14 +7,14 @@ my $time = scalar(localtime());
 print "Start GhostWalking $time\n";
 
 ## Kill these if they exist.  They would conflict with what is run here
-&One20Proof::pkill('lpx_manager');
-&One20Proof::pkill('yoshimi');
+&One20Proof::pkill("$ENV{'Home120Proof'}/lpx_manager");
+&One20Proof::pkill('/usr/local/bin/yoshimi');
 
 
 # Must have jack
 `jack_wait -w`;
-if(!$0){
-    die "Failed waiting jack: $0\n";
+if(!$?){
+    die "Failed waiting jack: $?\n";
 }
 
 ## lpx_control must be running
