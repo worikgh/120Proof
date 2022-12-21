@@ -134,6 +134,7 @@ sub set_up_midi( $ ) {
 		my $delete_args = "$port_num:$dev_num $$pair[0]:$$pair[1]";
 
 		# One side of the equation
+		# warn "connecting to: $delete_args";
 		$existing_connections_to{$delete_args} = 1;
 	    }
 	    next;
