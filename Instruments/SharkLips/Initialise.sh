@@ -5,16 +5,13 @@ use One20Proof;
 
 my $time = scalar(localtime());
 print "Start Sharklips $time\n";
-
-## Kill these if they exist.  They would conflict with what is run here
-&One20Proof::pkill('lpx_manager');
-&One20Proof::pkill('yoshimi');
+warn scalar(localtime()) . " MARK ";
 
 print "jack...\n";
 # Must have jack
 `jack_wait -w`;
-if(!$0){
-    die "Failed waiting jack: $0\n";
+if($?){
+    die "Failed waiting jack: $?\n";
 }
 print "...jack\n";
 
@@ -23,31 +20,34 @@ if(!`pgrep lpx_control`){
     die "lpx_control must be running";
 }
 
-print "Set up synths...\n";
+
+## Instruments
+my $KEYS_INSTR = "$ENV{Home120Proof}/Instruments/xiz/Hammond Organ.xiz";
+my $LPX_INSTR = "$ENV{Home120Proof}/Instruments/xiz/Simple Clonewheel.xiz";
+
+## Kill these if they exist.  They would conflict with what is run here
+## TODO: Put all the executable files in a configuration file
+&One20Proof::pkill("$ENV{'Home120Proof'}/bin/lpx_manager");
+&One20Proof::pkill('/usr/local/bin/yoshimi');
+
+warn scalar(localtime()) . " Set up synths...keys ";
 my $jack_name = 'SharkLipsKeys';
 my $midi_name =  "yoshimi-$jack_name";
-
-warn("MARK ");
-&One20Proof::run_daemon("$ENV{Home120Proof}/bin/InitialiseYos  $jack_name '$ENV{Home120Proof}/Instruments/xiz/Hammond Organ.xiz'");
 warn("MARK \$jack_name $jack_name ");
+warn("MARK \$midi_name $midi_name ");
+warn("MARK \$KEYS_INSTR $KEYS_INSTR ");
+&One20Proof::run_daemon("$ENV{Home120Proof}/bin/InitialiseYos  $jack_name '$KEYS_INSTR'");
 &One20Proof::wait_for_jack($jack_name) or die "Jack: $jack_name not found";
-warn("MARK ");
 &One20Proof::wait_for_midi($midi_name) or die "$midi_name not found";
 
 
-warn("MARK ");
-&One20Proof::run_daemon("$ENV{Home120Proof}/bin/InitialiseYos $jack_name '$ENV{Home120Proof}/Instruments/xiz/0004-DX Rhodes 4.xiz'");
-warn("MARK \$jack_name $jack_name ");
-&One20Proof::wait_for_jack($jack_name) or die "Jack: $jack_name not found";
-warn("MARK ");
-&One20Proof::wait_for_midi($midi_name) or die "$midi_name not found";
-
+warn scalar(localtime()) . " Set up synths...LPX ";
 $jack_name = 'SharkLipsLPX';
 $midi_name =  'yoshimi-SharkLipsLPX';
-
-warn("MARK ");
-&One20Proof::run_daemon("$ENV{Home120Proof}/bin/InitialiseYos $jack_name '$ENV{Home120Proof}/Instruments/xiz/0004-DX Rhodes 4.xiz'");
-warn("MARK ");
+warn("MARK \$jack_name $jack_name ");
+warn("MARK \$midi_name $midi_name ");
+warn("MARK \$LPX_INSTR $LPX_INSTR ");
+&One20Proof::run_daemon("$ENV{Home120Proof}/bin/InitialiseYos $jack_name '$LPX_INSTR'");
 &One20Proof::wait_for_jack($jack_name) or die "Jack: $jack_name not found";
 &One20Proof::wait_for_midi($midi_name) or die "$midi_name not found";
 

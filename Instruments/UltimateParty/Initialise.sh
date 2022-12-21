@@ -14,8 +14,8 @@ my $xiz_dir = "$ENV{Home120Proof}/Instruments/xiz";
 -d $xiz_dir or die "Not a directory: $xiz_dir";
 
 ## Kill these if they exist.  They would conflict with what is run here
-&One20Proof::pkill('lpx_manager');
-&One20Proof::pkill('yoshimi');
+&One20Proof::pkill("$ENV{'Home120Proof'}/lpx_manager");
+&One20Proof::pkill('/usr/local/bin/yoshimi');
 
 
 ## lpx_control must be running
