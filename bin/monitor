@@ -1,6 +1,7 @@
 #!/usr/bin/perl -w
 use strict;
 use FileHandle;
+
 ## Monitor output/*.out and *.err and report on state of system
 
 ## Open every file in the output diretctory and monitor the output.
@@ -10,8 +11,23 @@ use FileHandle;
 $|++; #Flush
 use lib("$ENV{'Home120Proof'}/Perl");
 use One20Proof;
+#use OutputFilesState;
 
 my $output_dir = "$ENV{'Home120Proof'}/output/";
+my $o = OutputFilesState->new($output_dir);
+$o->initialise();
+while(1){
+    $o->update();
+
+    print $o->output();
+    sleep(.1);
+}
+
+exit;
+
+
+
+
 opendir(my $dir, $output_dir) or die "$! $output_dir";
 
 # Get all the input files
@@ -81,3 +97,89 @@ while(1){
     }
     sleep(0.1);
 }
+
+## To facilitate monitoring the strate of files in the output directory
+## man perlobj
+package OutputFilesState;
+sub new {
+    my $class = shift;
+
+    ## The directory to monitor
+    my $path = shift or die;
+    -d $path or die "Pass the path to a directory";
+    $path =~ /\/$/ or $path .= '/';
+    my $self = {path => $path};
+    
+    return bless $self, $class;
+}
+
+sub initialise() {
+    my $self = shift;
+
+    ## Get a handle to the output directory
+    opendir(my $dh, $self->{path}) or die "$!";
+    $self->{dir} = $dh;
+
+    ## Initialise cache
+    $self->{cache} = {};
+
+    
+}
+
+sub list() {
+    my $self = shift;
+    rewinddir($self->{dir});
+    my @files = map{$self->{path}.$_}
+    grep{/[^\.]/} ## Some non dod character
+    grep {$_ !~ /\#/} ## Emacs writes these files temporarily
+    readdir($self->{dir});
+    return @files;
+}
+
+sub update() {
+    my $self = shift;
+
+    foreach my $fn ($self->list()){
+	
+	my $new_data = "";
+	$self->{cache}->{$fn} or $self->{cache}->{$fn} = [0, ""];
+
+	open(my $fh, $fn) or die "$!: $fn";
+	my @stat = stat($fh) or die "$!: $fn";
+	my $sz = $stat[7]; ## Actual size
+	my $csz = $self->{cache}->{$fn}->[0]; ## Cached size
+	$self->{cache}->{$fn}->[0] = $sz;
+	
+	if($sz > $csz){
+	    ## File size has grown.  Read the latest data
+	    seek($fh, $csz, 0);
+
+	    while(my $ln = <$fh>){
+		$new_data .= $ln;
+	    }
+	}elsif($sz < $csz){
+	    ## File has been restarted.  Read it all
+	    seek($fh, 0, 0);
+
+	    while(my $ln = <$fh>){
+		$new_data .= $ln;
+	    }
+	}
+	$self->{cache}->{$fn}->[1] = $new_data;
+    }
+}
+
+sub output {
+    my $self = shift;
+    my $result = "";
+    foreach my $fn (keys(%{$self->{cache}})){
+	$fn =~ /([^\/]+)$/ or die "\$fn makes no sense: '$fn'";
+	my $name = $1;
+	my @output = split("\n", $self->{cache}->{$fn}->[1]);
+	for my $l (@output){	    
+	    $result .=  "$name: $l\n";
+	}
+    }
+    return $result;
+}
+1;
