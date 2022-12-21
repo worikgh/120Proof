@@ -2,15 +2,16 @@
 use lib("$ENV{'Home120Proof'}/Perl");
 use One20Proof;
 
-my $HOME=$ENV{One20Home};
+my $HOME=$ENV{Home120Proof};
 -d $HOME or die "$!: $HOME";
 
 my $TIME=scalar(localtime());
 print  "$TIME\nStopping WillPad\n";
 
 ## Programmes to use
-my $pd='pd';
-my $lpx_scale='lpx_scale';
+## TODO:  Make a list of programmes to use in a configuration file
+my $pd='/usr/local/bin/pd';
+my $lpx_scale="$ENV{'Home120Proof'}/bin/lpx_scale";
 
 ## Kill these if they exist
 One20Proof::pkill($pd);

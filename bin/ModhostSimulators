@@ -59,7 +59,7 @@ sub handle_jack( $ ){
     ## Passed a Jack command execute it.  There are two: "connecyt"
     ## and "disconnect"
     my $cmd = shift or die;
-
+    # warn "$cmd ";
     if($cmd =~ /^connect (\S+)\s+(\S+)\s*$/){
 	## Commanded to make a connection.  Check first if it exists
 	## and there is nothing to do
