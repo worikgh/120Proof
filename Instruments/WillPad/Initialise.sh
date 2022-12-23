@@ -45,6 +45,10 @@ if (`pgrep -f $PD`){
 
 &One20Proof::run_daemon("$PD  -jack -path $HOME/pd_patches/ -send \"; pd dsp 1\" -stdpath  -nogui  $LPX_INSTR");
 &One20Proof::run_daemon("$HOME/bin/InitialiseYos WillPadKeys $KEYS_INSTR");
+
+&One20Proof::wait_for_midi("yoshimi-WillPadKeys");
+&One20Proof::wait_for_midi('Pure Data');
+
 &One20Proof::run_daemon("$LPX_SCALE $HOME/Instruments/WillPad/lpx_scale.cfg 60 1 3 5 6 8 10 12 ");
 warn scalar(localtime()) . " MARK ";
 

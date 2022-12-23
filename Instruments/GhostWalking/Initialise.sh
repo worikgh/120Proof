@@ -7,13 +7,13 @@ my $time = scalar(localtime());
 print "Start GhostWalking $time\n";
 
 ## Kill these if they exist.  They would conflict with what is run here
-&One20Proof::pkill("$ENV{'Home120Proof'}/lpx_manager");
+&One20Proof::pkill("$ENV{'Home120Proof'}/bin/lpx_manager");
 &One20Proof::pkill('/usr/local/bin/yoshimi');
 
 
 # Must have jack
 `jack_wait -w`;
-if(!$?){
+if($?){
     die "Failed waiting jack: $?\n";
 }
 

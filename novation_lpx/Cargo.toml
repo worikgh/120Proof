@@ -7,4 +7,5 @@ members = [
     "lpx_manager",
     "midi_connection",
     "lpx_scale",
+    "lpx_blank_screen",
 ]

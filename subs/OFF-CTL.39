@@ -6,17 +6,22 @@ my $HOME=$ENV{Home120Proof};
 -d $HOME or die "$!: $HOME";
 
 my $TIME=scalar(localtime());
-print  "$TIME\nStopping WillPad\n";
+warn "MARK $TIME ";
+
+&One20Proof::blank_lpx;
 
 ## Programmes to use
 ## TODO:  Make a list of programmes to use in a configuration file
-my $pd='/usr/local/bin/pd';
+my $pd=`which pd`;
+chomp $pd;
 my $lpx_scale="$ENV{'Home120Proof'}/bin/lpx_scale";
+my $yoshimi = `which yoshimi`;
+chomp $yoshimi;
+
 
 ## Kill these if they exist
-One20Proof::pkill($pd);
-One20Proof::pkill($lpx_scale);
-print "Killed $lpx_scale: ";
-print `pgrep lpx_scale` ? "True\n" : "False\n";
-
+&One20Proof::pkill($pd);
+&One20Proof::pkill($lpx_scale);
+&One20Proof::pkill( $yoshimi);
+warn "MARK";
 

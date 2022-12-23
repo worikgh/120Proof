@@ -7,12 +7,15 @@ use strict;
 my $name = shift or die;
 my $instrument = shift or die;
 
-## 
-## print STDERR " InitialiseYos is getting going....\n";
+##
+my $TIME=scalar(localtime());
+print "$TIME:  InitialiseYos \n";
 my $bin = `which yoshimi`;
 chomp $bin;
 -x $bin or die "Cannot find yoshimi";
+## MIDI client will be named "yoshimi-$name". Port will be 0
 my $cmd = "$bin  -i -J --alsa-midi=120Proof -c -K -L '$instrument' -N $name -R 48000";
+
 
 my $pid = fork();
 if(!$pid){

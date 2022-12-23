@@ -33,3 +33,4 @@ get_git_token
 .gitignore
 output/
 TAGS
+eTAGS
