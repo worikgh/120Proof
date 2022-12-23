@@ -11,7 +11,6 @@ use FileHandle;
 $|++; #Flush
 use lib("$ENV{'Home120Proof'}/Perl");
 use One20Proof;
-#use OutputFilesState;
 
 my $output_dir = "$ENV{'Home120Proof'}/output/";
 my $o = OutputFilesState->new($output_dir);
@@ -24,79 +23,6 @@ while(1){
 }
 
 exit;
-
-
-
-
-opendir(my $dir, $output_dir) or die "$! $output_dir";
-
-# Get all the input files
-my @files = grep {$_ =~ /[a-z]/} grep{$_ !~ /~/} readdir($dir) or die "$!: Failed to read from $output_dir";
-
-my %fh = ();
-my $bits = '';
-foreach my $fn (@files){
-    # my $fh = FileHandle->new(
-    open(my $fh, "$output_dir/$fn") or die "$!: $fn ";
-    vec($bits, fileno($fh),  1) = 1;
-
-    ## Associate a file name and file handle
-    $fh{$fn} = $fh;
-}
-
-
-## The state of 120Proof.  
-my %state  = ();
-
-## $length is the amount of data to read at a time from file handle
-## If missing data from file $bytes_read will be == $length.
-## So increase $length
-##my $length = 1;
-my $length = 4096;
-while(1){
-    my ($a, $b) = select(my $bytes = $bits, undef, undef, 0.1);
-    if($a == -1){
-	warn "$! Fail";
-    }else{
-	## Got some data
-	my $buffer;
-
-	foreach my $fn (sort keys %fh){
-	    ## Check each file
-	    my $bytes_read = sysread($fh{$fn}, $buffer, $length);
-	    if($bytes_read == $length){
-		warn "Length => $length -> ".($length*2)." ";
-		$length *= 2;
-	    }
-	    if($bytes_read > 0){
-		## Got some data.
-		my @lines = split(/\n/, $buffer);
-
-		if($fn =~ /^(.+).err$/){
-		    # All the errors
-		    print scalar(localtime())." e\n";
-		    print join("", map{"$1 e $_\n"} @lines);
-		    print "eeeeeeeeeeee\n";
-		}elsif($fn =~ /^(.+).out$/){
-		    # All the stdout
-		    print scalar(localtime())." o\n";
-		    print join("", map{"$1 o $_\n"} @lines);
-		    print "oooooooooooo\n";
-		}else{
-		    print "-- $fn\n";
-		}
-		# print("$fn: Looped: \$bytes_read: $bytes_read \n");
-
-		## Check for xruns
-		if(grep {/xrun reported/} @lines){
-		    $state{xrun} = time();
-		}
-	    }
-
-	}
-    }
-    sleep(0.1);
-}
 
 ## To facilitate monitoring the strate of files in the output directory
 ## man perlobj
