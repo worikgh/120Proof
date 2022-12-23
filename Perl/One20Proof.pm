@@ -18,6 +18,13 @@ our $PEDAL_DIR = "$ENV{'Home120Proof'}/pedal/PEDALS";
 ## The port 120Proof's mod-host smulator runs on
 our $MODHOST_PORT = 9116;
 
+
+sub blank_lpx {
+    my $lpx_blank_screen = "$ENV{Home120Proof}/bin/lpx_blank_screen";
+    -x $lpx_blank_screen or die "$!: $lpx_colour";
+    `$lpx_blank_screen`;
+}
+
 sub stack_trace {
     my $frame = 0;
     my @frames = ();
@@ -57,7 +64,7 @@ sub kill_port( $ ) {
 ## Kill any copies of the passed programme owned by this user
 sub pkill( $ ){
     my $prog_name = shift or die;
-
+    chomp $prog_name;
     ## The prog_name must be the complete path to the executable
     -x $prog_name or die "The argument to `pkill` ($prog_name) must be the complete path to the executable: " . scalar(One20Proof::stack_trace) . " ";
     
@@ -320,7 +327,6 @@ sub wait_for_jack {
 	if($counter > $loops){
 	    return 0;
 	}else{
-	    warn "MARK $counter";
 	    if(grep{/$jack_name/} `jack_lsp`){
 		return 1;
 	    }

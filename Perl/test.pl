@@ -30,6 +30,6 @@ if($to_test eq "kill_port"){
     }
     sleep .2;
     One20Proof::kill_port($PORT);
-    
-    
+}elsif($to_test eq "blank_lpx"){
+    One20Proof::blank_lpx;
 }
