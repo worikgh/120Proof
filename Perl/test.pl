@@ -7,8 +7,15 @@ use One20Proof;
 print "test  120Proof Perl module: One20Proof.pm\n";
 
 my $to_test = shift or die "Pass a test";
+my $cmd = "test_$to_test";
+eval {
+    no strict 'refs';
+    &$cmd;
+};
+    
+    
 
-if($to_test eq "kill_port"){
+sub test_kill_port {
     ## Start some a programme to kill
     my $PORT = 9000;          # pick something not in use
     my $pid = fork();
@@ -30,6 +37,14 @@ if($to_test eq "kill_port"){
     }
     sleep .2;
     One20Proof::kill_port($PORT);
-}elsif($to_test eq "blank_lpx"){
+}
+
+sub test_blank_lpx{
     One20Proof::blank_lpx;
 }
+
+sub test_get_pd {
+    my $result = &One20Proof::get_pd();
+    -x $result or die "$!: '$result'";
+}
+	
