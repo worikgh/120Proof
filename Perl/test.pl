@@ -13,7 +13,19 @@ eval {
     &$cmd;
 };
     
-    
+sub test_all {
+    ## Use reflection
+    my @subs = grep{$_ !~ /^test_all$/} map{s/^sub (.+\S)\s*\{\s*$/$1/; $_} `grep "^sub " test.pl`;
+    foreach my $test (@subs){
+	
+	eval {
+	    no strict 'refs';
+	    &$test;
+	};
+	print "Passed $test\n";
+    }
+    print "Passed all tests\n";
+}
 
 sub test_kill_port {
     ## Start some a programme to kill
@@ -43,8 +55,53 @@ sub test_blank_lpx{
     One20Proof::blank_lpx;
 }
 
+
+sub test_get_lpx_blank_screen {
+    my $result = &One20Proof::get_lpx_blank_screen();
+    -x $result or die "$!: '$result'";
+}
+
+sub test_get_lpx_colour {
+    my $result = &One20Proof::get_lpx_colour();
+    -x $result or die "$!: '$result'";
+}
+
+sub test_get_lpx_control {
+    my $result = &One20Proof::get_lpx_control();
+    -x $result or die "$!: '$result'";
+}
+
+sub test_get_lpx_manager {
+    my $result = &One20Proof::get_lpx_manager();
+    -x $result or die "$!: '$result'";
+}
+
+sub test_get_lpx_mode {
+    my $result = &One20Proof::get_lpx_mode();
+    -x $result or die "$!: '$result'";
+}
+
+sub test_get_lpx_scale {
+    my $result = &One20Proof::get_lpx_scale();
+    -x $result or die "$!: '$result'";
+}
+
+
+sub test_get_mod_host {
+    my $result = &One20Proof::get_mod_host();
+    -x $result or die "$!: '$result'";
+}
+
 sub test_get_pd {
     my $result = &One20Proof::get_pd();
     -x $result or die "$!: '$result'";
 }
+
+sub test_get_yoshimi {
+    my $result = &One20Proof::get_yoshimi();
+    -x $result or die "$!: '$result'";
+}
+
+
+
 	

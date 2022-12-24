@@ -18,7 +18,6 @@ our $PEDAL_DIR = "$ENV{'Home120Proof'}/pedal/PEDALS";
 ## The port 120Proof's mod-host smulator runs on
 our $MODHOST_PORT = 9116;
 
-
 sub blank_lpx {
     my $lpx_blank_screen = "$ENV{Home120Proof}/bin/lpx_blank_screen";
     -x $lpx_blank_screen or die "$!: $lpx_colour";
@@ -288,7 +287,6 @@ sub run_daemon( $;$ ) {
     return $pid;
 }
 
-
 ## Wait for a MIDI client to come up.  After five seconds give up
 sub wait_for_midi {
     my $midi_name = shift or die "Pass a midi name to wait for";
@@ -334,5 +332,50 @@ sub wait_for_jack {
 	select(undef, undef, undef, 0.05);
     }
 }    
+
+### Getters for binary programmes
+sub get_lpx_blank_screen {
+    return "$ENV{Home120Proof}/bin/lpx_blank_screen";
+}
+
+sub get_lpx_colour {
+    return "$ENV{Home120Proof}/bin/lpx_colour";
+}
+
+sub get_lpx_controll {
+    return "$ENV{Home120Proof}/bin/lpx_controll";
+}
+
+sub get_lpx_manager {
+    return "$ENV{Home120Proof}/bin/lpx_manager";
+}
+
+sub get_lpx_mode {
+    return "$ENV{Home120Proof}/bin/lpx_mode";
+}
+
+sub get_lpx_scale {
+    return "$ENV{Home120Proof}/bin/lpx_scale";
+}
+
+sub get_mod_host {
+    my $result = `which mod-host`;
+    chomp $result;
+    return $result;
+}
+
+sub get_pd {
+    my $result = `which pd`;
+    chomp $result;
+    return $result;
+}
+
+sub get_yoshimi {
+    my $result = `which yoshimi`;
+    chomp $result;
+    return $result;
+}
+
+
 
 1;
