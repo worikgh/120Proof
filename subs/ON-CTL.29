@@ -4,6 +4,5 @@ use lib("$ENV{'Home120Proof'}/Perl");
 use One20Proof;
 
 my $cmd = "/home/patch/120Proof/Instruments/GhostWalking/Initialise.sh";
-my $pid = &One20Proof::run_daemon($cmd);
-print "$pid: $cmd\n";
+&One20Proof::run_daemon($cmd);
 

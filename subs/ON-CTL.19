@@ -5,5 +5,5 @@ use One20Proof;
 
 
 my $cmd = "/home/patch/120Proof/Instruments/SharkLips/Initialise.sh ";
-my $pid = &One20Proof::run_daemon($cmd);
-print "$pid: $cmd\n";
+&One20Proof::run_daemon($cmd);
+
