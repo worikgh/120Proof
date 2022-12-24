@@ -17,8 +17,11 @@ my $o = OutputFilesState->new($output_dir);
 $o->initialise();
 while(1){
     $o->update();
-
-    print $o->output();
+    my $output = $o->output();
+    if($output){
+	my $time = scalar(localtime());
+	print $time . ": " . $o->output();
+    }
     sleep(.1);
 }
 
