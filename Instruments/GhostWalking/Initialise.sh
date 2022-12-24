@@ -1,3 +1,8 @@
+#!/usr/bin/perl -w
+use strict;
+use lib("$ENV{Home120Proof}/Perl");
+use One20Proof;
+
 
 my $TIME =  scalar(localtime()) ;
 warn "MARK $TIME ";
@@ -21,7 +26,7 @@ my $LPX_INSTR = "$ENV{'Home120Proof'}/Instruments/xiz/Wide Bass.xiz";
 
 my $jack_name = 'GhostWalkingKeys';
 my $midi_name =  'yoshimi-GhostWalkingKeys';
-
+    
 &One20Proof::run_daemon("$ENV{'Home120Proof'}/bin/InitialiseYos  GhostWalkingKeys '$KEYS_INSTR'");
 &One20Proof::wait_for_jack($jack_name) or die "Jack: $jack_name not found";
 &One20Proof::wait_for_midi($midi_name) or die "$midi_name not found";
@@ -46,4 +51,5 @@ $midi_name =  'yoshimi-GhostWalkingKeys';
 
 #&One20Proof::run_daemon("$ENV{'Home120Proof'}/bin/InitialiseMidi $ENV{'Home120Proof'}/Instruments/GhostWalking/midi.cfg ");
 print STDERR `$ENV{'Home120Proof'}/bin/InitialiseMidi $ENV{'Home120Proof'}/Instruments/GhostWalking/midi.cfg`;
+exit;
 # TODO: Get a way of of confirming MIDI set up correctly
