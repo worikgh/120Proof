@@ -3,15 +3,25 @@
 
 Idiosyncratic music making system.
 
-Set up using `systemctl start 120Proof`
+Set up using `bin/Mistress`
 
-* A very difficult system
 
 ## Prepare Raspberry Pi
+
+
+* Using [Pisound](https://blokas.io/pisound/) and [Patchbox OS](https://blokas.io/patchbox-os/)  on a [Raspberri Pi IV](https://www.raspberrypi.com/products/raspberry-pi-4-model-b/)
+
+* Pure Data (`pd`), and `yoshimi` must be installed.  Pure Data is installed by default with Patchbox.
 
 * Delete amidiauto
 
 	It makes MIDI connections without asking.  Very annoying.
+
+* Clone this repo 
+
+* Set environment variable `Home120Proof` to point at the root of the repository
+
+and run `bin/Mistress`.  Works first time....
 
 ## Instruments
 
