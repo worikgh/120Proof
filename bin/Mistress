@@ -21,7 +21,7 @@ use strict;
 ## Start pedal driver
 ## Delete all Jack MIDI connetions
 ## 
-warn "Mark ";
+
 ## Required to run 120Proof
 if(!$ENV{"Home120Proof"}){
     $0 =~ /^(.+)\/bin\/[^\/]+$/ or die $0;
@@ -52,7 +52,6 @@ my $pedal_driver = "$ENV{Home120Proof}/bin/$pedal_driver_name";
 -x $mod_host or die "$!:$mod_host is not executable";
 -x $pedal_driver or die "$!:$pedal_driver is not executable";
 
-warn "Mark ";
 One20Proof::pkill($lpx_control);
 One20Proof::pkill($lpx_scale);
 One20Proof::pkill($mod_host);
@@ -61,7 +60,6 @@ One20Proof::pkill($pedal_driver);
 ## Set up the LPX into programmer mode
 &One20Proof::run_daemon("$ENV{'Home120Proof'}/bin/lpx_mode 1", 1);
 &One20Proof::run_daemon("$ENV{Home120Proof}/bin/lpx_mode 127", 1);
-warn "Mark ";
 
 ## Clean up the modep commands file that will be written again by ExtractModep
 my $modep_command_fn = "$ENV{Home120Proof}/modep_commands.txt";
@@ -76,7 +74,6 @@ while(my $fn = readdir($dir)){
     my $fn_to_delete = "$output_dir/$fn";
     unlink($fn_to_delete) or die "$!: Cannot unlink $fn_to_delete";
 }
-warn "Mark ";
 
 ## If the argument KILL was passed (`mistree KILL`) then stop now.
 my $arg = shift;
@@ -86,7 +83,6 @@ if(defined($arg)){
     }
 }
 
-warn "Mark ";
 ## Required to run Jack
 $ENV{"JACK_PROMISCUOUS_SERVER"} = 'jack';
 ## TODO There is an environment variable that stops Jack from needing
@@ -94,7 +90,6 @@ $ENV{"JACK_PROMISCUOUS_SERVER"} = 'jack';
 
 print "120Proof's Mistress running rooted at: $ENV{'Home120Proof'} ".(scalar(localtime()))."\n";
 
-warn "Mark ";
 
 ## Initialise mod-host: IM (66)
 my $PORT = $One20Proof::MODHOST_PORT;
@@ -102,7 +97,6 @@ my $PORT = $One20Proof::MODHOST_PORT;
 ## IM: Copy the definitions of simulators writen by modep-mod-ui: EM (26)
 &One20Proof::run_daemon("$ENV{Home120Proof}/bin/ExtractModep $modep_command_fn Cello_Boaster Looper Harp_Sweetner ORGANS ORGANS_Sweet", 1);
 
-warn "Mark ";
 
 ## IM: Start mod-host
 $ENV{LV2_PATH} = '/usr/modep/lv2';
@@ -112,7 +106,6 @@ if(`lsof -i:$PORT`){
     die "$?:  mod-host already on $PORT";
 }
 
-warn "Mark ";
 
 &One20Proof::run_daemon( "$mod_host -p $PORT ");
 
@@ -121,15 +114,11 @@ unless(`lsof -i:$PORT`){
     die "$?: Failed to start $mod_host on $PORT";
 }
 
-warn "Mark ";
-
 ## IM: Start simulators MS (47)
 &One20Proof::run_daemon("$ENV{Home120Proof}/bin/ModhostSimulators");
 
 ## Set up the controls for the LPX
 One20Proof::run_daemon($lpx_control);
-warn "Mark ";
-
 
 ## Run the pedal
 &One20Proof::run_daemon("$pedal_driver $ENV{Home120Proof}/pedal/PEDALS ");
@@ -137,11 +126,9 @@ warn "Mark ";
 # Remove any nasty Jack MIDI connections
 
 &One20Proof::run_daemon("$ENV{Home120Proof}/bin/delete_jack_midi_connections delete");
-warn "Mark ";
 
 ## Check that they have been deleted
 my @jack_con = `$ENV{"Home120Proof"}/bin/delete_jack_midi_connections list`;
 @jack_con and warn "Failed to delete JACK Midi connections:\n\t".join("\n\t", @jack_con)."\n";
-warn "Mark ";
 
 print STDERR "Mistress is finished with you\n";
