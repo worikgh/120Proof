@@ -27,12 +27,10 @@ my $LPX_INSTR = "$ENV{Home120Proof}/Instruments/xiz/Simple Clonewheel.xiz";
 &One20Proof::pkill("$ENV{Home120Proof}/bin/lpx_manager");
 &One20Proof::pkill('/usr/local/bin/yoshimi');
 
-warn scalar(localtime()) . " Set up synths...keys ";
+
 my $jack_name = 'SharkLipsKeys';
 my $midi_name =  "yoshimi-$jack_name";
-# warn("MARK \$jack_name $jack_name ");
-# warn("MARK \$midi_name $midi_name ");
-# warn("MARK \$KEYS_INSTR $KEYS_INSTR ");
+
 &One20Proof::run_daemon("$ENV{Home120Proof}/bin/InitialiseYos  $jack_name '$KEYS_INSTR'");
 &One20Proof::wait_for_jack($jack_name) or die "Jack: $jack_name not found";
 &One20Proof::wait_for_midi($midi_name) or die "$midi_name not found";
@@ -41,9 +39,7 @@ my $midi_name =  "yoshimi-$jack_name";
 warn scalar(localtime()) . " Set up synths...LPX ";
 $jack_name = 'SharkLipsLPX';
 $midi_name =  'yoshimi-SharkLipsLPX';
-# warn("MARK \$jack_name $jack_name ");
-# warn("MARK \$midi_name $midi_name ");
-# warn("MARK \$LPX_INSTR $LPX_INSTR ");
+
 &One20Proof::run_daemon("$ENV{Home120Proof}/bin/InitialiseYos $jack_name '$LPX_INSTR'");
 &One20Proof::wait_for_jack($jack_name) or die "Jack: $jack_name not found";
 &One20Proof::wait_for_midi($midi_name) or die "$midi_name not found";
