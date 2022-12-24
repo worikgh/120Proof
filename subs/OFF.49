@@ -1,0 +1,9 @@
+#!/usr/bin/perl -w
+use strict;
+use lib("$ENV{'Home120Proof'}/Perl");
+use One20Proof;
+warn "MARK";
+&One20Proof::blank_lpx;
+&One20Proof::pkill( &One20Proof::get_yoshimi);
+warn "MARK";
+
