@@ -69,10 +69,14 @@ sub update() {
     my $self = shift;
 
     foreach my $fn ($self->list()){
-	
+	if(!-e $fn){
+	    ## File no longer exists
+	    $self->{cache}->{$fn} and $self->{cache}->{$fn} = undef;
+	    next;
+	}
 	my $new_data = "";
 	$self->{cache}->{$fn} or $self->{cache}->{$fn} = [0, ""];
-
+	    
 	open(my $fh, $fn) or die "$!: $fn";
 	my @stat = stat($fh) or die "$!: $fn";
 	my $sz = $stat[7]; ## Actual size

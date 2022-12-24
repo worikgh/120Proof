@@ -333,6 +333,25 @@ sub wait_for_jack {
     }
 }    
 
+## Musical Instruments.
+
+sub initialise_yoshimi( $$ ) {
+    my $name = shift or die "Pass name to use";
+    my $instrument = shift or die "Pass instrument";
+    -r $instrument or die "$!: '$instrument'";
+
+    my $bin = &get_yoshimi;
+    -x $bin or die "Cannot find yoshimi. Not:  '$bin'";
+
+    ## MIDI client will be named "yoshimi-$name". Port will be 0
+    my $cmd = "$bin  -i -J --alsa-midi=120Proof -c -K -L '$instrument' -N $name -R 48000";
+
+    &run_daemon($cmd);
+    &wait_for_jack($name) or die "Jack: $jack_name not found";
+    my $midi_name =  "yoshimi-$name";
+    &wait_for_midi($midi_name) or die "$midi_name not found";
+    
+}
 ### Getters for binary programmes
 sub get_lpx_blank_screen {
     return "$ENV{Home120Proof}/bin/lpx_blank_screen";

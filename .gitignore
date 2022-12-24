@@ -34,3 +34,8 @@ get_git_token
 output/
 TAGS
 eTAGS
+bin/lpx*
+pedal/PEDALS/A
+pedal/PEDALS/B
+pedal/PEDALS/C
+pedal/PEDALS/.driver.pid

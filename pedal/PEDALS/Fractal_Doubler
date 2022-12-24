@@ -1,0 +1,2 @@
+connect system:capture_1 effect_3:Input_L
+connect effect_3:Output_L system:playback_1

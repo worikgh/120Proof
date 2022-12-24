@@ -1,5 +1,7 @@
 #!/usr/bin/perl -w
 use strict;
+use lib("$ENV{'Home120Proof'}/Perl");
+use One20Proof;
 
 &set_up_pure_data($ARGV[0]);
 
@@ -9,6 +11,7 @@ sub set_up_pure_data( $ ){
     defined $patch or die "Must pass a patch";
     
     ## If pure data is running warn and kill it
+    
     if(`pgrep pd -x`){
 	warn "pd (Pure Data) is running already.  Killing it";
 	`pkill -x pd`;

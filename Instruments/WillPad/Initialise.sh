@@ -18,17 +18,21 @@ warn scalar(localtime()) . " MARK ";
 my $LPX_INSTR = "$HOME/pd_patches/instruments/HarpPoly.pd";
 my $KEYS_INSTR = "$HOME/Instruments/xiz/ElectricPiano.xiz";
 
-## Programmes to use
-my $PD='/usr/local/bin/pd';
+## Programmes to kill
+my $YOSHIMI=&One20Proof::get_yoshimi;
+my $LPX_MANAGER=&One20Proof::get_lpx_manager;
+
+## Programmes to kill then use
+my $PD=&One20Proof::get_pd;
 -x $PD or die "$!: $PD";
-my $LPX_SCALE="$HOME/bin/lpx_scale";
+my $LPX_SCALE=&One20Proof::get_lpx_scale;
 -x $LPX_SCALE or die "$!: $LPX_SCALE";
 
-## Programmes to kill
-my $YOSHIMI="/usr/local/bin/yoshimi";
-my $LPX_MANAGER="$HOME/bin/lpx_manager";
+&One20Proof::pkill($PD);
+&One20Proof::pkill($LPX_SCALE);
 &One20Proof::pkill($YOSHIMI);
 &One20Proof::pkill($LPX_MANAGER);
+
 
 ## Kill these if they exist.  They will be restarted
 &One20Proof::pkill($PD);
@@ -44,10 +48,9 @@ if (`pgrep -f $PD`){
 
 
 &One20Proof::run_daemon("$PD  -jack -path $HOME/pd_patches/ -send \"; pd dsp 1\" -stdpath  -nogui  $LPX_INSTR");
-&One20Proof::run_daemon("$HOME/bin/InitialiseYos WillPadKeys $KEYS_INSTR");
-
-&One20Proof::wait_for_midi("yoshimi-WillPadKeys");
 &One20Proof::wait_for_midi('Pure Data');
+&One20Proof::initialise_yoshimi("WillPadKeys", $KEYS_INSTR);
+
 
 &One20Proof::run_daemon("$LPX_SCALE $HOME/Instruments/WillPad/lpx_scale.cfg 60 1 3 5 6 8 10 12 ");
 warn scalar(localtime()) . " MARK ";

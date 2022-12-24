@@ -29,21 +29,10 @@ my $LPX_INSTR = "$ENV{Home120Proof}/Instruments/xiz/Simple Clonewheel.xiz";
 
 
 my $jack_name = 'SharkLipsKeys';
-my $midi_name =  "yoshimi-$jack_name";
+&One20Proof::initialise_yoshimi($jack_name, $KEYS_INSTR);
 
-&One20Proof::run_daemon("$ENV{Home120Proof}/bin/InitialiseYos  $jack_name '$KEYS_INSTR'");
-&One20Proof::wait_for_jack($jack_name) or die "Jack: $jack_name not found";
-&One20Proof::wait_for_midi($midi_name) or die "$midi_name not found";
-
-
-warn scalar(localtime()) . " Set up synths...LPX ";
 $jack_name = 'SharkLipsLPX';
-$midi_name =  'yoshimi-SharkLipsLPX';
-
-&One20Proof::run_daemon("$ENV{Home120Proof}/bin/InitialiseYos $jack_name '$LPX_INSTR'");
-&One20Proof::wait_for_jack($jack_name) or die "Jack: $jack_name not found";
-&One20Proof::wait_for_midi($midi_name) or die "$midi_name not found";
-
+&One20Proof::initialise_yoshimi($jack_name, $LPX_INSTR);
 
 &One20Proof::run_daemon("$ENV{Home120Proof}/bin/lpx_manager $ENV{Home120Proof}/Instruments/SharkLips/lpx_manager.cfg  57 1 4 7 8 11  ");
 

@@ -25,21 +25,16 @@ my $LPX_INSTR = "$ENV{'Home120Proof'}/Instruments/xiz/Wide Bass.xiz";
 
 
 my $jack_name = 'GhostWalkingKeys';
-my $midi_name =  'yoshimi-GhostWalkingKeys';
-    
-&One20Proof::run_daemon("$ENV{'Home120Proof'}/bin/InitialiseYos  GhostWalkingKeys '$KEYS_INSTR'");
-&One20Proof::wait_for_jack($jack_name) or die "Jack: $jack_name not found";
-&One20Proof::wait_for_midi($midi_name) or die "$midi_name not found";
-
+&One20Proof::initialise_yoshimi($jack_name, $KEYS_INSTR);
 
 $jack_name = 'GhostWalkingLPX';
-$midi_name =  'yoshimi-GhostWalkingKeys';
+&One20Proof::initialise_yoshimi($jack_name, $KEYS_INSTR);
 
-&One20Proof::run_daemon("$ENV{'Home120Proof'}/bin/InitialiseYos GhostWalkingLPX '$LPX_INSTR'");
-&One20Proof::wait_for_jack($jack_name) or die "Jack: $jack_name not found";
-&One20Proof::wait_for_midi($midi_name) or die "$midi_name not found";
-
-&One20Proof::run_daemon("$ENV{'Home120Proof'}/bin/lpx_manager $ENV{'Home120Proof'}/Instruments/GhostWalking/lpx_manager.cfg 69 1 4 6 9 11 ");
+my $lpx_manager = &One20Proof::get_lpx_manager;
+-x $lpx_manager or die  "$!: Not: '$lpx_manager'";
+my $lpx_manager_cfg = "$ENV{'Home120Proof'}/Instruments/GhostWalking/lpx_manager.cfg";
+-r $lpx_manager_cfg or die  "$!: Not: '$lpx_manager_cfg'";
+&One20Proof::run_daemon("$lpx_manager $lpx_manager_cfg 69 1 4 6 9 11 ");
 
 # Wait until lpx_manager is running
 &One20Proof::wait_for_midi("120-Proof-MIDI-In-LPX") or
