@@ -22,7 +22,7 @@ while(1){
 	my $time = scalar(localtime());
 	print $time . ": " . $o->output();
     }
-    sleep(.1);
+    sleep(.5);
 }
 
 exit;
