@@ -32,7 +32,7 @@ my $xiz_file = 'Hammond Organ';
 &One20Proof::initialise_yoshimi($jack_name_keys, "$xiz_dir/$xiz_file.xiz");
 
 my $jack_name_lpx = $instrument_name.'LPX';
-$xiz_file = 'ElectricPiano';
+$xiz_file = 'StrangeDays';
 &One20Proof::initialise_yoshimi($jack_name_lpx,  "$xiz_dir/$xiz_file.xiz");
 
 warn "Mark";
