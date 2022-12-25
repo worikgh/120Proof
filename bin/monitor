@@ -9,23 +9,124 @@ use FileHandle;
 ## Encode here knowledge about what 120Proof programmes ouitput.  This is tightly linked.
 
 $|++; #Flush
-use lib("$ENV{'Home120Proof'}/Perl");
-use One20Proof;
+# use lib("$ENV{'Home120Proof'}/Perl");
+# use One20Proof;
 
 my $output_dir = "$ENV{'Home120Proof'}/output/";
 my $o = OutputFilesState->new($output_dir);
 $o->initialise();
 while(1){
+    my $yoshimi_f = YoshimiOutFilter->new();
+    my $yoshimi_e = YoshimiErrFilter->new();
     $o->update();
     my $output = $o->output();
     if($output){
 	my $time = scalar(localtime());
-	print $time . ": " . $o->output();
+
+	## Do some processing	
+	my @output = split(/\n/, $output);
+	foreach my $l (@output){
+	    chomp $l;
+	    if($l =~ /yoshimi\.out:(.+)/){
+		print $yoshimi_f->process_line($l);
+	    }elsif($l =~ /yoshimi\.err:(.+)/){
+		print $yoshimi_e->process_line($l);
+	    }else{
+		print "$l\n";
+	    }
+	}
+    }
+    my $yoshimi_summary = $yoshimi_f->summary();
+    if($yoshimi_summary){
+	print scalar(localtime()).": ";
+	print $yoshimi_summary;
     }
     sleep(.5);
 }
 
 exit;
+
+## Yoshimi says too much...
+package YoshimiOutFilter;
+
+sub new {
+    my $class = shift;
+    my $self = {};
+    return bless $self, $class;
+}
+
+sub summary {
+    my $self = shift or die;
+    my $summary = "";
+    if($self->{xruns}){
+	$summary .= $self->{xruns}->{count} . " xruns. ";
+    }
+    if($self->{sample_rate}){
+	$summary .= "Sample rate: " .$self->{sample_rate} .". ";
+    }
+    if($self->{Instrument}){
+	$summary .= "Instrument: $self->{Instrument}. ";
+    }
+    
+    $summary and $summary = "Yoshimi: $summary\n";
+    return $summary;
+}
+sub process_line {
+    my $self = shift or die;
+    my $l = shift or die;
+    chomp $l;
+    if($l =~ "xrun reported"){
+	$self->{xruns} or $self->{xruns} = {};
+	$self->{xruns}->{count} or $self->{xruns}->{count} = 0;
+	$self->{xruns}->{count}++;
+    }elsif($l =~ /Samplerate: (\d+)/){
+	$self->{sample_rate} = $1;
+    }elsif($l =~ /Instrument file .+\/([^\/]+) loaded$/){
+	$self->{Instrument} = $1;
+    }
+    return "";
+}
+
+1;
+
+## Yoshimi says too much...
+package YoshimiErrFilter;
+
+sub new {
+    my $class = shift;
+    my $self = {};
+    $self->{errors} = [];
+    
+    return bless $self, $class;
+}
+
+sub summary {
+    my $self = shift or die;
+    my $summary = "";
+    foreach my $error (@{$self->{errors}}){
+	chomp $error;
+	$summary .= "Yoshimi Error: $error\n";
+    }
+	
+    return $summary;
+}
+sub process_line {
+    my $self = shift or die;
+    my $l = shift or die;
+    chomp $l;
+    if($l =~ /Interrupt/){
+	my $result = "Yoshimi ";
+	$self->{Instrument} and $result .= "Instrument: $self->{Instrument} ";
+	$result .= "interrupted\n";
+	return $result;
+    }elsif($l =~ /Cannot read socket fd = (\d+) err = (.+)/){
+	push(@{$self->{errors}}, "socket($1): $2");
+    }
+    return "";
+}
+
+1;
+
 
 ## To facilitate monitoring the strate of files in the output directory
 ## man perlobj
