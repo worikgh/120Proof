@@ -34,7 +34,7 @@ my $lpx_manager = &One20Proof::get_lpx_manager;
 -x $lpx_manager or die  "$!: Not: '$lpx_manager'";
 my $lpx_manager_cfg = "$ENV{'Home120Proof'}/Instruments/GhostWalking/lpx_manager.cfg";
 -r $lpx_manager_cfg or die  "$!: Not: '$lpx_manager_cfg'";
-&One20Proof::run_daemon("$lpx_manager $lpx_manager_cfg 69 5 53 1 1 4 6 9 11 ");
+&One20Proof::run_daemon("$lpx_manager $lpx_manager_cfg 69 5 53 1 1 4 6 8 11 ");
 
 # Wait until lpx_manager is running
 &One20Proof::wait_for_midi("120-Proof-MIDI-In-LPX") or
