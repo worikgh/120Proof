@@ -3,13 +3,18 @@
 
 Idiosyncratic music making system.
 
-Set up using `bin/Mistress`
+Runs on [Raspberry Pi](https://raspberrypi.org/) and a [Pisound](https://blokas.io/pisound/).  It could probably run on any other similar hardware.
 
+It uses MIDI and audio inputs. 
+
+* [ALSA MIDI](https://github.com/opensrc/alsa/blob/master/lib/md/AlsaMidi.md) for MIDI routing.
+* [JACK Audio Connection Kit](https://github.com/jackaudio) for audio routing
+* [Yoshimi](https://yoshimi.sourceforge.io/) and [Pure Data](https://puredata.info/) for synthesis.  Any MIDI controllable software that can output to Jack will work.
 
 ## Prepare Raspberry Pi
 
 
-* Using [Pisound](https://blokas.io/pisound/) and [Patchbox OS](https://blokas.io/patchbox-os/)  on a [Raspberri Pi IV](https://www.raspberrypi.com/products/raspberry-pi-4-model-b/)
+* Using [Pisound](https://blokas.io/pisound/) and [Patchbox OS](https://blokas.io/patchbox-os/)  on a [Raspberry Pi IV](https://www.raspberrypi.com/products/raspberry-pi-4-model-b/)
 
 * Pure Data (`pd`), and `yoshimi` must be installed.  Pure Data is installed by default with Patchbox.
 
