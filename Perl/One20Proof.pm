@@ -70,7 +70,8 @@ sub pkill( $ ){
     my @pgrep = `pgrep -f $prog_name -u $ENV{USER} `;
     if(`pgrep -f $prog_name -u $ENV{USER} `){
 	`pkill -f $prog_name  -u $ENV{USER} `;
-	if($?){
+	if($? && $? != 256){
+	    ## $? is eight bits.  256 is nine.
 	    warn join("\n", @pgrep);
 	    ## Could not kill the programme.  Do some diagnostics
 	    my $die_msg = "$?: Failed to kill $prog_name: ".scalar(stack_trace());
@@ -352,6 +353,10 @@ sub initialise_yoshimi( $$ ) {
     &wait_for_midi($midi_name) or die "$midi_name not found";
     
 }
+
+### MIDI handling
+
+
 ### Getters for binary programmes
 sub get_lpx_blank_screen {
     return "$ENV{Home120Proof}/bin/lpx_blank_screen";

@@ -56,7 +56,7 @@ if (`pgrep -f $PD`){
 warn scalar(localtime()) . " MARK ";
 
 ##&One20Proof::run_daemon("$HOME/bin/InitialiseMidi $HOME/Instruments/WillPad/midi.cfg", 1);
-print `$HOME/bin/InitialiseMidi $HOME/Instruments/WillPad/midi.cfg`;
+#print `$HOME/bin/InitialiseMidi $HOME/Instruments/WillPad/midi.cfg`;
 
     
 print " Will set up\n";

@@ -181,13 +181,13 @@ impl Adapter {
 /// The names of MIDI devices set up in this.  
 struct DeviceNames {
     /// The MIDI notes from the LPX.  The source
-    midi_source_lpx: String,
-    /// The MIDI notes from the LPX.  This end
-    midi_source_lpx_120: String,
+    midi_note_source_lpx_120: String,
+    /// The MIDI notes from the LPX.  This sink
+    midi_note_sink_lpx_120: String,
 
     /// Send MIDI commands to control pad colour on LPX
-    midi_sink_lpx: String,
-    midi_sink_lpx_120: String,
+    midi_ctl_sink_120_lpx: String,
+    midi_ctl_source_120_lpx: String,
 
     midi_sink_synth: String,
     midi_sink_synth_120: String,
@@ -195,8 +195,6 @@ struct DeviceNames {
 
 impl DeviceNames {
     fn new(cfg_fn: &str) -> io::Result<DeviceNames> {
-        // panic!("Unfinished.");
-
         // Read a configuration file for midi_source_lpx, midi_sink_lpx, midi_sink_synth
         let mut midi_source_lpx = "".to_string(); //"Launchpad X:Launchpad X MIDI 2".to_string();
         let mut midi_sink_lpx = "".to_string();
@@ -221,14 +219,14 @@ impl DeviceNames {
             }
         }
         Ok(DeviceNames {
-            midi_source_lpx: midi_source_lpx, //"Launchpad X:Launchpad X MIDI 2",
-            midi_source_lpx_120: "120-Proof-MIDI-In-LPX".to_string(),
+            midi_note_source_lpx_120: midi_source_lpx, //"Launchpad X:Launchpad X MIDI 2",
+            midi_note_sink_lpx_120: "lpx_scale_note_in".to_string(),
 
-            midi_sink_lpx: midi_sink_lpx, //"Launchpad X:Launchpad X MIDI 1".to_string(),
-            midi_sink_lpx_120: "120-Proof-MIDI-Out-LPX".to_string(),
+            midi_ctl_sink_120_lpx: midi_sink_lpx, //"Launchpad X:Launchpad X MIDI 1".to_string(),
+            midi_ctl_source_120_lpx: "lpx_scale_ctl_out".to_string(),
 
             midi_sink_synth: midi_sink_synth, //"Pure Data:Pure Data Midi-In 2".to_string(),
-            midi_sink_synth_120: "120-Proof-MIDI-Out-PD".to_string(),
+            midi_sink_synth_120: "lpx_scale_note_out".to_string(),
         })
     }
 }
@@ -253,7 +251,7 @@ fn main() -> Result<(), Box<dyn Error>> {
     for s in iter {
         // s is &String
 
-        match s.as_str().parse() {
+        match s.as_str().parse::<usize>() {
             Ok(value) => intermediate_value.push(value),
             Err(err) => panic!("s({}) err({:?})", s, err),
         };
@@ -270,8 +268,8 @@ fn main() -> Result<(), Box<dyn Error>> {
     )?;
 
     let midi_out_lpx: MIDICommunicator<()> = MIDICommunicator::new(
-        device_names.midi_sink_lpx.as_str(),
-        device_names.midi_sink_lpx_120.as_str(),
+        device_names.midi_ctl_sink_120_lpx.as_str(),
+        device_names.midi_ctl_source_120_lpx.as_str(),
         |_, _, _| {},
         (),
         2,
@@ -297,8 +295,8 @@ fn main() -> Result<(), Box<dyn Error>> {
     // The process that listens
 
     let _midi_in: MIDICommunicator<Adapter> = MIDICommunicator::new(
-        device_names.midi_source_lpx.as_str(),
-        device_names.midi_source_lpx_120.as_str(),
+        device_names.midi_note_source_lpx_120.as_str(),
+        device_names.midi_note_sink_lpx_120.as_str(),
         |_stamp, message, adapter| {
             let pad_in = message[1] as usize;
             let velocity = message[2] as u8;
