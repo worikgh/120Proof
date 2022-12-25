@@ -37,40 +37,30 @@ use One20Proof qw | $MODHOST_PORT |;
 ## TODO Make a configuration system for all the executables that might
 ## be involved in 120Proof.
 
-my $lpx_control_name = "lpx_controll";
-my $lpx_control = "$ENV{'Home120Proof'}/bin/$lpx_control_name";
+my $lpx_control = &One20Proof::get_lpx_controll;
+my $lpx_manager = &One20Proof::get_lpx_manager;
+my $lpx_scale = &One20Proof::get_lpx_scale;
+my $mod_host = &One20Proof::get_mod_host;
+my $pd = &One20Proof::get_pd;
+my $pedal_driver = &One20Proof::get_pedal_driver;
+my $yoshimi = &One20Proof::get_yoshimi;
 
-my $lpx_manager_name = "lpx_manager";
-my $lpx_manager = "$ENV{'Home120Proof'}/bin/$lpx_manager_name";
-
-my $lpx_scale_name = "lpx_scale";
-my $lpx_scale = "$ENV{'Home120Proof'}/bin/$lpx_scale_name";
-
-my $mod_host_name = "mod-host";
-my $mod_host = "/usr/bin/$mod_host_name";
-# my $mod_host = "/usr/local/bin/$mod_host_name";
-
-my $pd_name = `which pd`;
-chomp $pd_name;
-
-my $yoshimi_name = `which yoshimi`;
-chomp $yoshimi_name;
-
-my $pedal_driver_name = "120Proofpd";
-my $pedal_driver = "$ENV{Home120Proof}/bin/$pedal_driver_name";
 
 -x $lpx_control or die "$!:$lpx_control is not executable";
+-x $lpx_manager or die "$!:$lpx_manager is not executable";
 -x $lpx_scale or die "$!:$lpx_scale is not executable";
 -x $mod_host or die "$!:$mod_host is not executable";
+-x $pd or die "$!:$pd is not executable";
 -x $pedal_driver or die "$!:$pedal_driver is not executable";
+-x $yoshimi or die "$!:$yoshimi is not executable";
 
 &One20Proof::pkill($lpx_control);
 &One20Proof::pkill($lpx_manager);
 &One20Proof::pkill($lpx_scale);
 &One20Proof::pkill($mod_host);
+&One20Proof::pkill($pd);
 &One20Proof::pkill($pedal_driver);
-&One20Proof::pkill($pd_name);
-&One20Proof::pkill($yoshimi_name);
+&One20Proof::pkill($yoshimi);
 
 ## Set up the LPX into programmer mode
 &One20Proof::run_daemon("$ENV{'Home120Proof'}/bin/lpx_mode 1", 1);

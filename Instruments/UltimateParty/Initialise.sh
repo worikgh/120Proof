@@ -37,7 +37,7 @@ $xiz_file = 'StrangeDays';
 
 warn "Mark";
 
-&One20Proof::run_daemon("$LPX_MANAGER $ENV{Home120Proof}/Instruments/$instrument_name/lpx_manager.cfg   57 1 4 6 8 11 ");
+&One20Proof::run_daemon("$LPX_MANAGER $ENV{Home120Proof}/Instruments/$instrument_name/lpx_manager.cfg   57 5 17 1 1 4 6 8 11 ");
 
 warn "Mark";
 

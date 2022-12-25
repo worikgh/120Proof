@@ -108,9 +108,11 @@ Sets the colour of a pad on the `LPX`.
 
 ### Invocation
 
-`bin/lpx_manager <Path to MIDI configuration> <Root note MIDI> <[1-12]>`
+`bin/lpx_manager <Path to MIDI configuration> <Root note MIDI> <root colour> <scale colour> other colour> <[1-12]>`
 
 Where `<Root note MIDI>` is the MIDI value for the note the center pad (r4, c5) is assigned to.
+
+`<root colour>`, `<scale colour>`, and `<other colour>` are the colours (from the LPX palette) that are assigned to root notes, scale notes, and other notes respectively.
 
 `<[1-12]>` is the scale defined as one to twelve integers in the range 1 - 12 inclusive, and ordered, that define the notes of the scale.  Always starts with `1`
 

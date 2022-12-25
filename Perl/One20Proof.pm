@@ -389,6 +389,10 @@ sub get_pd {
     return $result;
 }
 
+sub get_pedal_driver {
+    return "$ENV{Home120Proof}/bin/120Proofpd";
+}
+
 sub get_yoshimi {
     my $result = `which yoshimi`;
     chomp $result;

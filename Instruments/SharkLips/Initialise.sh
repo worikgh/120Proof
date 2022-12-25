@@ -33,8 +33,8 @@ my $jack_name = 'SharkLipsKeys';
 
 $jack_name = 'SharkLipsLPX';
 &One20Proof::initialise_yoshimi($jack_name, $LPX_INSTR);
-
-&One20Proof::run_daemon("$ENV{Home120Proof}/bin/lpx_manager $ENV{Home120Proof}/Instruments/SharkLips/lpx_manager.cfg  57 1 4 7 8 11  ");
+my $lpx_manager = &One20Proof::get_lpx_manager;
+&One20Proof::run_daemon("$lpx_manager $ENV{Home120Proof}/Instruments/SharkLips/lpx_manager.cfg  57 5 17 113 1 4 7 8 11  ");
 
 
 # Wait until lpx_manager is running

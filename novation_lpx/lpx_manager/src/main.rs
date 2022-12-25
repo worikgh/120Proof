@@ -20,6 +20,11 @@ struct Adapter {
     scale: Vec<u8>,     // At most 12 unique intergers in 1..12 inclusive
     midi_note_to_pads: Vec<(Option<u8>, Option<u8>)>, // Each note at most 2 pads
     root_note: u8,
+
+    /// Colours for the three types of a pad: root, scale, and other.
+    root_colour: u8,
+    scale_colour: u8,
+    other_colour: u8,
 }
 impl std::fmt::Debug for Adapter {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
@@ -27,6 +32,7 @@ impl std::fmt::Debug for Adapter {
     }
 }
 impl Adapter {
+    /// `inp` is the index of the pad.  Return the MIDI note
     fn adapt(&self, inp: u8) -> u8 {
         self.midi_map[inp as usize]
     }
@@ -35,8 +41,12 @@ impl Adapter {
     /// others cream(113)
     fn pad_colour(&self, pad_in: u8) -> Option<u8> {
         if pad_in % 10 > 0 && pad_in % 10 < 9 {
+            // `pad_in` is a MIDI Note pad
+
+            // `pad_out` is MIDI note
             let pad_out = self.adapt(pad_in);
 
+            // `diff_12` is the note on the scale 0..11
             let diff_12 = ((self.root_note as i16 - pad_out as i16).abs() % 12) as u8;
 
             let note = if pad_out >= self.root_note {
@@ -45,10 +55,10 @@ impl Adapter {
                 12_u8 - if diff_12 == 0 { 12_u8 } else { diff_12 } + 1
             };
             let colour = match note {
-                1 => 5, // Root note
+                1 => self.root_colour, // Root note
                 a => match self.scale.iter().find(|&&x| x == a) {
-                    Some(_) => 17, // Scale note
-                    None => 113,
+                    Some(_) => self.scale_colour, // Scale note
+                    None => self.other_colour,
                 },
             };
             Some(colour)
@@ -61,8 +71,11 @@ impl Adapter {
     fn new(
         midi_out_synth: MIDICommunicator<()>,
         midi_out_lpx: MIDICommunicator<()>,
-        scale: &Vec<u8>,
+        scale: &[u8],
         root_note: u8, // Where the scale is rooted.  The MIDI note
+        root_colour: u8,
+        scale_colour: u8,
+        other_colour: u8,
     ) -> Self {
         let mut midi_map = [0_u8; 99];
 
@@ -127,12 +140,15 @@ impl Adapter {
         }
 
         Self {
-            midi_out_synth: midi_out_synth,
-            midi_out_lpx: midi_out_lpx,
-            midi_map: midi_map,
+            midi_out_synth,
+            midi_out_lpx,
+            midi_map,
             scale: scale.to_vec(),
-            midi_note_to_pads: midi_note_to_pads,
-            root_note: root_note,
+            midi_note_to_pads,
+            root_note,
+            root_colour,
+            scale_colour,
+            other_colour,
         }
     }
 }
@@ -192,17 +208,17 @@ fn main() -> Result<(), Box<dyn Error>> {
 
     // This is the scale.  Should be able to pass this in on the command line.
     let scale: Vec<u8>;
-    let root_note: u8;
     if args.is_empty() {
         panic!("Need arguments");
     }
     // First argument is the config file name.  Next the root
     // note.  The rest of the arguments are the scale
     let mut iter = args.iter();
-    let cfg_fn = iter.nth(1).unwrap().as_str();
-    let root_note_iv = iter.nth(0).unwrap().as_str();
-
-    root_note = root_note_iv.parse::<u8>()?;
+    let cfg_fn = iter.nth(1).unwrap().to_string();
+    let root_note: u8 = iter.next().unwrap().parse::<u8>()?;
+    let root_colour: u8 = iter.next().unwrap().parse::<u8>()?;
+    let scale_colour: u8 = iter.next().unwrap().parse::<u8>()?;
+    let other_colour: u8 = iter.next().unwrap().parse::<u8>()?;
 
     let mut intermediate_value: Vec<u8> = Vec::new();
     for s in iter {
@@ -214,7 +230,7 @@ fn main() -> Result<(), Box<dyn Error>> {
     }
     scale = intermediate_value;
 
-    let device_names = match DeviceNames::new(cfg_fn) {
+    let device_names = match DeviceNames::new(&cfg_fn) {
         Ok(dn) => dn,
         Err(err) => panic!("Cannot make DeviceNames from {}. Err({})", cfg_fn, err),
     };
@@ -235,7 +251,15 @@ fn main() -> Result<(), Box<dyn Error>> {
         2,
     )?;
 
-    let mut adapter = Adapter::new(midi_out_synth, midi_out_lpx, &scale, root_note);
+    let mut adapter = Adapter::new(
+        midi_out_synth,
+        midi_out_lpx,
+        &scale,
+        root_note,
+        root_colour,
+        scale_colour,
+        other_colour,
+    );
     // Initialise LPX colours
     for i in 11..90 {
         if i % 10 > 0 && i % 10 < 9 {
