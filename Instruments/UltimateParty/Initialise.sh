@@ -35,11 +35,8 @@ my $jack_name_lpx = $instrument_name.'LPX';
 $xiz_file = 'StrangeDays';
 &One20Proof::initialise_yoshimi($jack_name_lpx,  "$xiz_dir/$xiz_file.xiz");
 
-warn "Mark";
 
 &One20Proof::run_daemon("$LPX_MANAGER $ENV{Home120Proof}/Instruments/$instrument_name/lpx_manager.cfg   57 5 17 1 1 4 6 8 11 ");
-
-warn "Mark";
 
 # Wait until lpx_manager is running
 &One20Proof::wait_for_midi("120-Proof-MIDI-In-LPX") or
@@ -48,9 +45,7 @@ warn "Mark";
     die "120-Proof-MIDI-Out-LPX not found";
 &One20Proof::wait_for_midi("120-Proof-MIDI-Out-PD") or
     die "120-Proof-MIDI-Out-PD not found";
-warn "Mark";
 
 # sleep 5
 
 &One20Proof::run_daemon("$ENV{'Home120Proof'}/bin/InitialiseMidi $ENV{'Home120Proof'}/Instruments/$instrument_name/midi.cfg ");
-warn "Mark";

@@ -48,4 +48,3 @@ my $lpx_manager = &One20Proof::get_lpx_manager;
 #&One20Proof::run_daemon("$ENV{Home120Proof}/bin/InitialiseMidi $ENV{Home120Proof}/Instruments/SharkLips/midi.cfg ");
 print STDERR `$ENV{Home120Proof}/bin/InitialiseMidi $ENV{Home120Proof}/Instruments/SharkLips/midi.cfg`;
 
-warn "Set up MIDI";

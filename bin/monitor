@@ -15,6 +15,8 @@ $|++; #Flush
 my $output_dir = "$ENV{'Home120Proof'}/output/";
 my $o = OutputFilesState->new($output_dir);
 $o->initialise();
+
+my $lines_since_time = 0;
 while(1){
     my $yoshimi_f = YoshimiOutFilter->new();
     my $yoshimi_e = YoshimiErrFilter->new();
@@ -26,6 +28,7 @@ while(1){
 	## Do some processing	
 	my @output = split(/\n/, $output);
 	foreach my $l (@output){
+	    $lines_since_time++;
 	    chomp $l;
 	    if($l =~ /yoshimi\.out:(.+)/){
 		print $yoshimi_f->process_line($l);
@@ -36,10 +39,16 @@ while(1){
 	    }
 	}
     }
-    my $yoshimi_summary = $yoshimi_f->summary();
-    if($yoshimi_summary){
-	print scalar(localtime()).": ";
-	print $yoshimi_summary;
+    my $yoshimi_f_summary = $yoshimi_f->summary();
+    my $yoshimi_e_summary = $yoshimi_e->summary();
+    my $summary = $yoshimi_e_summary . $yoshimi_f_summary;
+
+    if($summary){
+	if($lines_since_time > 20){
+	    print scalar(localtime())."\n";
+	    $lines_since_time = 0;
+	}
+	print $summary;
     }
     sleep(.5);
 }

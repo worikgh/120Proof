@@ -53,10 +53,10 @@ if (`pgrep -f $PD`){
 
 
 &One20Proof::run_daemon("$LPX_SCALE $HOME/Instruments/WillPad/lpx_scale.cfg 60 1 3 5 6 8 10 12 ");
-warn scalar(localtime()) . " MARK ";
+#warn scalar(localtime()) . " MARK ";
 
 ##&One20Proof::run_daemon("$HOME/bin/InitialiseMidi $HOME/Instruments/WillPad/midi.cfg", 1);
 print `$HOME/bin/InitialiseMidi $HOME/Instruments/WillPad/midi.cfg`;
 
     
-print " Will set up\n";
+#print " Will set up\n";
