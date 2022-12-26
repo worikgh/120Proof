@@ -1,9 +1,5 @@
 #!/usr/bin/perl -w
 use strict;
-use lib("$ENV{'Home120Proof'}/Perl");
-use One20Proof;
-
-
-my $cmd = "/home/patch/120Proof/Instruments/SharkLips/Initialise.sh ";
-&One20Proof::run_daemon($cmd);
+my $cmd = "/home/patch/120Proof/Instruments/SharkLips/Initialise ";
+exec $cmd;
 

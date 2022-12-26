@@ -2,7 +2,6 @@
 use strict;
 use lib("$ENV{'Home120Proof'}/Perl");
 use One20Proof;
-warn "MARK";
 &One20Proof::blank_lpx;
 my $yoshimi = `which yoshimi`;
 chomp $yoshimi;

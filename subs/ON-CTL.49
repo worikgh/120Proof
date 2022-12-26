@@ -1,5 +1,5 @@
 #!/usr/bin/perl -w
 use strict;
-my $cmd = "/home/patch/120Proof/Instruments/UltimateParty/Initialise.sh ";
-`$cmd`;
+my $cmd = "/home/patch/120Proof/Instruments/UltimateParty/Initialise";
+exec $cmd;
 
