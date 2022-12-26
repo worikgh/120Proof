@@ -8,7 +8,7 @@ print "test  120Proof Perl module: One20Proof.pm\n";
 
 my $to_test = shift or die "Pass a test";
 my $cmd = "test_$to_test";
-eval {
+{
     no strict 'refs';
     &$cmd;
 };
@@ -18,7 +18,7 @@ sub test_all {
     my @subs = grep{$_ !~ /^test_all$/} map{s/^sub (.+\S)\s*\{\s*$/$1/; $_} `grep "^sub " test.pl`;
     foreach my $test (@subs){
 	
-	eval {
+	 {
 	    no strict 'refs';
 	    &$test;
 	};
@@ -51,10 +51,26 @@ sub test_kill_port {
     One20Proof::kill_port($PORT);
 }
 
+sub test_list_pedals {
+    my @array = One20Proof::list_pedals;
+    @array or die "No pedals";
+    my $pedals = One20Proof::list_pedals;
+    $pedals or die "No pedals";
+    print ref $pedals;
+    print $pedals;
+}
+
 sub test_blank_lpx{
     One20Proof::blank_lpx;
 }
 
+sub test_get_bin{
+    -d     One20Proof::get_bin  or die $!;
+}
+
+sub test_get_pedal_dir{
+    -d     One20Proof::get_pedal_dir  or die $!;
+}
 
 sub test_get_lpx_blank_screen {
     my $result = &One20Proof::get_lpx_blank_screen();
@@ -66,8 +82,8 @@ sub test_get_lpx_colour {
     -x $result or die "$!: '$result'";
 }
 
-sub test_get_lpx_control {
-    my $result = &One20Proof::get_lpx_control();
+sub test_get_lpx_controll {
+    my $result = &One20Proof::get_lpx_controll();
     -x $result or die "$!: '$result'";
 }
 

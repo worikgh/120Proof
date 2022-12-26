@@ -1,7 +1,7 @@
 package One20Proof;
 use IPC::Open3;
 #use POSIX "setsid";
-
+use strict;
 BEGIN {
     require Exporter;
     our @ISA = qw(Exporter);
@@ -20,7 +20,7 @@ our $MODHOST_PORT = 9116;
 
 sub blank_lpx {
     my $lpx_blank_screen = "$ENV{Home120Proof}/bin/lpx_blank_screen";
-    -x $lpx_blank_screen or die "$!: $lpx_colour";
+    -x $lpx_blank_screen or die "$!: $lpx_blank_screen";
     `$lpx_blank_screen`;
 }
 
@@ -224,7 +224,7 @@ sub list_all_midi_connections {
 	    my @targets = split(/,/, $1);
 
 	    ## Filter outy the perverse target "128:0[real:0]"
-	    @targets = map{s/\s//g; $_} grep{_ !~ /128:0]+$/} @targets;
+	    @targets = map{s/\s//g; $_} grep{$_ !~ /128:0]+$/} @targets;
 	    foreach my $t (@targets){
 		my $real = undef;
 		$t  =~ s/\[(.+)\:.+\]// and $real = $1; 
@@ -348,7 +348,7 @@ sub initialise_yoshimi( $$ ) {
     my $cmd = "$bin  -i -J --alsa-midi=120Proof -c -K -L '$instrument' -N $name -R 48000";
 
     &run_daemon($cmd);
-    &wait_for_jack($name) or die "Jack: $jack_name not found";
+    &wait_for_jack($name) or die "Jack: $name not found";
     my $midi_name =  "yoshimi-$name";
     &wait_for_midi($midi_name) or die "$midi_name not found";
     
@@ -356,30 +356,48 @@ sub initialise_yoshimi( $$ ) {
 
 ### MIDI handling
 
+### Handling pedal definitions
+sub list_pedals {
+    opendir(my $dir, &get_pedal_dir) or die $!;
+    my @pedals =
+	grep{$_ !~ /^\./} ## Not hidden file
+    grep{/\S\S/} ## Not just one character
+    readdir($dir);
+    wantarray and return @pedals;
+    return join("\n", @pedals);
+}
 
+### Getters for directories
+sub get_bin {
+    return "$ENV{Home120Proof}/bin";
+}
+
+sub get_pedal_dir {
+    return "$ENV{Home120Proof}/pedal/PEDALS";
+}
 ### Getters for binary programmes
 sub get_lpx_blank_screen {
-    return "$ENV{Home120Proof}/bin/lpx_blank_screen";
+    return &get_bin()."/lpx_blank_screen";
 }
 
 sub get_lpx_colour {
-    return "$ENV{Home120Proof}/bin/lpx_colour";
+    return &get_bin()."/lpx_colour";
 }
 
 sub get_lpx_controll {
-    return "$ENV{Home120Proof}/bin/lpx_controll";
+    return &get_bin()."/lpx_controll";
 }
 
 sub get_lpx_manager {
-    return "$ENV{Home120Proof}/bin/lpx_manager";
+    return &get_bin()."/lpx_manager";
 }
 
 sub get_lpx_mode {
-    return "$ENV{Home120Proof}/bin/lpx_mode";
+    return &get_bin()."/lpx_mode";
 }
 
 sub get_lpx_scale {
-    return "$ENV{Home120Proof}/bin/lpx_scale";
+    return &get_bin()."/lpx_scale";
 }
 
 sub get_mod_host {
@@ -395,7 +413,7 @@ sub get_pd {
 }
 
 sub get_pedal_driver {
-    return "$ENV{Home120Proof}/bin/120Proofpd";
+    return &get_bin()."/120Proofpd";
 }
 
 sub get_yoshimi {
