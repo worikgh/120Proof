@@ -431,7 +431,7 @@ int load_pedal(char p){
 #endif
   if(fd == 0){
 #ifdef VERBOSE
-    Log("Failed to open: %s\n", scriptname); 
+    Log("Failed to open: '%s': %s\n", strerror(errno), scriptname); 
 #endif
    return -1;
   }
@@ -776,14 +776,15 @@ int main(int argc, char * argv[]) {
 
 	  gettimeofday(&c, NULL);
 
+
 	  Log("Implement %c: %ld\n", *current_pedal,
 	      ((b.tv_sec - a.tv_sec) * 1000000) +
 	      (b.tv_usec - a.tv_usec));
-
 	  
 	  Log( "Deimplement %c: %ld\n", old_pedal?*old_pedal:'-',
 	       ((c.tv_sec - b.tv_sec) * 1000000) +
 	       (c.tv_usec - b.tv_usec));
+	  
 	  Log("Total: %ld\n", ((c.tv_sec - a.tv_sec) * 1000000) +
 	      (c.tv_usec - a.tv_usec));
 	}
@@ -855,6 +856,7 @@ void Log(char * sp, ...){
 
 
   int res = fprintf(stderr, "%s", LOGBUFFER);
+  assert(res || LOGBUFFER[0] == '\0');
   /* fprintf(stdout, "Logging\n"); */
 
 }
