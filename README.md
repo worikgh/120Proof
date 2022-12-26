@@ -40,6 +40,8 @@ and run `bin/Mistress`.  Works first time....
 
 	Essentially a three key USB-keyboard configured as a pedal
 
+  * Look into using a [Behringer FCB1010](https://www.behringer.com/product.html?modelCode=P0089) A MIDI foot pedal
+  
 * Berringer XR18
 
 	Can only be controlled by software
