@@ -41,3 +41,4 @@ pedal/PEDALS/C
 pedal/PEDALS/.driver.pid
 bin/120Proofpd
 pedal/120Proofpd
+*/.gdb_history
