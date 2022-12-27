@@ -1,7 +1,5 @@
 use std::collections::HashMap;
 use std::env;
-// use std::ffi::OsStr;
-// use std::ffi::OsString;
 use std::fs;
 use std::io;
 use std::io::prelude::*;
@@ -10,34 +8,11 @@ use std::io::SeekFrom;
 use std::path::Path;
 use std::thread;
 use std::time;
-/// Maintain the knowledge about the file
-struct FileRecord {
-    /// The position in the file that has been processed upto.
-    position: u64,
+mod file_filter;
+mod file_record;
+// use file_filter::FileFilter;
+use file_record::FileRecord;
 
-    /// The contents of the file that has not been read but not
-    /// processed
-    cache: String,
-}
-trait FileFilter {
-    fn filter(&mut self, input: String) -> String;
-}
-impl FileRecord {
-    fn new() -> FileRecord {
-        FileRecord {
-            position: 0,
-            cache: String::new(),
-        }
-    }
-
-    //fn process(&mut self
-    fn summarise(&self, filter: Option<&mut dyn FileFilter>) -> String {
-        match filter {
-            Some(f) => f.filter(self.cache.clone()),
-            None => self.cache.clone(),
-        }
-    }
-}
 fn main() -> io::Result<()> {
     let mut file_store: HashMap<String, FileRecord> = HashMap::new();
     let home = env::var("Home120Proof").unwrap();
