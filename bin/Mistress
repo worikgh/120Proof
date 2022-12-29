@@ -100,7 +100,8 @@ print "120Proof's Mistress running rooted at: $ENV{'Home120Proof'} ".(scalar(loc
 my $PORT = $One20Proof::MODHOST_PORT;
 
 ## IM: Copy the definitions of simulators writen by modep-mod-ui: EM (26)
-&One20Proof::run_daemon("$ENV{Home120Proof}/bin/ExtractModep $modep_command_fn Cello_Boaster Looper Harp_Sweetner ORGANS ORGANS_Sweet", 1);
+# &One20Proof::run_daemon("$ENV{Home120Proof}/bin/ExtractModep $modep_command_fn Cello_Boaster Looper Harp_Sweetner ORGANS ORGANS_Sweet", 1);
+&One20Proof::run_daemon("$ENV{Home120Proof}/bin/ExtractModep $modep_command_fn Looper  ORGANS ORGANS_Sweet", 1);
 
 
 ## IM: Start mod-host
@@ -114,9 +115,9 @@ if(`lsof -i:$PORT`){
 
 &One20Proof::run_daemon( "$mod_host -p $PORT ");
 
-sleep 1;
-unless(`lsof -i:$PORT`){
-    die "$?: Failed to start $mod_host on $PORT";
+while(!`lsof -i:$PORT`){
+    sleep 1;
+    warn "$?: Failed to start $mod_host on $PORT";
 }
 
 ## IM: Start simulators MS (47)
