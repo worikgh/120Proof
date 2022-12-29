@@ -44,7 +44,7 @@ fn get_file_names(output_dir_path: &Path) -> Vec<String> {
 /// If the file is new but empty the data will be an empty string and
 /// the new position zero
 fn refresh_file(file_name: String, file_position: u64) -> io::Result<(String, u64)> {
-    let mut f = fs::File::open(&file_name)?;
+    let mut f = fs::File::open(file_name)?;
     let fsize = f.metadata().unwrap().len();
 
     if fsize < file_position {
@@ -135,7 +135,7 @@ mod tests {
         use std::path::Path;
         use std::path::PathBuf;
         use std::process;
-        let temp_dir_name = format!("test_dir_{}", process::id());
+        let temp_dir_name = format!("test_dir_test_file_names{}", process::id());
         let mut test_path: PathBuf = temp_dir();
         test_path.push(temp_dir_name.as_str());
 
@@ -159,6 +159,52 @@ mod tests {
         assert!(file_names.len() == 1);
 
         // Clean up
+        fs::remove_file(test_file_path).unwrap();
+        fs::remove_dir(test_dir_path).unwrap();
+        assert!(!Path::exists(test_dir_path));
+    }
+
+    #[test]
+    /// A convoluted test to test refreshing files
+
+    fn test_refresh_file() {
+        use std::env::temp_dir;
+        use std::fs::create_dir;
+        use std::path::Path;
+        use std::path::PathBuf;
+        use std::process;
+        let temp_dir_name = format!("test_dir_test_refresh_files{}", process::id());
+        let mut test_path: PathBuf = temp_dir();
+        test_path.push(temp_dir_name.as_str());
+
+        let test_dir_path = test_path.as_path();
+        assert!(!Path::exists(test_dir_path));
+        create_dir(test_dir_path).unwrap();
+        assert!(Path::exists(test_dir_path));
+        assert!(Path::is_dir(test_dir_path));
+
+        let temp_file_name = format!("test_file_{}", process::id());
+        let mut test_file_path = test_path.clone();
+        test_file_path.push(temp_file_name.as_str());
+        let test_file_path = test_file_path.as_path();
+        let mut file = fs::File::create(test_file_path).unwrap();
+        let file_name: String = test_file_path.as_os_str().to_str().unwrap().to_string();
+        assert!(Path::is_file(test_file_path));
+        let (contents, position): (String, u64) = refresh_file(file_name.clone(), 0).unwrap();
+        assert!(contents.is_empty());
+        assert!(position == 0);
+        let test_string: String = "abcdefg".to_string();
+        file.write_all(test_string.as_bytes()).unwrap();
+
+        let (contents, position): (String, u64) = refresh_file(file_name.clone(), 0).unwrap();
+        assert!(contents == test_string);
+        assert!(position == test_string.len() as u64);
+
+        let (contents, position): (String, u64) = refresh_file(file_name, 1).unwrap();
+        assert!(contents == test_string[1..]);
+        assert!(position == test_string.len() as u64);
+
+        // Cleanup
         fs::remove_file(test_file_path).unwrap();
         fs::remove_dir(test_dir_path).unwrap();
         assert!(!Path::exists(test_dir_path));
