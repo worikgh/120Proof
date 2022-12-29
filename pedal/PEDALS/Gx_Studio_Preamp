@@ -1,3 +1,2 @@
-connect system:capture_1 effect_4:in
-connect effect_4:out system:playback_1
-connect effect_4:out system:playback_2
+connect effect_7:out system:playback_1
+connect system:capture_1 effect_7:in
