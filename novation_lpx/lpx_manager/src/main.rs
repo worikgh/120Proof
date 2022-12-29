@@ -11,9 +11,9 @@ use std::time::Duration;
 // use midir;
 use std::error::Error;
 
+/// `Adapter` changes the MIDI note and sends it to the synthesiser and
+/// sends colour change messages to the LPX
 struct Adapter {
-    // Adapter changes the MIDI note and sends it to the synthesiser
-    // and sends colour change messages to the LPX
     midi_out_synth: MIDICommunicator<()>,
     midi_out_lpx: MIDICommunicator<()>,
     midi_map: [u8; 99], // key is MIDI from LPX value MIDI to synth
@@ -32,13 +32,13 @@ impl std::fmt::Debug for Adapter {
     }
 }
 impl Adapter {
-    /// `inp` is the index of the pad.  Return the MIDI note
+    /// `inp` is the index of the pad.  Returns the MIDI note
     fn adapt(&self, inp: u8) -> u8 {
         self.midi_map[inp as usize]
     }
 
-    /// The colour of a pad.  Root notes get red(5), scale green(17),
-    /// others cream(113)
+    /// The colour of a pad.  Root notes get root_colour red(5), scale
+    /// scale_colour, others other_colour
     fn pad_colour(&self, pad_in: u8) -> Option<u8> {
         if pad_in % 10 > 0 && pad_in % 10 < 9 {
             // `pad_in` is a MIDI Note pad
@@ -49,11 +49,14 @@ impl Adapter {
             // `diff_12` is the note on the scale 0..11
             let diff_12 = ((self.root_note as i16 - pad_out as i16).abs() % 12) as u8;
 
+            // This is mad!
             let note = if pad_out >= self.root_note {
                 ((pad_out as i16 - self.root_note as i16).abs() % 12) as u8 + 1
             } else {
+                // 12_u8 - (diff_12 % 12) + 1
                 12_u8 - if diff_12 == 0 { 12_u8 } else { diff_12 } + 1
             };
+
             let colour = match note {
                 1 => self.root_colour, // Root note
                 a => match self.scale.iter().find(|&&x| x == a) {
