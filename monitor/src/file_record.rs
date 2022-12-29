@@ -17,10 +17,7 @@ impl FileRecord {
     }
 
     //fn process(&mut self
-    pub fn summarise(&self, filter: Option<&mut dyn FileFilter>) -> String {
-        match filter {
-            Some(f) => f.filter(self.cache.clone()),
-            None => self.cache.clone(),
-        }
+    pub fn summarise(&self, f: &mut dyn FileFilter) -> Vec<String> {
+        f.process_text(self.cache.as_str())
     }
 }

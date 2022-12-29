@@ -1,3 +1,3 @@
 pub trait FileFilter {
-    fn filter(&mut self, input: String) -> String;
+    fn process_text(&mut self, input: &str) -> Vec<String>;
 }
