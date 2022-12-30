@@ -7,6 +7,8 @@ const SECONDS_XRUN_REPORT: i64 = 60;
 /// Rule names
 const SAMPLE_RATE_RULE_NAME: &str = "sample_rate_rule";
 const INSTRUMENT_RULE_NAME: &str = "instrument_rule_name";
+const YAY_RUNNING_RULE_NAME: &str = "yay_running_rul_name";
+
 /// Maintain the knowledge about the file
 #[derive(Debug)]
 pub struct YoshimiOutFilter {
@@ -61,6 +63,21 @@ impl FileFilter for YoshimiOutFilter {
                 }
 
                 self.sample_rate = Some(new_sample_rate);
+            } else if self
+                .filter_rules
+                .evaluate(YAY_RUNNING_RULE_NAME, line)
+                .is_some()
+            {
+                // Yoshimi is set up
+                line_result = format!(
+                    "Yoshimi up: Sample rate: {} Instruments: {}",
+                    if self.sample_rate.is_some() {
+                        format!("{}", self.sample_rate.unwrap())
+                    } else {
+                        "<None>".to_string()
+                    },
+                    self.instrument.join(", ")
+                );
             } else if let Some(caps) = self.filter_rules.evaluate(INSTRUMENT_RULE_NAME, line) {
                 self.instrument
                     .push(caps.get(1).unwrap().as_str().to_string());
@@ -79,6 +96,7 @@ impl YoshimiOutFilter {
     pub fn new() -> YoshimiOutFilter {
         let mut filter_rules = FilterRules::new();
         filter_rules.add_rule(SAMPLE_RATE_RULE_NAME, r"Samplerate: (\d+)");
+        filter_rules.add_rule(YAY_RUNNING_RULE_NAME, r"^Yay! We're up and running :-\)$");
         filter_rules.add_rule(
             INSTRUMENT_RULE_NAME,
             format!(
@@ -118,5 +136,8 @@ mod tests {
         );
         assert!(result.is_empty());
         assert!(!yoshimi_filter.instrument.is_empty());
+
+        let result = yoshimi_filter.process_text("Yay! We're up and running :-)");
+        assert!(!result.is_empty());
     }
 }
