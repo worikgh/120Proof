@@ -13,7 +13,7 @@ pub struct YoshimiOutFilter {
     pub sample_rate: Option<usize>,
     pub xruns: usize, // Count how many xruns
     pub xrun_time: Option<OffsetDateTime>,
-    pub instrument: Option<String>,
+    pub instrument: Vec<String>,
     filter_rules: FilterRules,
 }
 impl FileFilter for YoshimiOutFilter {
@@ -54,7 +54,8 @@ impl FileFilter for YoshimiOutFilter {
                 line_result = String::new();
             } else if let Some(caps) = self.filter_rules.evaluate(INSTRUMENT_RULE_NAME, *line) {
                 println!("caps: {:?}", &caps);
-                self.instrument = Some(caps.get(1).unwrap().as_str().to_string());
+                self.instrument
+                    .push(caps.get(1).unwrap().as_str().to_string());
 
                 line_result = String::new();
             }
@@ -82,7 +83,7 @@ impl YoshimiOutFilter {
             sample_rate: None,
             xruns: 0,
             xrun_time: None,
-            instrument: None,
+            instrument: vec![],
             filter_rules,
         }
     }
@@ -105,6 +106,6 @@ mod tests {
             r"Instrument file /home/patch/120Proof/Instruments/xiz/Hammond Organ.xiz loaded",
         );
         assert!(result.is_empty());
-        assert!(yoshimi_filter.instrument.is_some());
+        assert!(yoshimi_filter.instrument.len() > 0);
     }
 }
