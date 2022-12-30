@@ -21,7 +21,7 @@ impl FileFilter for YoshimiOutFilter {
         // Value to return
         println!("Processing text: {}", input);
         // Break into lines
-        let lines: Vec<&str> = input.split("\n").collect();
+        let lines: Vec<&str> = input.split('\n').collect();
 
         let mut result: Vec<String> = vec![];
         for line in lines.iter() {
@@ -47,13 +47,21 @@ impl FileFilter for YoshimiOutFilter {
                         "".to_string()
                     };
                 }
-            } else if let Some(caps) = self.filter_rules.evaluate(SAMPLE_RATE_RULE_NAME, *line) {
-                println!("sample rate: caps: {:?}", &caps);
+            } else if let Some(caps) = self.filter_rules.evaluate(SAMPLE_RATE_RULE_NAME, line) {
                 let sample_rate_text = caps.get(1).map_or("0", |m| m.as_str());
-                self.sample_rate = Some(sample_rate_text.parse().unwrap());
-                line_result = String::new();
-            } else if let Some(caps) = self.filter_rules.evaluate(INSTRUMENT_RULE_NAME, *line) {
-                println!("caps: {:?}", &caps);
+                let new_sample_rate = sample_rate_text.parse().unwrap();
+                if self.sample_rate.is_some() {
+                    line_result = format!(
+                        "Overwriting sample rate.  Was: {} changed to: {}",
+                        self.sample_rate.unwrap(),
+                        new_sample_rate
+                    );
+                } else {
+                    line_result = String::new();
+                }
+
+                self.sample_rate = Some(new_sample_rate);
+            } else if let Some(caps) = self.filter_rules.evaluate(INSTRUMENT_RULE_NAME, line) {
                 self.instrument
                     .push(caps.get(1).unwrap().as_str().to_string());
 
@@ -102,10 +110,13 @@ mod tests {
         let result = yoshimi_filter.process_text("Samplerate: 48000");
         assert!(result.is_empty());
         assert!(yoshimi_filter.sample_rate == Some(48000));
+        let result = yoshimi_filter.process_text("Samplerate: 48001");
+        assert!(!result.is_empty());
+        assert!(yoshimi_filter.sample_rate == Some(48001));
         let result = yoshimi_filter.process_text(
             r"Instrument file /home/patch/120Proof/Instruments/xiz/Hammond Organ.xiz loaded",
         );
         assert!(result.is_empty());
-        assert!(yoshimi_filter.instrument.len() > 0);
+        assert!(!yoshimi_filter.instrument.is_empty());
     }
 }
