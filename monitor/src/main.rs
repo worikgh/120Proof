@@ -13,8 +13,8 @@ use std::time;
 mod default_filter;
 mod file_filter;
 mod file_record;
+mod filter_rules;
 mod yoshimi_out_filter;
-
 use default_filter::DefaultFilter;
 use file_record::FileRecord;
 use yoshimi_out_filter::YoshimiOutFilter;
