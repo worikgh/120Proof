@@ -4,7 +4,8 @@
 /// Each rule is indexed with String
 use regex::Regex;
 use std::collections::HashMap;
-struct FilterRules {
+#[derive(Debug)]
+pub struct FilterRules {
     pub rules: HashMap<String, Regex>,
 }
 
