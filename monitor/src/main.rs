@@ -14,13 +14,17 @@ mod default_filter;
 mod file_filter;
 mod file_record;
 mod filter_rules;
+mod yoshimi_err_filter;
 mod yoshimi_out_filter;
 use default_filter::DefaultFilter;
 use file_record::FileRecord;
+use yoshimi_err_filter::YoshimiErrFilter;
 use yoshimi_out_filter::YoshimiOutFilter;
 
 const OUTPUT_DIR: &str = "output";
-
+fn get_output_dir() -> String {
+    format!("{}/{}", env::var("Home120Proof").unwrap(), OUTPUT_DIR)
+}
 /// Get the names of all the files in the output directory
 fn get_file_names(output_dir_path: &Path) -> Vec<String> {
     fs::read_dir(output_dir_path)
@@ -28,7 +32,8 @@ fn get_file_names(output_dir_path: &Path) -> Vec<String> {
         .map(|x| {
             x.unwrap()
                 .path()
-                .into_os_string()
+                .file_name()
+                .unwrap()
                 .to_str()
                 .unwrap()
                 .to_string()
@@ -44,7 +49,7 @@ fn get_file_names(output_dir_path: &Path) -> Vec<String> {
 /// If the file is new but empty the data will be an empty string and
 /// the new position zero
 fn refresh_file(file_name: String, file_position: u64) -> io::Result<(String, u64)> {
-    let mut f = fs::File::open(file_name)?;
+    let mut f = fs::File::open(format!("{}/{}", get_output_dir(), file_name))?;
     let fsize = f.metadata().unwrap().len();
 
     if fsize < file_position {
@@ -68,14 +73,14 @@ fn refresh_file(file_name: String, file_position: u64) -> io::Result<(String, u6
 fn main() -> io::Result<()> {
     // Main cache of data about the files being monitored
     let mut file_store: HashMap<String, FileRecord> = HashMap::new();
-    let home = env::var("Home120Proof").unwrap();
-    let output_dir_path = Path::new(&home).join(OUTPUT_DIR);
+    let home = get_output_dir();
+    let output_dir_path = Path::new(&home);
 
     // Filters to use for the different files
     let mut default_filter = DefaultFilter {};
     let mut yoshimi_out_filter = YoshimiOutFilter::new();
     loop {
-        let files = get_file_names(&output_dir_path);
+        let files = get_file_names(output_dir_path);
 
         for file_name in files.iter() {
             if !file_store.contains_key(file_name) {
@@ -100,7 +105,6 @@ fn main() -> io::Result<()> {
                     // delete from cache and continue
                     match err.kind() {
                         ErrorKind::NotFound => {
-                            println!("Removing filename: {}", &file_name);
                             file_store.remove(file_name);
                             continue;
                         }
@@ -112,11 +116,11 @@ fn main() -> io::Result<()> {
 
         for (f, mut v) in &mut file_store {
             let summary = match f.as_str() {
-                "yohimi.out" => v.summarise(&mut yoshimi_out_filter),
+                "yoshimi.out" => v.summarise(&mut yoshimi_out_filter),
                 _ => v.summarise(&mut default_filter),
             };
             for s in summary.iter() {
-                println!("f: {}: {}", f, s.len());
+                println!("f: {}: {}", f, s);
             }
             v.cache = String::new();
         }

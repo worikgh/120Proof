@@ -20,8 +20,6 @@ pub struct YoshimiOutFilter {
 }
 impl FileFilter for YoshimiOutFilter {
     fn process_text(&mut self, input: &str) -> Vec<String> {
-        // Value to return
-        println!("Processing text: {}", input);
         // Break into lines
         let lines: Vec<&str> = input.split('\n').collect();
 
