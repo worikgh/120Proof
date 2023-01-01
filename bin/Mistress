@@ -74,7 +74,7 @@ my $modep_command_fn = "$ENV{Home120Proof}/modep_commands.txt";
 my $output_dir = "$ENV{Home120Proof}/output";
 opendir(my $dir, $output_dir) or die "$!";
 while(my $fn = readdir($dir)){
-    $fn =~ /^\.\.?/ and next;
+    $fn =~ /^\.\.?$/ and next;
     $fn =~ /^README/ and next;
     my $fn_to_delete = "$output_dir/$fn";
     unlink($fn_to_delete) or die "$!: Cannot unlink $fn_to_delete";
