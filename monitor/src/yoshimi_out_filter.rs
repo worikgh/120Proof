@@ -16,6 +16,7 @@ pub struct YoshimiOutFilter {
     pub xruns: usize, // Count how many xruns
     pub xrun_time: Option<OffsetDateTime>,
     pub instrument: Vec<String>,
+    pid: usize,
     filter_rules: FilterRules,
 }
 impl FileFilter for YoshimiOutFilter {
@@ -83,7 +84,7 @@ impl FileFilter for YoshimiOutFilter {
                 line_result = String::new();
             }
             if !line_result.is_empty() {
-                result.push(line_result);
+                result.push(format!("{}:{}", self.pid, line_result));
             }
         }
         result
@@ -91,7 +92,7 @@ impl FileFilter for YoshimiOutFilter {
 }
 
 impl YoshimiOutFilter {
-    pub fn new() -> YoshimiOutFilter {
+    pub fn new(pid: usize) -> YoshimiOutFilter {
         let mut filter_rules = FilterRules::new();
         filter_rules.add_rule(SAMPLE_RATE_RULE_NAME, r"Samplerate: (\d+)");
         filter_rules.add_rule(YAY_RUNNING_RULE_NAME, r"^Yay! We're up and running :-\)$");
@@ -108,6 +109,7 @@ impl YoshimiOutFilter {
             xruns: 0,
             xrun_time: None,
             instrument: vec![],
+            pid,
             filter_rules,
         }
     }
@@ -117,7 +119,7 @@ mod tests {
     use super::*;
     #[test]
     fn test_process_text() {
-        let mut yoshimi_filter = YoshimiOutFilter::new();
+        let mut yoshimi_filter = YoshimiOutFilter::new(999);
         assert!(yoshimi_filter
             .filter_rules
             .rules

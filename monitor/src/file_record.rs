@@ -16,8 +16,10 @@ impl FileRecord {
         }
     }
 
-    //fn process(&mut self
-    pub fn summarise(&self, f: &mut dyn FileFilter) -> Vec<String> {
+    /// Summarise the contents of the filter for display.  When it is
+    /// possible the PID of the process generating the output is
+    /// included.  But it is not allways possible
+    pub fn summarise(&self, _pid: Option<usize>, f: &mut dyn FileFilter) -> Vec<String> {
         f.process_text(self.cache.as_str())
     }
 }

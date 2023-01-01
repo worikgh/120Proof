@@ -18,6 +18,7 @@ mod yoshimi_err_filter;
 mod yoshimi_out_filter;
 use default_filter::DefaultFilter;
 use file_record::FileRecord;
+use regex::Regex;
 use yoshimi_err_filter::YoshimiErrFilter;
 use yoshimi_out_filter::YoshimiOutFilter;
 
@@ -25,7 +26,15 @@ const OUTPUT_DIR: &str = "output";
 fn get_output_dir() -> String {
     format!("{}/{}", env::var("Home120Proof").unwrap(), OUTPUT_DIR)
 }
-/// Get the names of all the files in the output directory
+
+/// Given a file name, of a file with data to monitor, convert it to a
+/// complete path so it can be opened
+fn complete_path(file_name: &str) -> String {
+    format!("{}/{}", get_output_dir(), file_name)
+}
+
+/// Get the names of all the files in the output directory.
+/// `output_dir_path` is complete path to the output directory
 fn get_file_names(output_dir_path: &Path) -> Vec<String> {
     fs::read_dir(output_dir_path)
         .unwrap()
@@ -41,15 +50,33 @@ fn get_file_names(output_dir_path: &Path) -> Vec<String> {
         .collect()
 }
 
-/// Check to see if a file has any fresh data:
-/// `file_name` is complete path to the file
-/// `file_position` is the position in the file to read from
-/// Return the data and the new position in the file
-/// The data can be an empty string and the new position the old position.
+/// The output files from 120Proof havce form: <Name>.<PID>.err and
+/// <Name>.<PID>.out  This function breaks out the name and PID
+fn decode_file_name(file_name: &str) -> Option<(String, usize)> {
+    let regex = Regex::new(r"^(.+)\.(\d+)\.([erout]{3}$)").unwrap();
+    match regex.captures(file_name) {
+        Some(caps) => {
+            let text1: &str = caps.get(1).unwrap().as_str();
+            let text2: &str = caps.get(2).unwrap().as_str();
+            let text3: &str = caps.get(3).unwrap().as_str();
+            Some((
+                format!("{}.{}", text1, text3,),
+                text2.parse::<usize>().unwrap(),
+            ))
+        }
+        None => None,
+    }
+}
+
+/// Check to see if a file has any fresh data: `file_name` is complete
+/// path to the file `file_position` is the position in the file to
+/// read from Return the data and the new position in the file The
+/// data can be an empty string and the new position the old position.
 /// If the file is new but empty the data will be an empty string and
-/// the new position zero
+/// the new position zero. (The returned u64 is always equal to the
+/// file size???)
 fn refresh_file(file_name: String, file_position: u64) -> io::Result<(String, u64)> {
-    let mut f = fs::File::open(format!("{}/{}", get_output_dir(), file_name))?;
+    let mut f = fs::File::open(file_name)?;
     let fsize = f.metadata().unwrap().len();
 
     if fsize < file_position {
@@ -78,7 +105,8 @@ fn main() -> io::Result<()> {
 
     // Filters to use for the different files
     let mut default_filter = DefaultFilter {};
-    let mut yoshimi_out_filter = YoshimiOutFilter::new();
+    let mut y_err_filters: HashMap<usize, YoshimiErrFilter> = HashMap::new();
+    let mut y_out_filters: HashMap<usize, YoshimiOutFilter> = HashMap::new();
     loop {
         let files = get_file_names(output_dir_path);
 
@@ -90,7 +118,7 @@ fn main() -> io::Result<()> {
             }
 
             match refresh_file(
-                file_name.to_string(),
+                complete_path(file_name),
                 file_store.get(file_name).unwrap().position,
             ) {
                 Ok((new_data, n)) => {
@@ -114,10 +142,28 @@ fn main() -> io::Result<()> {
             };
         }
 
+        // Summarise the data.  Depending on the filename
         for (f, mut v) in &mut file_store {
-            let summary = match f.as_str() {
-                "yoshimi.out" => v.summarise(&mut yoshimi_out_filter),
-                _ => v.summarise(&mut default_filter),
+            let summary = match decode_file_name(f.as_str()) {
+                Some((name, pid)) => v.summarise(
+                    Some(pid),
+                    match name.as_str() {
+                        "yoshimi.err" => {
+                            y_err_filters
+                                .entry(pid)
+                                .or_insert_with(|| YoshimiErrFilter::new(pid));
+                            y_err_filters.get_mut(&pid).unwrap()
+                        } //yoshimi_err_filter,
+                        "yoshimi.out" => {
+                            y_out_filters
+                                .entry(pid)
+                                .or_insert_with(|| YoshimiOutFilter::new(pid));
+                            y_out_filters.get_mut(&pid).unwrap()
+                        } //yoshimi_out_filter,
+                        _ => &mut default_filter,
+                    },
+                ),
+                None => v.summarise(None, &mut default_filter),
             };
             for s in summary.iter() {
                 println!("f: {}: {}", f, s);
@@ -169,32 +215,78 @@ mod tests {
     }
 
     #[test]
-    /// A convoluted test to test refreshing files
+    fn test_decode_filename() {
+        let file_name: &str = "Name.9999.out";
+        match decode_file_name(file_name) {
+            Some((name, pid)) => {
+                assert!(name == "Name.out", "name: {}", name);
+                assert!(pid == 9999);
+            }
+            None => panic!("Failed to decode {}", file_name),
+        };
 
+        let file_name: &str = "Name.9998.err";
+        match decode_file_name(file_name) {
+            Some((name, pid)) => {
+                assert!(name == "Name.err");
+                assert!(pid == 9998);
+            }
+            None => panic!("Failed to decode {}", file_name),
+        };
+
+        let file_name: &str = "Name.9q998.err";
+        match decode_file_name(file_name) {
+            Some((name, pid)) => panic!(
+                "Decoded invalid filename: {}.  name: {} pid: {}",
+                file_name, name, pid
+            ),
+
+            None => assert!(true),
+        };
+    }
+    #[test]
+    /// A convoluted test to test refreshing files
     fn test_refresh_file() {
         use std::env::temp_dir;
         use std::fs::create_dir;
         use std::path::Path;
         use std::path::PathBuf;
         use std::process;
-        let temp_dir_name = format!("test_dir_test_refresh_files{}", process::id());
-        let mut test_path: PathBuf = temp_dir();
-        test_path.push(temp_dir_name.as_str());
 
-        let test_dir_path = test_path.as_path();
+        // Make a directory to do experiments in:  First the name
+        let temp_dir_name = format!("test_dir_test_refresh_files{}", process::id());
+        let mut test_path_buf: PathBuf = temp_dir();
+        test_path_buf.push(temp_dir_name.as_str());
+
+        // The complete path to test directory
+        let test_dir_path = test_path_buf.as_path();
+
+        // Create the temporary directory
         assert!(!Path::exists(test_dir_path));
         create_dir(test_dir_path).unwrap();
         assert!(Path::exists(test_dir_path));
         assert!(Path::is_dir(test_dir_path));
 
+        // Make a test file to use: First create the path to the file
         let temp_file_name = format!("test_file_{}", process::id());
-        let mut test_file_path = test_path.clone();
-        test_file_path.push(temp_file_name.as_str());
-        let test_file_path = test_file_path.as_path();
+        let mut test_file_path_buf = test_path_buf.clone();
+        test_file_path_buf.push(temp_file_name.as_str());
+        let test_file_path = test_file_path_buf.as_path();
+        assert!(!Path::exists(test_file_path));
+
+        // Create the test file
         let mut file = fs::File::create(test_file_path).unwrap();
-        let file_name: String = test_file_path.as_os_str().to_str().unwrap().to_string();
+        assert!(Path::exists(test_file_path));
         assert!(Path::is_file(test_file_path));
-        let (contents, position): (String, u64) = refresh_file(file_name.clone(), 0).unwrap();
+
+        // The name of the test file as a string
+        let file_name: String = test_file_path.as_os_str().to_str().unwrap().to_string();
+
+        // Test `refresh_file` on the empty file
+        let (contents, position): (String, u64) = match refresh_file(file_name.clone(), 0) {
+            Ok(tuple_2) => tuple_2,
+            Err(err) => panic!("Failed to refresh: {}.  Err: {}", &file_name, err),
+        };
         assert!(contents.is_empty());
         assert!(position == 0);
         let test_string: String = "abcdefg".to_string();
