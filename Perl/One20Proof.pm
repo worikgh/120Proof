@@ -262,13 +262,11 @@ sub run_daemon( $;$ ) {
 	my $command_file = $_x;
 	$command_file =~ s/^.+\/([^\/]+)$/$1/;
 	
-	# Turn on autoflush
-	
-	my $stderr_fn = $ENV{'Home120Proof'}."/output/$command_file.err";
+	my $stderr_fn = $ENV{'Home120Proof'}."/output/$command_file.$$.err";
 	$stderr_fn =~ /\/\.err$/ and
 	    die "No file name for err: \$cmd: '$cmd' ".
 	    join("\n", stack_trace());
-	my $stdout_fn = $ENV{'Home120Proof'}."/output/$command_file.out";
+	my $stdout_fn = $ENV{'Home120Proof'}."/output/$command_file.$$.out";
 	$stdout_fn =~ /\/\.out$/ and
 	    die "No file name for out: \$cmd: '$cmd' ".
 	    join("\n", stack_trace());
@@ -277,6 +275,7 @@ sub run_daemon( $;$ ) {
 	open(my $stdout, ">>", $stdout_fn) or
 	    die "$!: Cannot open $stdout_fn for append";
 
+	# Turn on autoflush
 	select($stdout);
 	$|++;
 	select($stderr);
