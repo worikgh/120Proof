@@ -22,6 +22,7 @@ use strict;
 ## Delete all Jack MIDI connetions
 ## 
 
+
 ## Required to run 120Proof
 if(!$ENV{"Home120Proof"}){
     $0 =~ /^(.+)\/bin\/[^\/]+$/ or die $0;
@@ -80,6 +81,7 @@ while(my $fn = readdir($dir)){
     unlink($fn_to_delete) or die "$!: Cannot unlink $fn_to_delete";
 }
 
+
 ## If the argument KILL was passed (`mistree KILL`) then stop now.
 my $arg = shift;
 if(defined($arg)){
@@ -98,6 +100,7 @@ print "120Proof's Mistress running rooted at: $ENV{'Home120Proof'} ".(scalar(loc
 
 ## Initialise mod-host: IM (66)
 my $PORT = $One20Proof::MODHOST_PORT;
+#-e "$ENV{Home120Proof}/pedal/PEDALS/A" or die "$!: $ENV{Home120Proof}/pedal/PEDALS/A";
 
 ## IM: Copy the definitions of simulators writen by modep-mod-ui: EM (26)
 # &One20Proof::run_daemon("$ENV{Home120Proof}/bin/ExtractModep $modep_command_fn Cello_Boaster Looper Harp_Sweetner ORGANS ORGANS_Sweet", 1);
@@ -122,6 +125,11 @@ while(!`lsof -i:$PORT`){
 
 ## IM: Start simulators MS (47)
 &One20Proof::run_daemon("$ENV{Home120Proof}/bin/ModhostSimulators");
+
+while(!-e "$ENV{Home120Proof}/pedal/PEDALS/A" || !-e "$ENV{Home120Proof}/pedal/PEDALS/B" || !-e "$ENV{Home120Proof}/pedal/PEDALS/C" ){
+    warn "Waiting on pedals";
+    sleep(1);
+}
 
 ## Set up the controls for the LPX
 One20Proof::run_daemon($lpx_control);
