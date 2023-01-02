@@ -14,6 +14,8 @@ mod default_filter;
 mod file_filter;
 mod file_record;
 mod filter_rules;
+mod mod_host_out_filter;
+use mod_host_out_filter::ModHostOutFilter;
 mod yoshimi_err_filter;
 mod yoshimi_out_filter;
 use default_filter::DefaultFilter;
@@ -105,6 +107,7 @@ fn main() -> io::Result<()> {
 
     // Filters to use for the different files
     let mut default_filter = DefaultFilter {};
+    let mut mod_host_out_filter = ModHostOutFilter::new();
     let mut y_err_filters: HashMap<usize, YoshimiErrFilter> = HashMap::new();
     let mut y_out_filters: HashMap<usize, YoshimiOutFilter> = HashMap::new();
     loop {
@@ -160,6 +163,7 @@ fn main() -> io::Result<()> {
                                 .or_insert_with(|| YoshimiOutFilter::new(pid));
                             y_out_filters.get_mut(&pid).unwrap()
                         } //yoshimi_out_filter,
+                        "mod-host.out" => &mut mod_host_out_filter,
                         _ => &mut default_filter,
                     },
                 ),
