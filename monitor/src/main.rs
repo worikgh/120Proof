@@ -16,10 +16,12 @@ mod file_record;
 mod filter_rules;
 mod mod_host_out_filter;
 use mod_host_out_filter::ModHostOutFilter;
+mod lpx_control_err_filter;
 mod yoshimi_err_filter;
-mod yoshimi_out_filter;
 use default_filter::DefaultFilter;
+mod yoshimi_out_filter;
 use file_record::FileRecord;
+use lpx_control_err_filter::LPXControlErrFilter;
 use regex::Regex;
 use yoshimi_err_filter::YoshimiErrFilter;
 use yoshimi_out_filter::YoshimiOutFilter;
@@ -98,14 +100,16 @@ fn refresh_file(file_name: String, file_position: u64) -> io::Result<(String, u6
         Ok(("".to_string(), fsize))
     }
 }
-
+//use lpx_control_err_filter::test_process_texta;
 fn main() -> io::Result<()> {
     // Main cache of data about the files being monitored
+    // test_process_texta();
     let mut file_store: HashMap<String, FileRecord> = HashMap::new();
     let home = get_output_dir();
     let output_dir_path = Path::new(&home);
 
     // Filters to use for the different files
+    let mut lpx_control_err_filter = LPXControlErrFilter::new();
     let mut default_filter = DefaultFilter {};
     let mut mod_host_out_filter = ModHostOutFilter::new();
     let mut y_err_filters: HashMap<usize, YoshimiErrFilter> = HashMap::new();
@@ -163,6 +167,7 @@ fn main() -> io::Result<()> {
                                 .or_insert_with(|| YoshimiOutFilter::new(pid));
                             y_out_filters.get_mut(&pid).unwrap()
                         } //yoshimi_out_filter,
+                        "lpx_controll.err" => &mut lpx_control_err_filter,
                         "mod-host.out" => &mut mod_host_out_filter,
                         _ => &mut default_filter,
                     },

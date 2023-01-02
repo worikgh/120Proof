@@ -94,8 +94,10 @@ sub pkill( $ ){
             #             on disk (often, but not always, 512 bytes each)
 
 	    
+	    warn "Info: Stating \$prog_name: $prog_name";
 	    my @stat = stat($prog_name);
-	    my $owner = ${getpwuid($stat[4])}[0];
+	    my $owner = getpwuid($stat[4]);
+	    warn "Info: Stating \$prog_name: $prog_name.  Owner: $owner";
 	    if($owner){
 		$die_msg .= " Owner: $owner ";
 	    }else{
@@ -401,8 +403,9 @@ sub get_lpx_scale {
 
 sub get_mod_host {
     my $result = `which mod-host`;
-    chomp $result;
+    chomp $result;    
     return $result;
+    # return "/usr/bin/mod-host";
 }
 
 sub get_pd {

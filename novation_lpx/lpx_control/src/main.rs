@@ -15,13 +15,13 @@ use std::thread;
 use std::time::Duration;
 
 // Colours used for the keys to provide feedback
-static ENABLEDCOLOUR: u8 = 87; // Ready
-static DISABLEDCOLOUR: u8 = 5; // Disabled
-static SELECTEDCOLOUR: u8 = 67; // In use
+const ENABLEDCOLOUR: u8 = 87; // Ready
+const DISABLEDCOLOUR: u8 = 5; // Disabled
+const SELECTEDCOLOUR: u8 = 67; // In use
 
 // The number of seconds to make the controls inactive when
 // notes played
-static SLEEPDURATION: usize = 2;
+const SLEEPDURATION: usize = 2;
 
 /// Dispatcher matches a control key to an executable and executes it
 struct Dispatcher {
@@ -103,10 +103,11 @@ impl Dispatcher {
         // env::set_current_dir(&home_dir)
         // 	.expect(format!("Cannot change directory to: {}", home_dir.display()).as_str());
         // let command = format!("{}/{}", home_dir.display(), &cmd);
-        println!("Run command: {}", &cmd);
+
         let mut _child = process::Command::new(&cmd)
             .spawn()
             .expect(format!("Failed to execute {}", &cmd).as_str());
+        // child.wait().expect(" not running");
     }
 
     /// A control pad has been pressed
@@ -158,9 +159,9 @@ impl Dispatcher {
                     Ok(()) => (),
                     Err(err) => eprintln!("Failed send: {:?}", err),
                 };
-                println!("Starting command: {}", &cmd);
+                println!("run: {}", &cmd);
                 Self::run_cmd(cmd.as_str());
-                println!("Returnd command: {}", &cmd);
+                println!("ret: {}", &cmd);
 
                 // Colour pad selected
                 let out_message_enable: [u8; 11] =
@@ -330,12 +331,6 @@ fn process_message(
         if pad >= 19 && vel > 0 {
             // There is some noise coming from the LPX with ctl-key 7
             // The rest are control signals that we want
-            // The locked state of the LPX must be considered here.  Lock
-            // the mode using pads: 91, 92, 93, 94 in succession and
-            // unlock with 94, 93, 92, 91.  If locked reject any control
-            // key but 94 (which starts unlocking).  If locking/unlocking
-            // the pad must be the next in the sequence r state is swiched
-            // to unlocked/locked.
 
             let lps = &mut lpx_state.lock().unwrap();
 
