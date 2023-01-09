@@ -47,7 +47,7 @@ if (`pgrep -f $PD`){
 }
 
 
-&One20Proof::run_daemon("$PD  -jack -path $HOME/pd_patches/ -send \"; pd dsp 1\" -stdpath  -nogui  $LPX_INSTR");
+&One20Proof::run_daemon("$PD  -jack -path $HOME/pd_patches/ -send \"; pd dsp 1\" -verbose -realtime -stdpath  -nogui  $LPX_INSTR");
 &One20Proof::wait_for_midi('Pure Data');
 &One20Proof::initialise_yoshimi("WillPadKeys", $KEYS_INSTR);
 
