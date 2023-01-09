@@ -17,11 +17,13 @@ mod filter_rules;
 mod mod_host_out_filter;
 use mod_host_out_filter::ModHostOutFilter;
 mod lpx_control_err_filter;
+mod pd_err_filter;
 mod yoshimi_err_filter;
 use default_filter::DefaultFilter;
 mod yoshimi_out_filter;
 use file_record::FileRecord;
 use lpx_control_err_filter::LPXControlErrFilter;
+use pd_err_filter::PdErrFilter;
 use regex::Regex;
 use yoshimi_err_filter::YoshimiErrFilter;
 use yoshimi_out_filter::YoshimiOutFilter;
@@ -114,6 +116,7 @@ fn main() -> io::Result<()> {
     let mut mod_host_out_filter = ModHostOutFilter::new();
     let mut y_err_filters: HashMap<usize, YoshimiErrFilter> = HashMap::new();
     let mut y_out_filters: HashMap<usize, YoshimiOutFilter> = HashMap::new();
+    let mut pd_err_filters: HashMap<usize, PdErrFilter> = HashMap::new();
     loop {
         let files = get_file_names(output_dir_path);
 
@@ -161,6 +164,12 @@ fn main() -> io::Result<()> {
                                 .or_insert_with(|| YoshimiErrFilter::new(pid));
                             y_err_filters.get_mut(&pid).unwrap()
                         } //yoshimi_err_filter,
+                        "pd.err" => {
+                            pd_err_filters
+                                .entry(pid)
+                                .or_insert_with(|| PdErrFilter::new(pid));
+                            pd_err_filters.get_mut(&pid).unwrap()
+                        } //pd_err_filter,
                         "yoshimi.out" => {
                             y_out_filters
                                 .entry(pid)
@@ -174,6 +183,15 @@ fn main() -> io::Result<()> {
                 ),
                 None => v.summarise(None, &mut default_filter),
             };
+            if summary.len() > 0 {
+                eprintln!(
+                    "{}",
+                    match time::SystemTime::now().duration_since(time::SystemTime::UNIX_EPOCH) {
+                        Ok(n) => format!("n:{:?}", n),
+                        Err(err) => format!("{}", err),
+                    }
+                );
+            }
             for s in summary.iter() {
                 println!("f: {}: {}", f, s);
             }
