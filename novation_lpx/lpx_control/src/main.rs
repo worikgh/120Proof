@@ -101,10 +101,12 @@ impl Dispatcher {
         // 	.expect(format!("Cannot change directory to: {}", home_dir.display()).as_str());
         // let command = format!("{}/{}", home_dir.display(), &cmd);
 
-        let mut _child = process::Command::new(&cmd)
+        let mut child = process::Command::new(&cmd)
             .spawn()
             .expect(format!("Failed to execute {}", &cmd).as_str());
-        // child.wait().expect(" not running");
+        eprintln!("Wait for child {}", child.id());
+        child.wait().expect(" not running");
+        eprintln!("Waited for child {}", child.id());
     }
 
     /// A control pad has been pressed
