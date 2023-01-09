@@ -18,16 +18,18 @@ impl FileFilter for LPXControlErrFilter {
             let mut line_result: String = line.to_string();
             if let Some(_) = self.filter_rules.evaluate(MARK_RULE_NAME, *line) {
                 // Abandon this line
-                continue;
+                line_result = line.to_string();
             };
             if let Some(_) = self.filter_rules.evaluate(INFO_RULE_NAME, *line) {
                 // Abandon this line
                 continue;
             };
-            if let Some(caps) = self.filter_rules.evaluate(STRIP_LINE_RULE_NAME, line) {
-                // "r^(.+) at <Home directory>"
-                let binding = caps.get(1).unwrap().as_str();
-                line_result = binding.to_string();
+            if line_result.is_empty() {
+                if let Some(caps) = self.filter_rules.evaluate(STRIP_LINE_RULE_NAME, line) {
+                    // "r^(.+) at <Home directory>"
+                    let binding = caps.get(1).unwrap().as_str();
+                    line_result = binding.to_string();
+                }
             }
             if !line_result.is_empty() {
                 result.push(line_result)
