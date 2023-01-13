@@ -1,0 +1,3 @@
+connect system:capture_2 effect_17:in
+connect system:capture_1 effect_17:in
+connect effect_17:out system:playback_1
