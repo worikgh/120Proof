@@ -8,3 +8,4 @@ edition = "2021"
 [dependencies]
 regex = "1.7.0"
 time = "0.3.17"
+chrono = "0.4.23"
