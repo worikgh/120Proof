@@ -1,3 +1,4 @@
+use chrono::{DateTime, Local};
 /// Monitor the output of all the programmes started using
 /// One20Proof::run_daemon.
 use std::collections::HashMap;
@@ -184,13 +185,8 @@ fn main() -> io::Result<()> {
                 None => v.summarise(None, &mut default_filter),
             };
             if summary.len() > 0 {
-                eprintln!(
-                    "{}",
-                    match time::SystemTime::now().duration_since(time::SystemTime::UNIX_EPOCH) {
-                        Ok(n) => format!("n:{:?}", n),
-                        Err(err) => format!("{}", err),
-                    }
-                );
+                let now: DateTime<Local> = Local::now();
+                eprintln!("TS: {}", now.format("%Y-%m-%dT%H:%M:%S"));
             }
             for s in summary.iter() {
                 println!("f: {}: {}", f, s);
