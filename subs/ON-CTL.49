@@ -1,6 +1,5 @@
 #!/usr/bin/perl -w
 use strict;
-warn "MARK";
 my $cmd = "/home/patch/120Proof/Instruments/UltimateParty/Initialise";
 exec $cmd;
 

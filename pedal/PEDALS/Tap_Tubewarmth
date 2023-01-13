@@ -1,2 +1,2 @@
-connect system:capture_1 effect_15:input
 connect effect_15:output system:playback_1
+connect system:capture_1 effect_15:input
