@@ -206,16 +206,18 @@ impl DeviceNames {
         })
     }
 }
+
 fn main() -> Result<(), Box<dyn Error>> {
     let args: Vec<String> = env::args().collect();
 
     // This is the scale.  Should be able to pass this in on the command line.
-    let scale: Vec<u8>;
+
     if args.is_empty() {
         panic!("Need arguments");
     }
-    // First argument is the config file name.  Next the root
-    // note.  The rest of the arguments are the scale
+    // First argument is the config file name.  Next the root note.
+    // Next root, scale, and other colours.  These are the colours for
+    // the pads.  The rest of the args are the scale itself the scale
     let mut iter = args.iter();
     let cfg_fn = iter.nth(1).unwrap().to_string();
     let root_note: u8 = iter.next().unwrap().parse::<u8>()?;
@@ -223,16 +225,9 @@ fn main() -> Result<(), Box<dyn Error>> {
     let scale_colour: u8 = iter.next().unwrap().parse::<u8>()?;
     let other_colour: u8 = iter.next().unwrap().parse::<u8>()?;
 
-    let mut intermediate_value: Vec<u8> = Vec::new();
-    for s in iter {
-        // s is &String
-        match s.as_str().parse() {
-            Ok(value) => intermediate_value.push(value),
-            Err(err) => panic!("s({}) err({:?})", s, err),
-        };
-    }
-    scale = intermediate_value;
-
+    let scale: Vec<u8> = iter
+        .map(|note_text| note_text.as_str().parse().unwrap())
+        .collect();
     let device_names = match DeviceNames::new(&cfg_fn) {
         Ok(dn) => dn,
         Err(err) => panic!("Cannot make DeviceNames from {}. Err({})", cfg_fn, err),
