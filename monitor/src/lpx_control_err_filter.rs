@@ -26,11 +26,9 @@ impl FileFilter for LPXControlErrFilter {
                 continue;
             };
             if line_result.is_empty() {
-                eprintln!("Empty line result: Strip {}", &line);
                 if let Some(caps) = self.filter_rules.evaluate(STRIP_LINE_RULE_NAME, line) {
                     // r"^(.+) at <Home directory>"
                     let binding = caps.get(1).unwrap().as_str();
-                    eprintln!("Empty line result: Strip {}", &binding);
                     line_result = binding.to_string();
                 }
             }
@@ -47,7 +45,6 @@ impl LPXControlErrFilter {
         filter_rules.add_rule(MARK_RULE_NAME, r"^MARK");
         filter_rules.add_rule(INFO_RULE_NAME, r"^Info");
         let strip_line_rule = format!(r"^(.+)\s+at\s+{}", env::var("Home120Proof").unwrap());
-        eprintln!("strip_line_rule: {}", strip_line_rule);
 
         filter_rules.add_rule(STRIP_LINE_RULE_NAME, strip_line_rule.as_str());
         LPXControlErrFilter { filter_rules }

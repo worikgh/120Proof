@@ -1,4 +1,4 @@
-use chrono::{DateTime, Local};
+use chrono::Local;
 /// Monitor the output of all the programmes started using
 /// One20Proof::run_daemon.
 use std::collections::HashMap;
@@ -119,6 +119,8 @@ fn main() -> io::Result<()> {
     let mut y_out_filters: HashMap<usize, YoshimiOutFilter> = HashMap::new();
     let mut pd_err_filters: HashMap<usize, PdErrFilter> = HashMap::new();
     loop {
+        let mut cached_timestamp: String = "".to_string();
+
         let files = get_file_names(output_dir_path);
 
         for file_name in files.iter() {
@@ -185,8 +187,11 @@ fn main() -> io::Result<()> {
                 None => v.summarise(None, &mut default_filter),
             };
             if summary.len() > 0 {
-                let now: DateTime<Local> = Local::now();
-                eprintln!("TS: {}", now.format("%Y-%m-%dT%H:%M:%S"));
+                let now: String = Local::now().format("%Y-%m-%dT%H:%M:%S").to_string();
+                if now != cached_timestamp {
+                    cached_timestamp = now;
+                }
+                println!("TS: {}", cached_timestamp);
             }
             for s in summary.iter() {
                 println!("f: {}: {}", f, s);
