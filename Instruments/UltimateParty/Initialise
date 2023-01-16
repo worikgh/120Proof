@@ -26,10 +26,7 @@ if(!`pgrep lpx_control`){
     die "lpx_control must be running";
 }
 
-my $jack_name_keys = $instrument_name.'Keys';
 my $xiz_file = 'Hammond Organ';
-
-&One20Proof::initialise_yoshimi($jack_name_keys, "$xiz_dir/$xiz_file.xiz");
 
 my $jack_name_lpx = $instrument_name.'LPX';
 $xiz_file = 'StrangeDays';

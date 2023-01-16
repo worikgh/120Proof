@@ -1,40 +1,90 @@
 # 120Proof
 
-
 Idiosyncratic music making system.
 
 Runs on [Raspberry Pi](https://raspberrypi.org/) and a [Pisound](https://blokas.io/pisound/).  It could probably run on any other similar hardware.
 
-It uses MIDI and audio inputs. 
+It uses MIDI, USB, and audio inputs. 
 
 * [ALSA MIDI](https://github.com/opensrc/alsa/blob/master/lib/md/AlsaMidi.md) for MIDI routing.
 * [JACK Audio Connection Kit](https://github.com/jackaudio) for audio routing
 * [Yoshimi](https://yoshimi.sourceforge.io/) and [Pure Data](https://puredata.info/) for synthesis.  Any MIDI controllable software that can output to Jack will work.
 
-## Prepare Raspberry Pi
+## Raspberry Pi
 
 
-* Using [Pisound](https://blokas.io/pisound/) and [Patchbox OS](https://blokas.io/patchbox-os/)  on a [Raspberry Pi IV](https://www.raspberrypi.com/products/raspberry-pi-4-model-b/)
+* Soundcard:  [Pisound](https://blokas.io/pisound/)
 
-* Pure Data (`pd`), and `yoshimi` must be installed.  Pure Data is installed by default with Patchbox.
+* Operating System:  [Patchbox OS](https://blokas.io/patchbox-os/) 
+
+* [Raspberry Pi IV](https://www.raspberrypi.com/products/raspberry-pi-4-model-b/)
+
+## Third Party Software
+
+* [Pure Data - `pd`](https://puredata.info/) 
+
+* [`yoshimi`](https://github.com/Yoshimi/yoshimi)
 
 * Delete amidiauto
 
 	It makes MIDI connections without asking.  Very annoying.
 
+## Setup
+
 * Clone this repo 
 
-* Set environment variable `Home120Proof` to point at the root of the repository
+* Set environment variable `Home120Proof` to point at the root of the repository  and run `bin/Mistress`.  Works first time....
 
-and run `bin/Mistress`.  Works first time....
+## Configuration
+
+### MIDI
+
+Two classes of hardware device
+
+1. Musician Interface 
+
+	The device the musician uses.  It requires three connections:
+	
+	1. MIDI note out
+	2. MIDI control out
+	3. MIDI control in
+	
+	The two outputs can be the same MIDI device.
+	
+	Examples
+	
+	* a keyboard 
+	* Novation LPX
+
+2. Audience Interface.
+
+	The device that the audience listens to.  It requires two connections:
+	
+	1. MIDI note in
+	2. MIDI control in
+	
+	The two inputs can be the same MIDI device.
+
+
+
+## Configuration Files 
+
+In `./Instruments` are the instruments definitions.
+
+Each instrument has a configuration file for the LPX MIDI names:
+
+* **`midi_source_lpx`** The MIDI connetion the LPX uses to send note and control MIDI 
+* **`midi_sink_lpx`** The MIDI connection the LPX receives control MIDI on. (This is used to change the colours of the pads)
+* **`midi_sink_synth`** The MIDI connection the MIDI Notes and controls are sent to the synthesiser on.
+
+
+For each instrument there is a `midi.cfg` file that 
 
 ## Instruments
 
 * Launchpad LPX
 
-	Made by Novation.  A nice grid of LED buttons 
-
-* Nektar LX88
+	Made by Novation.  A nice grid of LED buttons.  120Proof has custom programmes to control this instrument.
 
 * Pedal
 
@@ -48,32 +98,11 @@ and run `bin/Mistress`.  Works first time....
 
 	~/X-Air-LiveToolbox-132-source/X-AIR-Edit_RASPI_1.5/X-AIR-Edit
 
-* Yoshimi
-
-From https://github.com/Yoshimi/yoshimi.git
-
-yoshimi --no-gui  --no-cmdline  --jack-audio --alsa-midi=120Proof
-
-  * `--no-gui` `--no-cmdline` for headless 
-  
-  * `--alsa-midi=1` `--jack-audio` for putting audio through jack and MIDI through alsa. (The RHS of `--alsa-midi=X` seems to be irrelevant.)
 
 # Tools
 
 Executable files in the `bin` directory
 
-
-## InitialisePd
-
-Sets up Pure Data running in the background.
-
-Kills any instances of Pure Data already  running.
-
-### Invocation
-
-Pass the name of a patch (including the `.pd` suffix) as an argument.  No argument just kills Pure Data. 
-
-Example: `bin/InitialisePd poly_harp~.pd`
 
 ## InitialiseMidi
 
@@ -117,11 +146,11 @@ Sets the colour of a pad on the `LPX`.
 
 `bin/lpx_manager <Path to MIDI configuration> <Root note MIDI> <root colour> <scale colour> other colour> <[1-12]>`
 
-Where `<Root note MIDI>` is the MIDI value for the note the center pad (r4, c5) is assigned to.
+	Where `<Root note MIDI>` is the MIDI value for the note the center pad (r4, c5) is assigned to.
 
-`<root colour>`, `<scale colour>`, and `<other colour>` are the colours (from the LPX palette) that are assigned to root notes, scale notes, and other notes respectively.
+	`<root colour>`, `<scale colour>`, and `<other colour>` are the colours (from the LPX palette) that are assigned to root notes, scale notes, and other notes respectively.
 
-`<[1-12]>` is the scale defined as one to twelve integers in the range 1 - 12 inclusive, and ordered, that define the notes of the scale.  Always starts with `1`
+	`<[1-12]>` is the scale defined as one to twelve integers in the range 1 - 12 inclusive, and ordered, that define the notes of the scale.  Always starts with `1`
 
 * Example
 
@@ -211,6 +240,8 @@ The inputs appear in the MIDI configuration file as: `Pure Data:Pure Data Midi-I
    In this case the MIDI input connection appears in the configuration
    file as: `yoshimi-Midi01:input`.  The Jack output will be (in this
    case) `yoshimi-Midi01`.
+   
+
    
 ### LPX Setup
 

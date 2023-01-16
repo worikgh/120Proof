@@ -19,7 +19,6 @@ if(!`pgrep lpx_control`){
 
 
 ## Instruments
-my $KEYS_INSTR = "$ENV{Home120Proof}/Instruments/xiz/Hammond Organ.xiz";
 my $LPX_INSTR = "$ENV{Home120Proof}/Instruments/xiz/Simple Clonewheel.xiz";
 
 ## Kill these if they exist.  They would conflict with what is run here
@@ -28,10 +27,8 @@ my $LPX_INSTR = "$ENV{Home120Proof}/Instruments/xiz/Simple Clonewheel.xiz";
 &One20Proof::pkill('/usr/local/bin/yoshimi');
 
 
-my $jack_name = 'SharkLipsKeys';
-&One20Proof::initialise_yoshimi($jack_name, $KEYS_INSTR);
 
-$jack_name = 'SharkLipsLPX';
+my $jack_name = 'SharkLipsLPX';
 &One20Proof::initialise_yoshimi($jack_name, $LPX_INSTR);
 my $lpx_manager = &One20Proof::get_lpx_manager;
 &One20Proof::run_daemon("$lpx_manager $ENV{Home120Proof}/Instruments/SharkLips/lpx_manager.cfg  57 5 17 113 1 4 7 8 11  ");
