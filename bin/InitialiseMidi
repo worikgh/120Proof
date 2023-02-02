@@ -45,6 +45,7 @@ sub wait_for_midi( $ ) {
 	    ##     0 'Launchpad X MIDI 1'
 	    if($ac =~ /^\s+\d+\s+'\s*(\S[^']+\S)\s*'/){
 		my $rhs = $1;
+		defined($lhs) or die "No \$lhs.  \$ac: $ac ";
 		$connections{"$lhs:$rhs"} = 1;
 		next;
 	    }
@@ -62,7 +63,7 @@ sub wait_for_midi( $ ) {
 	@disconnected or last;
 	warn "Not connected:\n\t".join("\n\t", @disconnected);
 
-	## Failure condition
+	## Failure condition.  
 	my $now = time();
 	$now - $start > 5 and die "These MIDI endpoints never appeared: " .
 	    join(', ', grep{$connections{$_} == 0} keys(%connections));
@@ -116,7 +117,8 @@ sub set_up_midi( $ ) {
 	if($ac =~ /^\s+(\d+)\s+'\s*(\S[^']+\S)\s*'/){
 	    $dev_num = $1;
 	    $dev_str =  $2;
-
+	    defined($port_num) or die "No \$port_num.  \$ac $ac ";
+	    defined($port_str) or die "No \$port_str.  \$ac $ac ";
 	    ## Have port:dev as string and number
 	    $midi_devices_by_str{"$port_str:$dev_str"} = [$port_num, $dev_num];
 	    $midi_devices_by_num{"$port_num:$dev_num"} = [$port_str, $dev_str];
@@ -131,6 +133,8 @@ sub set_up_midi( $ ) {
 	    ## connectred to
 	    
 	    foreach my $pair (map{/^\s*(\d+):(\d+)/; [$1,$2]} @con_str){
+		defined($port_num) or die "No \$port_num.  \$ac $ac ";
+		defined($dev_num) or die "No \$dev_num.  \$ac $ac ";
 		my $delete_args = "$port_num:$dev_num $$pair[0]:$$pair[1]";
 
 		# One side of the equation
@@ -148,6 +152,8 @@ sub set_up_midi( $ ) {
 	    ## device
 
 	    foreach my $pair (map{/^\s*(\d+):(\d+)/; [$1,$2]} @con_str){
+		defined($port_num) or die "No \$port_num.  \$ac $ac ";
+		defined($dev_num) or die "No \$dev_num.  \$ac $ac ";
 		my $delete_args = "$$pair[0]:$$pair[1] $port_num:$dev_num";
 
 		# # The otehr side of the equation
