@@ -48,8 +48,8 @@ sub process_file( $$ ) {
     my @lines = <$fh>;
     my @ret = ();
     
-    ## Channels between effects and the outside 
-    my %channels = ();
+    # ## Channels between effects and the outside 
+    # my %channels = ();
     my $channel = ''; # The last channel seen 
 
     my %effects = ();
@@ -99,8 +99,8 @@ sub process_file( $$ ) {
 	if($line =~ /^_:(\S+)\s*$/){
 	    ## Got the root of a tree
 	    my $id = $1;
-	    defined($channels{$id}) and die "$ln: '$line' Already a tree for $id ";
-	    $channels{$id} = {};
+	    # defined($channels{$id}) and die "$ln: '$line' Already a tree for $id ";
+	    # $channels{$id} = {};
 	    $channel = $id;
 	    next;
 	}
