@@ -355,6 +355,118 @@ sub initialise_yoshimi( $$ ) {
     
 }
 
+sub initialise_pedals( @ ) {
+    my @names = @_;
+    my @pedals = &list_pedals;
+    my $pedals_dir = &get_pedal_dir();
+    
+    ## `@names` are the pedals we want. `@pedals` are the pedals available.
+    foreach my $name (@names){
+	## Restet this if `$name` in @pedals
+	my $die = 1;
+	foreach my $pedal (@pedals){
+	    $pedal eq $name and $die = 0;
+	}
+	$die and die "'$name' is not a valid pedal";
+    }
+
+    ## Three pedals: A, B, and C
+    scalar(@names) <= 3 or die "Too many pedals passed.  Can only have 3";
+
+    my $pedalA = "$pedals_dir/A";
+    my $pedalB = "$pedals_dir/B";
+    my $pedalC = "$pedals_dir/C";
+
+    !-e $pedalA or -l $pedalA or die "$pedalA is not a link";
+    !-e $pedalB or -l $pedalB or die "$pedalB is not a link";
+    !-e $pedalC or -l $pedalC or die "$pedalC is not a link";
+
+    -e $pedalA and (unlink $pedalA or die "$!");
+    -e $pedalB and unlink $pedalB;
+    -e $pedalC and unlink $pedalC;
+
+    my @pedal_names = qw | A B C |;
+    foreach my $name (@names){
+
+	## This will not fail.  Checked @names ,= 3 elements
+	my $p = shift(@pedal_names) or die;
+
+	symlink("$pedals_dir/$name", "$pedals_dir/$p") or die
+	    "$pedals_dir/$name $pedals_dir/$p";
+    }
+
+    ## Signal the pedal driver
+    
+}
+
+## Read a ttl, Turtle, document
+## Return an array of tripples (RDF)
+sub read_turtle( $ ){
+    my $fn = shift or die "Pass a Turtle file to process";
+    open(my $fh, $fn) or die "$!: $fn";
+    my @lines = map{chomp; $_} grep {$_ !~ /^\s*#/} <$fh>;
+
+    ## Create prefixs
+    my %prefix_lines = map{
+	/^\@prefix (\S*):\s+<(\S*)> \.$/;
+	defined($1) or die "Prefix undefined";
+	defined($2) or die "Prefix subject undefined";
+	$1 => $2
+    } grep{/^\@prefix /} @lines;
+    @lines = grep {$_ !~ /^\@prefix /} @lines;
+    my @result = ();
+
+    ## TTurtle is broken up by '.'
+    my $input = join("", @lines);
+    foreach my $key (keys %prefix_lines){
+	my $prefix = $key;
+	my $subject = $prefix_lines{$key};
+	$input =~ s/$prefix:/$subject:/g;
+    }
+    my @input = split(' \.', $input);
+    ## Process the ";" 
+    my @semi_colon_processed = ();
+    foreach my $statement  (@input) {
+	if($statement =~ / ; /){
+	    ## There is a ' ; ' on this line
+	    ## The ; symbol may be used to repeat the subject of of triples that vary only in predicate and object RDF terms.semi_colon_processed
+	    $statement =~ s/^\s*(\S+)\s+(\S+)\s+(\S+)\s+;// or die $statement;
+	    my ($subject, $predicate, $object) = ($1, $2, $3);
+	    push(@semi_colon_processed, "$subject $predicate $object");
+	    ## This next line will break if and predicate or object
+	    ## has an embedded ';'
+	    while($statement =~ s/^\s*(\S+)\s+([^;])+\s;//){
+		($predicate, $object) = ($1, $2);
+		push(@semi_colon_processed, "$subject $predicate $object");
+	    }
+	    
+	}else{
+	    push(@semi_colon_processed, $statement);
+	}
+    }
+
+    ## Process ' , '
+    my @comma_processed = ();
+    foreach my $semi (@semi_colon_processed){
+	if($semi =~ / , /){
+	    $semi =~ s/^(\S+)\s+(\S+)\s+(\S+)\s+,//;
+	    my($subject, $predicate, $object) = ($1, $2, $3);
+	    push(@comma_processed, "$subject $predicate $object");
+	    my @objects = split(' , ', $semi);
+	    foreach $object (@objects){
+		push(@comma_processed, "$subject $predicate $object");
+	    }
+	}else{
+	    push(@comma_processed, $semi);
+	}
+    }
+    foreach my $s(@comma_processed){
+	print $s."\n";
+    }
+    #foreach my $line
+    
+}
+
 ### MIDI handling
 
 ### Handling pedal definitions
@@ -376,6 +488,7 @@ sub get_bin {
 sub get_pedal_dir {
     return "$ENV{Home120Proof}/pedal/PEDALS";
 }
+
 ### Getters for binary programmes
 sub get_lpx_blank_screen {
     return &get_bin()."/lpx_blank_screen";
