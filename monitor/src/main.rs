@@ -1,6 +1,11 @@
 use chrono::Local;
 /// Monitor the output of all the programmes started using
 /// One20Proof::run_daemon.
+extern crate sensors;
+use sensors::Chip;
+use sensors::Feature;
+use sensors::Sensors;
+use sensors::Subfeature;
 use std::collections::HashMap;
 use std::env;
 use std::fs;
@@ -119,6 +124,24 @@ fn main() -> io::Result<()> {
     let mut y_out_filters: HashMap<usize, YoshimiOutFilter> = HashMap::new();
     let mut pd_err_filters: HashMap<usize, PdErrFilter> = HashMap::new();
     loop {
+        let sensors = Sensors::new();
+        // cpu_thermal-virtual-0 (on Virtual device): F => temp1  SF => temp1_input = 67.679
+        // rpi_volt-isa-0000 (on ISA adapter): F => in0  SF => in0_lcrit_alarm = 0
+
+        let chip: Chip = sensors
+            .into_iter()
+            .find(|x| x.get_name().unwrap() == "cpu_thermal-virtual-0")
+            .unwrap();
+        let feature: Feature = chip
+            .into_iter()
+            .find(|x| x.get_label().unwrap() == "temp1")
+            .unwrap();
+        let sub_feature: Subfeature = feature
+            .into_iter()
+            .find(|x| x.name() == "temp1_input")
+            .unwrap();
+        let temp: f64 = sub_feature.get_value().unwrap();
+
         let mut cached_timestamp: String = "".to_string();
 
         let files = get_file_names(output_dir_path);
@@ -191,7 +214,7 @@ fn main() -> io::Result<()> {
                 if now != cached_timestamp {
                     cached_timestamp = now;
                 }
-                println!("TS: {}", cached_timestamp);
+                println!("TS: {} {}", cached_timestamp, temp);
             }
             for s in summary.iter() {
                 println!("f: {}: {}", f, s);
