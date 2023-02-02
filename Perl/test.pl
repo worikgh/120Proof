@@ -27,6 +27,31 @@ sub test_all {
     print "Passed all tests\n";
 }
 
+sub test_initialise_pedals {
+    One20Proof::initialise_pedals(qw| delay DISTORTION Wookie |);
+    1;
+}
+
+sub test_read_turtle {
+
+    # Write a test turtle document
+    my $test_dir = "/tmp/$$"."_test_data";
+    -d $test_dir or mkdir $test_dir or die $!;
+    my $fn1 = "$test_dir/read_turtle_test1.ttl";
+    open(my $fh1, ">$fn1") or die "$!: $fn1";
+    my $str = <<'END';
+# this is a complete turtle document
+@prefix foo: <http://example.org/ns#> .
+@prefix : <http://other.example.org/ns#> .
+foo:bar foo: : .
+:bar : foo:bar .
+END
+    print $fh1 $str;
+    close $fh1 or die $!;
+       
+    &One20Proof::read_turtle($fn1);
+    &One20Proof::read_turtle("/var/modep/pedalboards/AK20.pedalboard/AK20.ttl");
+}
 sub test_kill_port {
     ## Start some a programme to kill
     my $PORT = 9000;          # pick something not in use
