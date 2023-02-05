@@ -1,0 +1,17 @@
+#!/usr/bin/perl -w
+use strict;
+use lib("$ENV{'Home120Proof'}/Perl");
+use One20Proof qw | $MODEP_PEDALS $PEDAL_DIR |;
+
+my $fn = shift;
+if ($fn){
+    print join "\n", &One20Proof::read_turtle($fn);
+    
+}else{
+    my @ttl_fn = `find  /var/modep/ -type f -name "*.ttl" -not -name "manifest.ttl"`;
+    foreach my $fn (@ttl_fn){
+	print "FN: $fn\n";
+	print join "\n", &One20Proof::read_turtle($fn);
+	print "#######\n";
+    }
+}
