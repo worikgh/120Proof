@@ -124,7 +124,7 @@ while(!`lsof -i:$PORT`){
 }
 
 ## IM: Start simulators MS (47)
-&One20Proof::run_daemon("$ENV{Home120Proof}/bin/ModhostSimulators");
+&One20Proof::run_daemon("$ENV{Home120Proof}/bin/ModhostSimulators", 1);
 
 while(!-e "$ENV{Home120Proof}/pedal/PEDALS/A" || !-e "$ENV{Home120Proof}/pedal/PEDALS/B" || !-e "$ENV{Home120Proof}/pedal/PEDALS/C" ){
     warn "Waiting on pedals";
