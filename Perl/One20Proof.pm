@@ -416,13 +416,13 @@ sub read_turtle( $ ){
     @lines = grep {$_ !~ /^\@prefix /} @lines;
     my @result = ();
 
-    ## TTurtle is broken up by '.'
+    ## Turtle is broken up by '.'
     my $input = join("", @lines);
-    foreach my $key (keys %prefix_lines){
-	my $prefix = $key;
-	my $subject = $prefix_lines{$key};
-	$input =~ s/$prefix:/$subject:/g;
-    }
+    # foreach my $key (keys %prefix_lines){
+    # 	my $prefix = $key;
+    # 	my $subject = $prefix_lines{$key};
+    # 	$input =~ s/$prefix:/$subject:/g;
+    # }
     my @input = split(' \.', $input);
     ## Process the ";" 
     my @semi_colon_processed = ();
@@ -430,12 +430,18 @@ sub read_turtle( $ ){
 	if($statement =~ / ; /){
 	    ## There is a ' ; ' on this line
 	    ## The ; symbol may be used to repeat the subject of of triples that vary only in predicate and object RDF terms.semi_colon_processed
-	    $statement =~ s/^\s*(\S+)\s+(\S+)\s+(\S+)\s+;// or die $statement;
+	    $statement =~ s/^\s*(\S+)\s+(\S+)\s+([^;]+)\s+;// or die $statement;
 	    my ($subject, $predicate, $object) = ($1, $2, $3);
+	    if($object =~ /\s/){
+		## Must be a quoted string
+		$object =~ /"(.+)"$/ or die $statement;
+	    }
 	    push(@semi_colon_processed, "$subject $predicate $object");
 	    ## This next line will break if and predicate or object
 	    ## has an embedded ';'
-	    while($statement =~ s/^\s*(\S+)\s+([^;])+\s;//){
+	    while(1){
+		$statement =~ s/^\s*(\S+)\s+([^;]+)\s*;?// or last;
+		$1 and $2 or last;
 		($predicate, $object) = ($1, $2);
 		push(@semi_colon_processed, "$subject $predicate $object");
 	    }
@@ -460,12 +466,175 @@ sub read_turtle( $ ){
 	    push(@comma_processed, $semi);
 	}
     }
-    foreach my $s(@comma_processed){
-	print $s."\n";
+    return @comma_processed;
+}
+
+## Process LV2 turtle file Passed a file name and a start index,
+## returns a HASH ref that describes all the actions required to
+## instantiate a pedal board.  The `index` is used to identify each
+## effect.  This function is called for all the pedal boards at the
+## same time, and each one must be independent.  So by initialising
+## the index in the arguments, each effect, in a pedal board, across
+## all pedal boards, can have a unique index
+sub process_lv2_turtle( $$ ) {
+    my $fn = shift or die;
+    my $index = shift or die; ## Zero is invalid index
+
+    $fn =~ s/-\d\d\d\d\d\.ttl$/\.ttl/; ## TODO: WTF??
+
+    my $fh = undef;
+    unless( -r $fn and open($fh, $fn)){
+	return ();
     }
-    #foreach my $line
+
+    ## Decode the Turtle file
+    my @lines = read_turtle($fn) or die "Cannot process $fn";
+
+  
+
+    ## We need to get the instructions needed to initialise this
+    ## effect and turn it on.
+
+    ## Need: 
+
+    ## add <lv2_uri> <instance_number> Record what instance number
+    ## goes with what effect so it can be communicated to the user.  
+
+    ## param_set <instance_number> <param_symbol> <param_value>
+    ## Set up the effect in the way it was saved from mod-ui
+
+    ## Tripples and their meanings
+    ## predicate == "lv2:prototype" => subject is an effect, objecty is the URL.
+    ## ......... <DS1> lv2:prototype <http://moddevices.com/plugins/mod-devel/DS1> 
+    ## _________ Use for the "add" command
+    ## predicate == ingen:arc => object names a Jack connection.
+    ## .........   "<> ingen:arc _:b1"
+    ## _________  Use in "jack_connect" commands
+    ## predicate == lv2:port => subject is a device and object is a port of that device
+    ## ......... <DS1> lv2:port  <DS1/Out1>
+    ## ......... <DS1> lv2:port  <DS1/Tone>
+
+    ## predicate == ingen:tail => subject is a Jack connection, object is where it starts
+    ## predicate == ingen:head => subject is a Jack connection, object is where it ends
+    ## .........  "_b2 ingen:tail <bitta/output>" 
+    ## .........  "_b1 ingen:head <playback_1>
+    ## predicate == a  => subject is of type object
+    ## .........  <DS1/In> a lv2:AudioPort
+    ## .........  <DS1/In> a lv2:InputPort
+    ## _________  Use in "jack_connect" commands
+    ## .........  <bitta/drywet> a lv2:ControlPort
+    ## _________  Use in "param" commands
+    ## predicate == "ingen:value" and subject == a control port of a device => object is a value to set a port
+    ## .........  <bitta/drywet> ingen:value 1.000000
+    ## _________  Use for the "param" command
+
+    ## .........  
+    ## .........  
+
+    ## Each effect is setup in this hash.
+    ## Indexed by the name	
+    my %effects = ();
+
+    ## The internal pipes between the effects that make up the pedal
+    ## board and the output.  These are established at startup for all
+    ## effects
+    my @persistant_jack_pipes = ();
+
+    ## The input audio pipes .  Connecting these enables the effect
+    ## chain that makes up the pedal board.  (TODO: What about MIDI
+    ## LV2 effects?)
+    my @activation_jack_pipes = ();
+    
+    ## each entry om @line is a tripple as text.  Convert into an
+    ## array of arrays, each with three elements: subject, predicate,
+    ## object
+    my @tripples = map {
+	chomp;
+	/^(\S+)\s+(\S+)\s+(.+)/ or die $_;
+	[$1, $2, $3]
+    } @lines;
+
+    ## Get the commands to add
+    my @prototypes = grep {$_->[1] eq "lv2:prototype" } @tripples;
+
+    # To map numbers names
+    my %name_number = ();
+    my %number_name = ();
+    
+    foreach my $prototype (@prototypes){
+	my ($name, $predicate, $uri) = @$prototype;
+
+	## The name is in angle brackets
+	$name =~ /^<(\S+)>$/ or die "Badly formed subject: $name ";
+	$name = $1;
+
+	$predicate eq "lv2:prototype" or die "Error in prototypes: $predicate";
+
+	## Initialise the effect hash 
+	$effects{$name} = {};
+	$effects{$name}->{lv2_commands} = {};
+	$effects{$name}->{lv2_commands}->{param} = [];
+	$effects{$name}->{lv2_commands}->{add} = "add $uri $index";
+	$name_number{$name} = $index;
+	$number_name{$index} = $name;
+	$index += 1;
+    }
+
+    ## Get all the control ports.  As a hash so it can be used to
+    ## identify `ingen:value` commands directed at the control ports
+    ## of effects in the pedal board
+    my $filter_port = sub {
+	## Filter for the p[orts wanted and get the name/port from
+	## inside the angle brackets
+	my $raw = shift or die;
+	$raw =~ /^<([a-z0-9_]+\/[a-z0-9_\:]+)>$/ or 
+	    # Not a name/port
+	    return undef; 
+	return $1;
+    };
+
+    my %control_ports = map{
+	$_->[0] => 1
+    } grep {
+	defined
+    }map{
+	&$filter_port($_->[0])
+    }grep {
+	$_->[1] eq 'a' && $_->[2] eq 'lv2:ControlPort'
+    } @tripples;
+
+    ## Get all the values for control ports
+    my %control_port_values = map {
+	$_->[0] => $_->[2]
+    } grep {
+	defined($control_ports{$_->[0]})
+    }grep{
+	$_->[1] eq 'ingen:value'
+    }grep{
+	## These are some sort of global setting
+	## TODO: Document
+	$_->[0] !~ /^:/
+    }@tripples;
+
+    ## Set up the `param set` commands in effects
+    foreach my $port (keys %control_port_values){
+	$port =~ /([a-z_0-9]+)\/([\:a-z0-9_]+)/i or 
+    die "Badly formed port: $port";
+	my $name = $1;
+	my $port = $2;
+	my $value = $control_port_values{$port};
+	my $number = $name_number{$name};
+	defined($number) or die "Unknown name: $name";
+	my $command = "param $port $value";
+	push(@{$effects{$name}->{commands}->{param}}, $command);
+    }
+
+    my %result = ('effects' => \%effects, 'index' => $index, 'number_name' => \%number_name);
+    return %result;
+
     
 }
+
 
 ### MIDI handling
 

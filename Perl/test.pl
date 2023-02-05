@@ -27,6 +27,21 @@ sub test_all {
     print "Passed all tests\n";
 }
 
+sub test_process_lv2_turtle {
+
+    my $fn = '/var/modep/pedalboards/Test.pedalboard/Test.ttl';
+    -r $fn or die "$fn";
+    my %result = One20Proof::process_lv2_turtle($fn, 1);
+    foreach my $key(sort keys %result){
+	my %effects = %{$result{effects}};
+	foreach my $name (sort keys %effects){
+	    print "$name\t$effects{$name} \n";
+	}
+	print "$key => $result{$key}\n";
+    }
+}
+
+
 sub test_initialise_pedals {
     One20Proof::initialise_pedals(qw| delay DISTORTION Wookie |);
     1;
@@ -48,7 +63,8 @@ foo:bar foo: : .
 END
     print $fh1 $str;
     close $fh1 or die $!;
-       
+    my $fn2 = '/var/modep/pedalboards/Gx_Studio_Preamp.pedalboard/Gx_Studio_Preamp.ttl';
+    &One20Proof::read_turtle($fn2);
     &One20Proof::read_turtle($fn1);
     &One20Proof::read_turtle("/var/modep/pedalboards/AK20.pedalboard/AK20.ttl");
 }

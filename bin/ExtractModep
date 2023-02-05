@@ -37,7 +37,7 @@ sub process_file( $$ ) {
     my $prefix = shift or die;
     my $fn = shift or die;
 
-    $fn =~ s/-\d\d\d\d\d\.ttl$/\.ttl/;
+    $fn =~ s/-\d\d\d\d\d\.ttl$/\.ttl/; ## TODO: WTF??
 
     $VERBOSE and print STDERR "Process $prefix  $fn\n";
     my $fh = undef;
@@ -45,12 +45,22 @@ sub process_file( $$ ) {
 	$VERBOSE and warn "process_modep: $!: $fn\nprocess_modep: Abandon this pedal board\n";
 	return ();
     }
-    my @lines = <$fh>;
+
+    ## Decode the Turtle file
+    my @lines = One20Proof::read_turtle($fn) or die "Cannot process $fn";
+
+
+
+
+
     my @ret = ();
-    
-    # ## Channels between effects and the outside 
+  
+    # TODO: Not any more.  Now use read_turtle so do not need
+    # most (all?) of these variables.
+  
+#   # ## Channels between effects and the outside 
     # my %channels = ();
-    my $channel = ''; # The last channel seen 
+    # my $channel = ''; # The last channel seen 
 
     my %effects = ();
     my $EFFECT = ""; # The last effect seen
@@ -64,244 +74,104 @@ sub process_file( $$ ) {
     my @jack_pipes = ();
 
     ## Keep track of jack ports found so they can be distinguished
-    ## from effects
+    ## from effects. TODO: What does that mean?
     my %jack_ports = ();
     
     my $ln = 0;
 
     ## Hack to get propper name of pedalboard It is in line of form:
-    ## "doap:name <Name>" The name is put in position
-    ## zero of returned array
+    ## "doap:name <Name>" The name is put in position zero of returned
+    ## array 
     my $name = undef;
-    foreach my $line (@lines){
-	$ln++;
-	chomp $line;
-	if ($line =~ /^\s+doap:name\s+\"([^\"]+)\"\s*;/ ){
-	    $name = $1;
-	    next;
-	}
-	## Do not care about expanding prefixes
-	$line =~ /^\s*\@prefix/ and next;
 
-	## I am unsure what these are.
-	if($line =~ /^<:[a-z]/ or
-	   $line =~ /^<\S+\/:\S+>\s*$/ or
-	    $line =~ /^\s+a\s+atom:.+/){
-	    $EFFECT = undef;
-	    $port = "";
-	    next;
-	}
 
-	## These seem to be some sort of global effect
-	$line =~ /^<:/ and next;
-	
-	## Root of a tree.  A connection
-	if($line =~ /^_:(\S+)\s*$/){
-	    ## Got the root of a tree
-	    my $id = $1;
-	    # defined($channels{$id}) and die "$ln: '$line' Already a tree for $id ";
-	    # $channels{$id} = {};
-	    $channel = $id;
-	    next;
-	}
 
-	## Source for channel
-	if($line =~ /^\s+ingen:tail\s+<(\S+)\/(\S+)>\s*[.;]\s*$/){
-	    #     ingen:tail <_jcm800pre_/out> ;
-	    my ($effect, $port_name) = ($1, $2);
-	    $source = "$prefix:$effect/$port_name";
-	    $jack_ports{$source} = 1;
+    ## We need to get the instructions needed to initialise this
+    ## effect and turn it on.
 
-	    if(defined($sink)){
-		push(@jack_pipes, [$source, $sink]);
-		$source = undef;
-		$sink = undef;
-	    }
+    ## Need: 
 
-	    defined($effects{$effect}) or $effects{$effect} = {
-		ports => {
-		}
-	    };
-	    defined($effects{$effect}->{ports}->{$port_name}) or
-		$effects{$effect}->{ports}->{$port_name} = {
-		    category => "Audio",
-		    type => "Source"
-	    };
+    ## add <lv2_uri> <instance_number> Record what instance number
+    ## goes with what effect so it can be communicated to the user.  
 
-	    ## What is this supposed to do?
-	    # foreach my $pn (sort keys %{$effects{$effect}->{ports}}){
-	    # 	if($effects{$effect}->{ports}->{$pn}->{type} eq "Sink"){
-	    # 	    $effects{$effect}->{ports}->{$pn}->{other} = $effect;
-	    # 	    $effects{$effect}->{ports}->{$effect}->{other} = $pn;
-	    # 	}
-	    # }
-	    next;
-	}
+    ## param_set <instance_number> <param_symbol> <param_value>
+    ## Set up the effect in the way it was saved from mod-ui
 
-	## System source for channel
-	if($line =~ /^\s+ingen:tail\s+<([^\/]+)>\s*[.;]\s*$/){
-	    # ingen:tail <capture_1> ;
-	    $source = $1;
-	    $jack_ports{$source} = 1;
-	    if(defined($sink)){
-		push(@jack_pipes, [$source, $sink]);
-		$source = undef;
-		$sink = undef;
-	    }
-	    next;
-	}
+    ## Tripples and their meanings
+    ## predicate == "lv2:prototype" => subject is an effect, objecty is the URL.
+    ## ......... <DS1> lv2:prototype <http://moddevices.com/plugins/mod-devel/DS1> 
+    ## _________ Use for the "add" command
+    ## predicate == ingen:arc => object names a Jack connection.
+    ## .........   "<> ingen:arc _:b1"
+    ## _________  Use in "jack_connect" commands
+    ## predicate == lv2:port => subject is a device and object is a port of that device
+    ## ......... <DS1> lv2:port  <DS1/Out1>
+    ## ......... <DS1> lv2:port  <DS1/Tone>
 
-	## System sink for channel
-	if($line =~ /^\s+ingen:head\s+<([^\/]+)>\s*[.;]\s*$/){
-	    ## ingen:head <playback_1> .
-	    $sink = $1; # playback_1
-	    $jack_ports{$sink} = 1;
-	    
-	    if(defined($source)){
-		push(@jack_pipes, [$source, $sink]);
-		$source = undef;
-		$sink = undef;
-	    }
-	    next;
-	}
-	
-	## Sink for channel
-	if($line =~ /^\s+ingen:head\s+<(\S+)\/(\S+)>\s*[.;]\s*$/){
-	    my ($effect, $port_name) = ($1, $2);
-	    $sink = "$prefix:$effect/$port_name";
-	    $jack_ports{$sink} = 1;
-	    if(defined($source)){
-		push(@jack_pipes, [$source, $sink]);
-		$source = undef;
-		$sink = undef;
-	    }
-	    
-	    defined($effects{$effect}) or $effects{$effect} = {
-		ports => {
-		}
-	    };
-	    defined($effects{$effect}->{ports}->{$port_name}) or
+    ## predicate == ingen:tail => subject is a Jack connection, object is where it starts
+    ## predicate == ingen:head => subject is a Jack connection, object is where it ends
+    ## .........  "_b2 ingen:tail <bitta/output>" 
+    ## .........  "_b1 ingen:head <playback_1>
+    ## predicate == a  => subject is of type object
+    ## .........  <DS1/In> a lv2:AudioPort
+    ## .........  <DS1/In> a lv2:InputPort
+    ## _________  Use in "jack_connect" commands
+    ## .........  <bitta/drywet> a lv2:ControlPort
+    ## _________  Use in "param" commands
+    ## predicate == "ingen:value" and subject == a control port of a device => object is a value to set a port
+    ## .........  <bitta/drywet> ingen:value 1.000000
+    ## _________  Use for the "param" command
 
-		$effects{$effect}->{ports}->{$port_name} = {
-		    category => "Audio",
-		    type => "Sink"
-	    };
+    ## .........  
+    ## .........  
 
-	    # foreach my $pn (sort keys %{$effects{$effect}->{ports}}){
-	    # 	if($effects{$effect}->{ports}->{$pn}->{type} eq "Source"){
-	    # 	    $effects{$effect}->{ports}->{$pn}->{other} = $effect;
-	    # 	    $effects{$effect}->{ports}->{$effect}->{other} = $pn;
-	    # 	}
-	    # }
-	    next;
-	}
-	
-	# The start of a effect
-	if($line =~ /^<([^\/\s]+)>\s*$/ and !defined($jack_ports{$1})){
-	    # An effect
+    ## Each effect is setup in this hash.
+    ## Indexed by the name
+    my %effects = {};
+    
+    ## each entry om @line is a tripple as text.  Convert into an
+    ## array of arrays, each with three elements: subject, predicate,
+    ## object
+    my @tripples = map {
+	chomp;
+	/^(\S+)\s+(\S+)\s+(.+)/ or die $_;
+	[$1, $2, $3]
+    } @lines;
 
-	    ## Any effects that are used will be in here.  If not here ignore it
-	    defined($effects{$1}) or next;
+    ## Get the commands to add
+    my @prototypes = grep {$_->[1] eq "lv2:prototype" } @tripples;
 
-	    $EFFECT = $1;
-	    $port = undef;
-	    next;
-	}
+    ## For creating LV2 effects, each effect has a number. `$index` holds it
+    my $index = 1;
 
-	if(defined($EFFECT)){
-	    if($line =~ /^\s+ingen:enabled ([truefals]{4,5})\s*;\s*$/){
-		$effects{$EFFECT}->{enabled} = $1;
-		next;
-	    }
+    # To map numbers names
+    my %name_number = ();
+    my %number_name = ();
+    
+    foreach my $prototype (@prototypes){
+	my ($name, $predicate, $uri) = @$prototype;
 
-	    ## URL for effect
-	    if($line =~ /^\s+lv2:prototype\s+<(\S+)>\s*;\s*$/){
-		$effects{$EFFECT}->{URL} = $1;
-		next;
-	    }
-	}
+	## The name is in angle brackets
+	$name => /^<(\S+)>$/ or die "Badly formed subject: $name ";
+	$name = $1;
 
-	## A effect/port section: <CABINET/CLevel> or <Degrade/left_in>
-	if($line =~ /^<(\S+)\/(\S+)>\s*$/){
-	    ## Could be a audio port or could be a control port
-	    if(defined($effects{$1})){
-		## Only do this for effects that are connected
-		$EFFECT =  $1; # CABINET or Degrade
-		$port = $2; # CLevel or left_in
-	    }
-	    next;
-	}
+	$predicate eq "lv2:prototype" or die "Error in prototypes: $predicate";
 
-	## Detect if port a control or audio port
-	if($EFFECT && $port &&
-	   ($line =~ /^\s+a\s+lv2:(Audio)Port\s*,\s*$/ or
-	   $line =~ /^\s+a\s+lv2:(Control)Port\s*,\s*$/)){
-	    $effects{$EFFECT}->{ports}->{$port}->{type} = $1;
-	    next;
-	}
-
-	# Input or output?
-	if($EFFECT && $port && (
-	       $line =~ /^\s+lv2:(Input)Port\s*\.\s*$/ or
-	       $line =~ /^\s+lv2:(Output)Port\s*\.\s*$/)
-	   ){
-	    $effects{$EFFECT}->{ports}->{$port}->{direction} = $1;
-	    next;
-	}
-
-	# Value for a control port
-	if($EFFECT && $port && $line =~ /^\s+ingen:value\s+(\S+)\s*;\s*$/){
-	    $effects{$EFFECT}->{ports}->{$port}->{value} = $1;
-	    next;
-	}
+	## Initialise the effect hash 
+	$effects{$name} = {};
+	$effects{$name}->{lv2_commands} = {};
+	$effects{$name}->{lv2_commands}->{param} = [];
+	$effects{$name}->{lv2_commands}->{add} = "add $uri $index";
+	$name_number{$name} = $index;
+	$number_name{$index} = $name;
+	$index += 1;
     }
 
-    ## Make lines to add effects
-    foreach my $e (sort grep {/\S/} keys %effects){
-	# "$prefix:Effect" name stands in for instance number
-	my $instance_number = "$prefix:$e";
-
-	# Later these will be used to assign integers > 0 
-	$VERBOSE and
-	    print STDERR "Initialise '$instance_number' in effect_name_instance\n";
-	$effect_name_instance{$instance_number} = -1;
-
-	my $_e1 = $effects{$e};
-	my $_url = $_e1->{URL};
-	my $cmd = "add $_url $instance_number";
-	# print STDERR "\$cmd $cmd\n";
-	my $line = "$cmd";
-	push(@ret, $line);
-
-	    ## Make param set lines
-
-	my @ports = sort keys %{$effects{$e}->{ports}};
-	foreach my $p (@ports){
-	    if($effects{$e}->{ports}->{$p}->{type} eq 'Control'){
-		if($effects{$e}->{ports}->{$p}->{direction} eq "Output"){
-		    ## No value for a output port.  Not used here
-		    next;
-		}
-		my $value = $effects{$e}->{ports}->{$p}->{value};
-		$line = "param_set $instance_number $p $value";
-		push(@ret, $line);
-	    }
-	}
-    }
-
-    ## Add jack connections
-    foreach my $ss (@jack_pipes){
-	my $line = "jack_connect $ss->[0] $ss->[1]";
-	push(@ret, $line);
-    }
-    my $name_line = "name: " . (defined($name) ? $name : "");
-    unshift(@ret, $name_line);
-    return @ret;
 }
 
 ## Get the ttl file that holds all the pedal board definitions
 sub get_board_ttl( $$$ ){
-   my ($root, $name, $board) = @_;
+    my ($root, $name, $board) = @_;
     my $fn = "$root/$name/$board.ttl";
     if(! -r $fn){
 	$board = ucfirst($board);
