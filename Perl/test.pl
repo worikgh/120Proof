@@ -32,13 +32,7 @@ sub test_process_lv2_turtle {
     my $fn = '/var/modep/pedalboards/Test.pedalboard/Test.ttl';
     -r $fn or die "$fn";
     my %result = One20Proof::process_lv2_turtle($fn, 1);
-    foreach my $key(sort keys %result){
-	my %effects = %{$result{effects}};
-	foreach my $name (sort keys %effects){
-	    print "$name\t$effects{$name} \n";
-	}
-	print "$key => $result{$key}\n";
-    }
+    &report_hash(\%result, "");
 }
 
 
@@ -161,4 +155,37 @@ sub test_get_yoshimi {
 
 
 
-	
+sub report_hash( $$ ) {
+    my $hashref = shift or die;
+    ref $hashref eq 'HASH' or die ;
+    my $prefix = shift;
+    defined($prefix) or $prefix = "";
+    foreach my $key (sort keys %$hashref){
+	my $next_prefix = "$prefix\t$key\t";
+	$next_prefix =~ s/^\s*//;
+	print("$next_prefix\n");
+	my $value = $hashref->{$key};
+	if(ref($value) eq ''){
+	    print("$next_prefix$value\n");
+	}elsif(ref($value) eq 'HASH'){
+	    &report_hash($value, $next_prefix);
+	}elsif(ref($value) eq 'ARRAY'){
+	    &report_array($value, $next_prefix);
+	}
+    }
+}
+sub report_array( $$ ) {
+    my $arrayref = shift or die;
+    ref $arrayref eq 'ARRAY' or die ;
+    my $prefix = shift;
+    defined($prefix) or $prefix = "";
+    foreach my $elem (@$arrayref){
+	if(ref($elem) eq ''){
+	    print("$prefix$elem\n");
+	}elsif(ref($elem) eq 'HASH'){
+	    &report_hash($elem, $prefix);
+	}elsif(ref($elem) eq 'ARRAY'){
+	    &report_array($elem, $prefix);
+	}
+    }
+}

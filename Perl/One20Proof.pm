@@ -430,7 +430,7 @@ sub read_turtle( $ ){
 	if($statement =~ / ; /){
 	    ## There is a ' ; ' on this line
 	    ## The ; symbol may be used to repeat the subject of of triples that vary only in predicate and object RDF terms.semi_colon_processed
-	    $statement =~ s/^\s*(\S+)\s+(\S+)\s+([^;]+)\s+;// or die $statement;
+	    $statement =~ s/^\s*(\S+)\s+(\S+)\s+([^;]*[^;\s])\s+;// or die $statement;
 	    my ($subject, $predicate, $object) = ($1, $2, $3);
 	    if($object =~ /\s/){
 		## Must be a quoted string
@@ -440,8 +440,8 @@ sub read_turtle( $ ){
 	    ## This next line will break if and predicate or object
 	    ## has an embedded ';'
 	    while(1){
-		$statement =~ s/^\s*(\S+)\s+([^;]+)\s*;?// or last;
-		$1 and $2 or last;
+		$statement =~ s/^\s*(\S+)\s+([^;]*[^;\s])\s*;?// or last;
+		defined($1) and defined($2) or last;
 		($predicate, $object) = ($1, $2);
 		push(@semi_colon_processed, "$subject $predicate $object");
 	    }
@@ -564,9 +564,11 @@ sub process_lv2_turtle( $$ ) {
     foreach my $prototype (@prototypes){
 	my ($name, $predicate, $uri) = @$prototype;
 
-	## The name is in angle brackets
-	$name =~ /^<(\S+)>$/ or die "Badly formed subject: $name ";
+	## The name and uri are in angle brackets
+	$name =~ /^<(\S+)>$/ or die "Badly formed subject: '$name' ";
 	$name = $1;
+	$uri =~ /^<(\S+)>$/ or die "Badly formed object: '$uri' ";
+	$uri = $1;
 
 	$predicate eq "lv2:prototype" or die "Error in prototypes: $predicate";
 
@@ -587,18 +589,26 @@ sub process_lv2_turtle( $$ ) {
 	## Filter for the p[orts wanted and get the name/port from
 	## inside the angle brackets
 	my $raw = shift or die;
-	$raw =~ /^<([a-z0-9_]+\/[a-z0-9_\:]+)>$/ or 
+	$raw =~ /^<([a-z0-9_]+\/[a-z0-9_\:]+)>$/i or 
 	    # Not a name/port
 	    return undef; 
 	return $1;
     };
 
+    ## Strip angle brackets from around a value.
+    my $strip_ang = sub {
+	my $v = shift or die;
+	$v =~ s/^<//;
+	$v =~ s/>$//;
+	$v
+    };
+
     my %control_ports = map{
-	$_->[0] => 1
+	$_ => 1
     } grep {
 	defined
     }map{
-	&$filter_port($_->[0])
+	&$filter_port(&$strip_ang($_->[0]))
     }grep {
 	$_->[1] eq 'a' && $_->[2] eq 'lv2:ControlPort'
     } @tripples;
@@ -607,7 +617,7 @@ sub process_lv2_turtle( $$ ) {
     my %control_port_values = map {
 	$_->[0] => $_->[2]
     } grep {
-	defined($control_ports{$_->[0]})
+	defined($control_ports{&$strip_ang($_->[0])})
     }grep{
 	$_->[1] eq 'ingen:value'
     }grep{
