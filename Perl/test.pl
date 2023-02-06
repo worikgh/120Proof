@@ -163,7 +163,7 @@ sub report_hash( $$ ) {
     foreach my $key (sort keys %$hashref){
 	my $next_prefix = "$prefix\t$key\t";
 	$next_prefix =~ s/^\s*//;
-	print("$next_prefix\n");
+	# print("$next_prefix\n");
 	my $value = $hashref->{$key};
 	if(ref($value) eq ''){
 	    print("$next_prefix$value\n");

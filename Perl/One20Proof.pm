@@ -482,6 +482,15 @@ sub process_lv2_turtle( $$ ) {
 
     $fn =~ s/-\d\d\d\d\d\.ttl$/\.ttl/; ## TODO: WTF??
 
+    ## Strip angle brackets from around a value.  We do this a lot as
+    ## it turns out
+    my $strip_ang = sub {
+	my $v = shift or die;
+	$v =~ s/^<//;
+	$v =~ s/>$//;
+	$v
+    };
+
     my $fh = undef;
     unless( -r $fn and open($fh, $fn)){
 	return ();
@@ -565,10 +574,8 @@ sub process_lv2_turtle( $$ ) {
 	my ($name, $predicate, $uri) = @$prototype;
 
 	## The name and uri are in angle brackets
-	$name =~ /^<(\S+)>$/ or die "Badly formed subject: '$name' ";
-	$name = $1;
-	$uri =~ /^<(\S+)>$/ or die "Badly formed object: '$uri' ";
-	$uri = $1;
+	$name = &$strip_ang($name);
+	$uri = &$strip_ang($uri);
 
 	$predicate eq "lv2:prototype" or die "Error in prototypes: $predicate";
 
@@ -589,22 +596,14 @@ sub process_lv2_turtle( $$ ) {
 	## Filter for the p[orts wanted and get the name/port from
 	## inside the angle brackets
 	my $raw = shift or die;
-	$raw =~ /^<([a-z0-9_]+\/[a-z0-9_\:]+)>$/i or 
+	$raw =~ /^([a-z0-9_]+\/[a-z0-9_\:]+)$/i or 
 	    # Not a name/port
 	    return undef; 
 	return $1;
     };
 
-    ## Strip angle brackets from around a value.
-    my $strip_ang = sub {
-	my $v = shift or die;
-	$v =~ s/^<//;
-	$v =~ s/>$//;
-	$v
-    };
-
     my %control_ports = map{
-	$_ => 1
+	&$strip_ang($_) => 1
     } grep {
 	defined
     }map{
@@ -615,7 +614,7 @@ sub process_lv2_turtle( $$ ) {
 
     ## Get all the values for control ports
     my %control_port_values = map {
-	$_->[0] => $_->[2]
+	&$strip_ang($_->[0]) => $_->[2]
     } grep {
 	defined($control_ports{&$strip_ang($_->[0])})
     }grep{
@@ -628,14 +627,14 @@ sub process_lv2_turtle( $$ ) {
 
     ## Set up the `param set` commands in effects
     foreach my $port (keys %control_port_values){
+	my $value = $control_port_values{$port};
 	$port =~ /([a-z_0-9]+)\/([\:a-z0-9_]+)/i or 
     die "Badly formed port: $port";
 	my $name = $1;
 	my $port = $2;
-	my $value = $control_port_values{$port};
 	my $number = $name_number{$name};
 	defined($number) or die "Unknown name: $name";
-	my $command = "param $port $value";
+	my $command = "param_set $number $port $value";
 	push(@{$effects{$name}->{commands}->{param}}, $command);
     }
 
