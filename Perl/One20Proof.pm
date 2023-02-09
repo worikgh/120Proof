@@ -747,11 +747,13 @@ sub get_modep_simulation_commands(){
     # Jack commands to run to set up a pedal board.  Indexed by name of board
     my %jack_activation = ();
     
+    my %number_name = ();
     foreach my $ex (@commands){
 	my %ex = %$ex;
 	my $pedal_board_name = $ex{pedal_board_name} or die;
 	foreach my $effect_name (sort keys %{$ex{effects}}){
 	    my $add = $ex{effects}->{$effect_name}->{add} or die $effect_name;
+	    map{$number_name{$_} = $ex{number_name}->{$_}} keys %{$ex{number_name}};
 	    push @add_mod_host, $ex{effects}->{$effect_name}->{add} or
 		die $effect_name;
 	    push @param_set, @{$ex{effects}->{$effect_name}->{param}} or
@@ -764,12 +766,7 @@ sub get_modep_simulation_commands(){
 	    
 	}
     }
-    print join("\n", @add_mod_host)."\n";
-    print join("\n", @param_set)."\n";
-    print join("\n", @jack_initial)."\n";
-    foreach my $key(sort keys %jack_activation){
-	print "$key:\n\t" . join("\n\t",  @{$jack_activation{$key}})."\n";
-    }
+    return (add => \@add_mod_host, param => \@param_set, jack_initial => \@jack_initial, jack_activation => \%jack_activation, number_name => \%number_name);
 }
 
 ### Getters for directories

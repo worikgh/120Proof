@@ -4,10 +4,10 @@ use strict;
 use lib(".");
 use One20Proof;
 
-print "test  120Proof Perl module: One20Proof.pm\n";
 
 my $to_test = shift or die "Pass a test";
 my $cmd = "test_$to_test";
+print "test  120Proof Perl module: One20Proof.pm\n$to_test\n";
 {
     no strict 'refs';
     &$cmd;
@@ -86,7 +86,14 @@ sub test_kill_port {
     One20Proof::kill_port($PORT);
 }
 sub test_get_modep_simulation_commands {
-    &report_hash(One20Proof::get_modep_simulation_commands());
+    my %result = One20Proof::get_modep_simulation_commands();
+    print join("\n", @{$result{add}})."\n";
+    print join("\n", @{$result{param}})."\n";
+    print join("\n", @{$result{jack_initial}})."\n";
+    foreach my $key(sort keys %{$result{jack_activation}}){
+	print "$key:\n\t" . join("\n\t",  @{$result{jack_activation}->{$key}})."\n";
+    }
+    print join("\n", map{"$_\t".$result{number_name}->{$_}} sort {$a <=> $b} keys %{$result{number_name}})."\n";
 }
 
 sub test_list_pedals {
