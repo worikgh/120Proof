@@ -479,8 +479,17 @@ sub read_turtle( $ ){
 sub process_lv2_turtle( $$ ) {
     my $fn = shift or die;
     my $index = shift or die; ## Zero is invalid index
+    $fn =~ /\/([^\/]+)$/ or die $fn;
+    my $pedal_board_name = $1;
 
     $fn =~ s/-\d\d\d\d\d\.ttl$/\.ttl/; ## TODO: WTF??
+
+    ## Break up an effect name and port.  This we do a lot
+    my $name_port = sub {
+	my $name_port = shift or die;
+	$name_port =~ /^(\S+)\/(\S+)/ or die $name_port;
+	return [$1, $2];
+    };
 
     ## Strip angle brackets from around a value.  We do this a lot as
     ## it turns out
@@ -581,9 +590,8 @@ sub process_lv2_turtle( $$ ) {
 
 	## Initialise the effect hash 
 	$effects{$name} = {};
-	$effects{$name}->{lv2_commands} = {};
-	$effects{$name}->{lv2_commands}->{param} = [];
-	$effects{$name}->{lv2_commands}->{add} = "add $uri $index";
+	$effects{$name}->{param} = [];
+	$effects{$name}->{add} = "add $uri $index";
 	$name_number{$name} = $index;
 	$number_name{$index} = $name;
 	$index += 1;
@@ -635,15 +643,70 @@ sub process_lv2_turtle( $$ ) {
 	my $number = $name_number{$name};
 	defined($number) or die "Unknown name: $name";
 	my $command = "param_set $number $port $value";
-	push(@{$effects{$name}->{commands}->{param}}, $command);
+	push(@{$effects{$name}->{param}}, $command);
     }
 
-    my %result = ('effects' => \%effects, 'index' => $index, 'number_name' => \%number_name);
-    return %result;
+    ## Build jack connections
+    my @jack_pipes = map {
+	$_->[0]
+    }grep{
+	$_->[1] eq 'ingen:tail'
+    }@tripples;
 
+    # There are two sorts of pipe: Internal pipes between effects, and
+    # to output, are created at startup.  Activation pipes, pipes from
+    # input (capture_N) to first effect in chain 
+    my @jack_internal_pipes = ();
+    my @jack_activation_pipes = ();
+    foreach my $pipe (@jack_pipes){
+	my @records = map {
+	    [$_->[0], $_->[1], &$strip_ang($_->[2])]
+	} grep {
+	    $_->[0] eq $pipe
+	}@tripples;
+
+	# One "ingen:tail" and one "ingen:head"
+	scalar(@records) == 2 or die "Pipeo $pipe is bad";
+	my @tail = grep {$_->[1] eq "ingen:tail"} @records;
+	scalar @tail == 1 or  die "Pipeo $pipe is bad";
+	my @head = grep {$_->[1] eq "ingen:head"} @records;
+	scalar @head == 1 or  die "Pipeo $pipe is bad";
+
+	# Activation connections are connected to system:capture_N
+	if($tail[0]->[2] =~ /^capture_\d+$/){
+	    ## A connection rom th system input
+	    my $name_port = &$name_port($head[0]->[2]);
+	    my $number = $name_number{$name_port->[0]};
+	    my $p = "system:$tail[0]->[2] effect_$number:$name_port->[1]";
+	    push(@jack_activation_pipes, $p);
+	    next;
+	}elsif($head[0]->[2] =~ /^playback_\d+$/){
+	    # Output pipe.  An internal pipe
+	    my $name_port = &$name_port($tail[0]->[2]);
+	    my $number = $name_number{$name_port->[0]};
+	    my $p = "effect_$number:$name_port->[1] system:$head[0]->[2]";
+	    push(@jack_internal_pipes, $p);
+	    next;
+	}
+
+	## This is an internal pipe
+	my $lhs_name_port = &$name_port($tail[0]->[2]);
+	my $lhs = "effect_".$name_number{$lhs_name_port->[0]}.":".
+	    $lhs_name_port->[1];
+	my $rhs_name_port = &$name_port($head[0]->[2]);
+	my $rhs = "effect_".$name_number{$rhs_name_port->[0]}.":".
+	    $rhs_name_port->[1];
+	my $p = "$lhs $rhs";
+	push(@jack_internal_pipes, $p);
+    }
+
+    # my  = ();
+    # my @jack_activation_pipes = ();
+
+    my %result = ('effects' => \%effects, 'index' => $index, 'number_name' => \%number_name, 'jack_internal_pipes' => \@jack_internal_pipes, 'jack_activation_pipes' => \@jack_activation_pipes, pedal_board_name => $pedal_board_name); # Need fn to name the pedal board uniquely
+    return %result;
     
 }
-
 
 ### MIDI handling
 
@@ -656,6 +719,57 @@ sub list_pedals {
     readdir($dir);
     wantarray and return @pedals;
     return join("\n", @pedals);
+}
+
+## The mod-host and jack commands for all the pedal boards
+sub get_modep_simulation_commands(){
+    my @fn = map{
+	"$MODEP_PEDALS/$_\.pedalboard/$_.ttl"
+    } One20Proof::list_pedals;
+    my $index = 1;
+    my @commands = ();
+
+    foreach my $fn (@fn){
+	my %ex = One20Proof::process_lv2_turtle($fn, $index);
+	$index = $ex{index};;
+	push(@commands, \%ex);
+    }
+    # The add commands for the mod-host initialisation
+    my @add_mod_host = ();
+
+    # The param_set commands to put each effect in the designed state
+    my @param_set = ();
+
+    # Jack commands to run when we set up all the pedal boards.  Sets
+    # up the connections between each effect in a pedalboard.
+    my @jack_initial = (); 
+
+    # Jack commands to run to set up a pedal board.  Indexed by name of board
+    my %jack_activation = ();
+    
+    foreach my $ex (@commands){
+	my %ex = %$ex;
+	my $pedal_board_name = $ex{pedal_board_name} or die;
+	foreach my $effect_name (sort keys %{$ex{effects}}){
+	    my $add = $ex{effects}->{$effect_name}->{add} or die $effect_name;
+	    push @add_mod_host, $ex{effects}->{$effect_name}->{add} or
+		die $effect_name;
+	    push @param_set, @{$ex{effects}->{$effect_name}->{param}} or
+		die $effect_name;
+	    push @jack_initial, @{$ex{jack_internal_pipes}} or
+		die $effect_name;
+	    my @act_pipes = @{$ex{jack_activation_pipes}}; 
+	    $jack_activation{$pedal_board_name} = 
+		\@act_pipes or die $effect_name;
+	    
+	}
+    }
+    print join("\n", @add_mod_host)."\n";
+    print join("\n", @param_set)."\n";
+    print join("\n", @jack_initial)."\n";
+    foreach my $key(sort keys %jack_activation){
+	print "$key:\n\t" . join("\n\t",  @{$jack_activation{$key}})."\n";
+    }
 }
 
 ### Getters for directories

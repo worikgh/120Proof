@@ -85,6 +85,9 @@ sub test_kill_port {
     sleep .2;
     One20Proof::kill_port($PORT);
 }
+sub test_get_modep_simulation_commands {
+    &report_hash(One20Proof::get_modep_simulation_commands());
+}
 
 sub test_list_pedals {
     my @array = One20Proof::list_pedals;
