@@ -1,5 +1,6 @@
 package One20Proof;
 use IPC::Open3;
+use File::Find;
 #use POSIX "setsid";
 use strict;
 BEGIN {
@@ -487,7 +488,7 @@ sub process_lv2_turtle( $$ ) {
     ## Break up an effect name and port.  This we do a lot
     my $name_port = sub {
 	my $name_port = shift or die;
-	$name_port =~ /^(\S+)\/(\S+)/ or die $name_port;
+	$name_port =~ /^(\S+)\/(\S+)/ or die "$fn: $name_port ";
 	return [$1, $2];
     };
 
@@ -648,9 +649,10 @@ sub process_lv2_turtle( $$ ) {
 
     ## Build jack connections
     my @jack_pipes = map {
+	# Store the name of the pipe
 	$_->[0]
     }grep{
-	$_->[1] eq 'ingen:tail'
+	$_->[1] eq "ingen:tail"
     }@tripples;
 
     # There are two sorts of pipe: Internal pipes between effects, and
@@ -659,16 +661,28 @@ sub process_lv2_turtle( $$ ) {
     my @jack_internal_pipes = ();
     my @jack_activation_pipes = ();
     foreach my $pipe (@jack_pipes){
+	# `$pipe` is the name of the pipe.  The subject of the triple
+
+	# Get the subject, predicate, and object for both ends of the pipe
 	my @records = map {
 	    [$_->[0], $_->[1], &$strip_ang($_->[2])]
 	} grep {
+	    # Filter by name
 	    $_->[0] eq $pipe
+		# ## Do not implement MIDI yet.  MIDI pipes eq
+		# ## 'midi_merger_out' for now, the only one I have
+		# ## seen.  TODO: Make some more pedal boards with MIDI
+		# ## controls and watch this die here
+		# and $->[2] ne 'midi_merger_out'
 	}@tripples;
-
+	join("", map{$_->[2]} @records) =~ /midi_merger_out/ and next;
+	join("", map{$_->[2]} @records) =~ /midi_capture_2/ and next;
 	# One "ingen:tail" and one "ingen:head"
 	scalar(@records) == 2 or die "Pipeo $pipe is bad";
+
 	my @tail = grep {$_->[1] eq "ingen:tail"} @records;
 	scalar @tail == 1 or  die "Pipeo $pipe is bad";
+
 	my @head = grep {$_->[1] eq "ingen:head"} @records;
 	scalar @head == 1 or  die "Pipeo $pipe is bad";
 
@@ -703,7 +717,14 @@ sub process_lv2_turtle( $$ ) {
     # my  = ();
     # my @jack_activation_pipes = ();
 
-    my %result = ('effects' => \%effects, 'index' => $index, 'number_name' => \%number_name, 'jack_internal_pipes' => \@jack_internal_pipes, 'jack_activation_pipes' => \@jack_activation_pipes, pedal_board_name => $pedal_board_name); # Need fn to name the pedal board uniquely
+    my %result = (
+	"effects" => \%effects,
+	"index" => $index,
+	"jack_activation_pipes" => \@jack_activation_pipes,
+	"jack_internal_pipes" => \@jack_internal_pipes,
+	"number_name" => \%number_name,
+	"pedal_board_name" => $pedal_board_name
+	);
     return %result;
     
 }
@@ -712,26 +733,34 @@ sub process_lv2_turtle( $$ ) {
 
 ### Handling pedal definitions
 sub list_pedals {
-    opendir(my $dir, &get_pedal_dir) or die $!;
+    my $pedal_dir =  &get_pedal_dir;
+    opendir(my $dir, $pedal_dir) or die $!;
+    my @files =     readdir($dir);
     my @pedals =
 	grep{$_ !~ /^\./} ## Not hidden file
     grep{/\S\S/} ## Not just one character
-    readdir($dir);
+    @files;
     wantarray and return @pedals;
     return join("\n", @pedals);
 }
 
 ## The mod-host and jack commands for all the pedal boards
 sub get_modep_simulation_commands(){
-    my @fn = map{
-	"$MODEP_PEDALS/$_\.pedalboard/$_.ttl"
-    } One20Proof::list_pedals;
+    ## Get the pedal board definitions
+    my @fn = ();
+    find(sub {$_ ne "manifest.ttl" and 
+		  /(.+)\.ttl/ and 
+		  push(@fn, $File::Find::name)}, 
+	 ( $MODEP_PEDALS ));
+    # my @fn = map{
+    # 	"$MODEP_PEDALS/$_\.pedalboard/$_.ttl"
+    # } One20Proof::list_pedals;
     my $index = 1;
     my @commands = ();
 
     foreach my $fn (@fn){
 	my %ex = One20Proof::process_lv2_turtle($fn, $index);
-	$index = $ex{index};;
+	$index = $ex{index};
 	push(@commands, \%ex);
     }
     # The add commands for the mod-host initialisation
@@ -766,7 +795,13 @@ sub get_modep_simulation_commands(){
 	    
 	}
     }
-    return (add => \@add_mod_host, param => \@param_set, jack_initial => \@jack_initial, jack_activation => \%jack_activation, number_name => \%number_name);
+    return (
+	add => \@add_mod_host,
+	param => \@param_set,
+	jack_initial => \@jack_initial,
+	jack_activation => \%jack_activation,
+	number_name => \%number_name
+	);
 }
 
 ### Getters for directories
