@@ -43,3 +43,4 @@ bin/120Proofpd
 pedal/120Proofpd
 */.gdb_history
 pedal/PEDALS/.PEDAL
+pedal/PEDALS/*
