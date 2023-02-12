@@ -19,12 +19,14 @@ our $PEDAL_DIR = "$ENV{'Home120Proof'}/pedal/PEDALS";
 ## The port 120Proof's mod-host smulator runs on
 our $MODHOST_PORT = 9116;
 
+## Turn off all the LEDs on the LPX
 sub blank_lpx {
-    my $lpx_blank_screen = "$ENV{Home120Proof}/bin/lpx_blank_screen";
+    my $lpx_blank_screen = &One20Proof::get_lpx_blank_scree();
     -x $lpx_blank_screen or die "$!: $lpx_blank_screen";
     `$lpx_blank_screen`;
 }
 
+## For debugging.  Not very useful
 sub stack_trace {
     my $frame = 0;
     my @frames = ();
@@ -39,7 +41,7 @@ sub stack_trace {
     return join("\n", @frames)."\n";
 }
 
-## Kill whatsoever process holds a port.  If it is owned by us
+## Kill whatsoever process, owned by us, holds a port
 sub kill_port( $ ) {
     my $port = shift or die;
     my @lsof = `lsof -i :$port -F`;
@@ -166,7 +168,6 @@ sub all_midi_devices {
 ## [<from device>, <from port>, <to device>, <to port>,
 ## <from device name>, <from port name> from type, PID or Card id]
 ## E.g: [32,0,130,1,'Launchpad X','Launchpad X MIDI 1','card',4]
-
 sub list_all_midi_connections {
 
     my @aconnect_l = `aconnect -l`;
@@ -247,6 +248,8 @@ sub list_all_midi_connections {
     return @connections;
 }
 
+## Run a programme, either as a daemon (this function retutns straight
+## away) or wait on its output
 sub run_daemon( $;$ ) {
     my $cmd = shift;
     my $wait = shift or 0;
@@ -315,8 +318,9 @@ sub wait_for_midi {
     }
 }    
 
+## Wait for a Jack client to come up.  After five seconds give up
 sub wait_for_jack {
-    my $jack_name = shift or die "Pass a midi name to wait for";
+    my $jack_name = shift or die "Pass a jack client name to wait for";
     chomp $jack_name;
 
     my $time_out = 5; # Five seconds
@@ -334,8 +338,9 @@ sub wait_for_jack {
 	}
 	select(undef, undef, undef, 0.05);
     }
-}    
+}
 
+## Check for a connetion between two ports.  
 sub test_jack_connection( $$ ) { 
     my ($lhs, $rhs) = @_;
     my @jack_lsp = `jack_lsp -c`;
@@ -363,6 +368,8 @@ sub test_jack_connection( $$ ) {
     }
     return 0;
 }
+
+
 ## Musical Instruments.
 
 sub initialise_yoshimi( $$ ) {
@@ -383,11 +390,14 @@ sub initialise_yoshimi( $$ ) {
     
 }
 
+## Initialise foot pedal files.  Three: A, B, and C.  Pass the names o
+## fthe pedal boards in the input array.  It must be three long
 sub initialise_pedals( @ ) {
     my @names = @_;
     my @pedals = &list_pedals;
     my $pedals_dir = &get_pedal_dir();
     
+    ## Make sure the pedals passed are all valid
     ## `@names` are the pedals we want. `@pedals` are the pedals available.
     foreach my $name (@names){
 	## Restet this if `$name` in @pedals
@@ -832,6 +842,7 @@ sub get_modep_simulation_commands(){
 }
 
 ### Getters for directories
+
 sub get_bin {
     return "$ENV{Home120Proof}/bin";
 }
@@ -841,6 +852,7 @@ sub get_pedal_dir {
 }
 
 ### Getters for binary programmes
+
 sub get_lpx_blank_screen {
     return &get_bin()."/lpx_blank_screen";
 }
