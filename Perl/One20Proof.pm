@@ -336,6 +336,33 @@ sub wait_for_jack {
     }
 }    
 
+sub test_jack_connection( $$ ) { 
+    my ($lhs, $rhs) = @_;
+    my @jack_lsp = `jack_lsp -c`;
+
+
+    my $c_lhs;
+    my $c_rhs;
+
+    my $result = 0;
+    my $state = "";
+    foreach my $line (@jack_lsp){
+	chomp $line;
+	if($line =~ /^$lhs$/){
+	    $state = $lhs;
+	    next;
+	}elsif($line =~ /^\S/){
+	    $state = "";
+	    next;
+	}elsif($line =~ /^\s+$rhs$/){
+	    if($state){
+		return 1;
+		exit;
+	    }
+	}
+    }
+    return 0;
+}
 ## Musical Instruments.
 
 sub initialise_yoshimi( $$ ) {

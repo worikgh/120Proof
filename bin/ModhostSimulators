@@ -6,42 +6,47 @@ use IO::Socket::INET;
 use lib("$ENV{'Home120Proof'}/Perl");
 use One20Proof qw | $PEDAL_DIR $MODHOST_PORT |;
 
-## Read the output of `ExtractModep` and set up the LV2 simulators,
-## and Jack pipes for the pedal boards defined by Modep.  Also set up
-## the "activation" files in `$pedal_dir` to put the definitions of
-## Jack pipes (and later Modhost control parameters of control
-## simulators).
-
 ## Get the directory to run in
 my $home_dir = $ENV{"Home120Proof"} or die '$ENV{"Home120Proof"} is not set';
 -d $home_dir or die "\$home_dir($home_dir) not a directory";
 
-
-## FIXME  Do not need to do this(??)
-## chdir $home_dir or die "$!: Cannot chdir $home_dir";
-
-## The file written by ExtractModep
-my $modep_command_fn = "$home_dir/modep_commands.txt";
-
 ## The directory to write the files that the pedal driver reads to
 ## control the simulatons
-my $pedal_dir = "$One20Proof::PEDAL_DIR/";
+my $pedal_dir = "$One20Proof::PEDAL_DIR";
 -d $pedal_dir or die "$!: $pedal_dir";
 -x $pedal_dir or die "$!: $pedal_dir";
 
 my $mod_host_port_p = $One20Proof::MODHOST_PORT;
 
-## Variables to drive main loop
-my $NAME; # Current pedal board
-my $section; # Two sections 'activation' and 'persistent'
-my @mh_commands = (); # The `mod-host` simulator definitions
-my @jack_commands = (); # The persistent Jack connetions.  Make noiw
+my %modep_simulation_commands = One20Proof::get_modep_simulation_commands();
+my @add = @{$modep_simulation_commands{add}};
+my @param = @{$modep_simulation_commands{param}};
+my @jack_initial = @{$modep_simulation_commands{jack_initial}};
+my %jack_activation =  %{$modep_simulation_commands{jack_activation}};
 
-# The commands to activate a pedal board. Initialised for each pedal
-# board
-my @activation_commands; 
+## Create the files of pedal instructions
+foreach my $p (sort keys %jack_activation){
+    ## `$p` is the name of the ttl file.  To be the name of the pedal
+    ## file it is best to delete the suffix, as the pedal file is not
+    ## a turtle format file
+    my $fn = "$pedal_dir/$p";
+    $fn =~ s/\.ttl$// or die $p;
+    open(my $out, ">$fn") or die $fn;
+    my $contents = join("\n", @{$jack_activation{$p}})."\n";
+    print $out $contents;
+    close $out or die "$!: $fn";
+}
 
+## Set up the effects, and the arameters
+my @mh_commands = ();
+push(@mh_commands, @add);
+push(@mh_commands, @param);
+&mod_host(\@mh_commands);
 
+foreach my $jcmd ( @jack_initial ) {
+    
+    &handle_jack( "connect $jcmd" );
+}
 
 
 
@@ -56,19 +61,19 @@ sub fhbits {
 }
 
 sub handle_jack( $ ){
-    ## Passed a Jack command execute it.  There are two: "connecyt"
+    ## Passed a Jack command execute it.  There are two: "connect"
     ## and "disconnect"
     my $cmd = shift or die;
     # warn "$cmd ";
     if($cmd =~ /^connect (\S+)\s+(\S+)\s*$/){
 	## Commanded to make a connection.  Check first if it exists
 	## and there is nothing to do
-	if( ! `$home_dir/bin/testJackConnection $1 $2`){
+	if( ! &One20Proof::test_jack_connection($1, $2)){
 	    # print STDERR "connect $1\t$2\n";
 	    print `jack_connect $1 $2`;
 	}
     }elsif($cmd =~ /^disconnect (\S+)\s+(\S+)\s*$/){
-	if(`$home_dir/bin/testConnection $1 $2`){
+	if(  &One20Proof::test_jack_connection($1, $2)){
 	
 	    print `jack_disconnect $1 $2`;
 	}
@@ -176,79 +181,6 @@ sub mod_host( $ ){
 	    }
 	}
     }
-}
-
-
-open(my $cmds, $modep_command_fn) or die $!;
-
-foreach my $line(<$cmds>){
-    chomp $line;
-
-    ## ignore comments ("#" as first character of line) and blank lines
-    $line =~ /^\s*#/ and next;
-    $line =~ /\S/ or next;
-
-    if($line =~ /^NAME\s+(.+)\s*$/){
-
-	## Got the name of a pedal board and in the section describing
-	## persistent LV2 simulators and Jack connections
-	$NAME = $1;
-	$section = "persistent";
-
-	@activation_commands = ();
-	next;
-    }
-    if($line =~ /^ACTIVATE\s*$/){
-	## The commands to put in the activation files, that `driver`
-	## uses to set up and tear down pedal board simulations in
-	## real time
-
-	## Today 2022-06-01 "set up and tear down pedal board
-	## simulations" means Jack connections.  But in the future it
-	## will include MIDI connections and mod-host command.  For
-	## example the plugin Fluid Organs is an LV2 simulator that
-	## takes MIDI as input.  The SooperLooper LV2 plugin has the
-	## normal looper controls (record, play, reset...) that are
-	## implemented as `mod-host` `param` commands and should be
-	## assigned to the pedal.
-	$section = "activate";
-	next;
-    }
-    if($line =~ /^ENDS\s*$/){
-
-	## The description of the effect has ended, so write
-	## activation file
-	my $fn = $pedal_dir.$NAME;
-	open(my $out, ">$fn") or die "$!: $fn ";
-	print $out join("\n", @activation_commands)."\n";
-	close($out) or die "$!: $fn ";
-	next;
-    }
-
-    ## Got a command for `mod-host` or for Jack
-    $line =~ /^mh (.+)\s*$/ or die "Invalid line: $line";
-
-    my $command = $1;
-    if($command =~ /^connect\s+.+\s*$/){	
-	if($section eq 'activate'){
-	    ## Commands to be used by a pedal to activate an effect
-	    push(@activation_commands, $command);
-	}elsif($section eq 'persistent'){
-	    ## Commands that connect up the simulated pedals that make
-	    ## an effect.
-	    push(@jack_commands, $command);
-	}
-    }else{
-	push(@mh_commands, $command);
-    }
-}
-# print join("\n", @mh_commands);
-# print join("\n", @jack_commands);
-
-&mod_host(\@mh_commands);
-
-foreach my $jcmd ( @jack_commands ) {
-    &handle_jack( $jcmd );
 }
 
 

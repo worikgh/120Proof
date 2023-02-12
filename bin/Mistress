@@ -24,10 +24,10 @@ use strict;
 
 
 ## Required to run 120Proof
-if(!$ENV{"Home120Proof"}){
-    $0 =~ /^(.+)\/bin\/[^\/]+$/ or die $0;
-    $ENV{"Home120Proof"} = $1;
-}
+# if(!$ENV{"Home120Proof"}){
+#     $0 =~ /^(.+)\/bin\/[^\/]+$/ or die $0;
+#     $ENV{"Home120Proof"} = $1;
+# }
 
 use lib("$ENV{'Home120Proof'}/Perl");
 use One20Proof qw | $MODHOST_PORT |;

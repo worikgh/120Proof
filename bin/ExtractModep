@@ -127,7 +127,7 @@ sub process_file( $$ ) {
 
     ## Each effect is setup in this hash.
     ## Indexed by the name
-    my %effects = {};
+    # my %effects = {};
     
     ## each entry om @line is a tripple as text.  Convert into an
     ## array of arrays, each with three elements: subject, predicate,
@@ -152,7 +152,7 @@ sub process_file( $$ ) {
 	my ($name, $predicate, $uri) = @$prototype;
 
 	## The name is in angle brackets
-	$name => /^<(\S+)>$/ or die "Badly formed subject: $name ";
+	$name =~ /^<(\S+)>$/ or die "Badly formed subject: $name ";
 	$name = $1;
 
 	$predicate eq "lv2:prototype" or die "Error in prototypes: $predicate";
