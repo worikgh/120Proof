@@ -1,7 +1,7 @@
 package One20Proof;
 use IPC::Open3;
 use File::Find;
-#use POSIX "setsid";
+use POSIX; # "setsid";
 use strict;
 BEGIN {
     require Exporter;
@@ -21,7 +21,7 @@ our $MODHOST_PORT = 9116;
 
 ## Turn off all the LEDs on the LPX
 sub blank_lpx {
-    my $lpx_blank_screen = &One20Proof::get_lpx_blank_scree();
+    my $lpx_blank_screen = &One20Proof::get_lpx_blank_screen();
     -x $lpx_blank_screen or die "$!: $lpx_blank_screen";
     `$lpx_blank_screen`;
 }
@@ -69,10 +69,12 @@ sub pkill( $ ){
     chomp $prog_name;
     ## The prog_name must be the complete path to the executable
     -x $prog_name or die "The argument to `pkill` ($prog_name) must be the complete path to the executable: " . scalar(One20Proof::stack_trace) . " ";
-    
+
+    my $signal = shift;
+    defined($signal) or $signal = SIGTERM;
     my @pgrep = `pgrep -f $prog_name -u $ENV{USER} `;
     if(`pgrep -f $prog_name -u $ENV{USER} `){
-	`pkill -f $prog_name  -u $ENV{USER} `;
+	`pkill --signal $signal -f $prog_name  -u $ENV{USER} `;
 	if($? && $? != 256){
 	    ## $? is eight bits.  256 is nine.
 	    warn join("\n", @pgrep);
@@ -434,7 +436,7 @@ sub initialise_pedals( @ ) {
     }
 
     ## Signal the pedal driver
-    
+    &One20Proof::pkill(&One20Proof::get_pedal_driver(), SIGHUP)
 }
 
 ## Read a ttl, Turtle, document
@@ -782,11 +784,16 @@ sub list_pedals {
 }
 
 ## The mod-host and jack commands for all the pedal boards
-sub get_modep_simulation_commands(){
+sub get_modep_simulation_commands( $ ){
+
+    my $ignore_ref = shift or die;
+    my @ignore_boards = @$ignore_ref;
+    
     ## Get the pedal board definitions
     my @fn = ();
     find(sub {$_ ne "manifest.ttl" and 
-		  /(.+)\.ttl/ and 
+		  /(.+)\.ttl/ and
+		  !grep{/$1/} @ignore_boards and
 		  push(@fn, $File::Find::name)}, 
 	 ( $MODEP_PEDALS ));
     # my @fn = map{
