@@ -1,6 +1,8 @@
 #!/usr/bin/perl -w
 use strict;
 
+## Debug with: o inhibit_exit=0
+
 ## Mistress is the boss.  It is in charge.
 ## It calls the scripts, in the proper order, to set up 120Proof.
 
@@ -95,16 +97,12 @@ $ENV{"JACK_PROMISCUOUS_SERVER"} = 'jack';
 ## TODO There is an environment variable that stops Jack from needing
 ## Dbus so this whole thing can be run headless
 
-print "120Proof's Mistress running rooted at: $ENV{'Home120Proof'} ".(scalar(localtime()))."\n";
+warn "120Proof's Mistress running rooted at: $ENV{'Home120Proof'} ".(scalar(localtime()))."\n";
 
 
 ## Initialise mod-host: IM (66)
 my $PORT = $One20Proof::MODHOST_PORT;
 #-e "$ENV{Home120Proof}/pedal/PEDALS/A" or die "$!: $ENV{Home120Proof}/pedal/PEDALS/A";
-
-## IM: Copy the definitions of simulators writen by modep-mod-ui: EM (26)
-# &One20Proof::run_daemon("$ENV{Home120Proof}/bin/ExtractModep $modep_command_fn Cello_Boaster Looper Harp_Sweetner ORGANS ORGANS_Sweet", 1);
-&One20Proof::run_daemon("$ENV{Home120Proof}/bin/ExtractModep $modep_command_fn Looper  ORGANS ORGANS_Sweet", 1);
 
 
 ## IM: Start mod-host
@@ -124,15 +122,10 @@ while(!`lsof -i:$PORT`){
 }
 
 ## IM: Start simulators MS (47)
-&One20Proof::run_daemon("$ENV{Home120Proof}/bin/ModhostSimulators", 1);
-
-while(!-e "$ENV{Home120Proof}/pedal/PEDALS/A" || !-e "$ENV{Home120Proof}/pedal/PEDALS/B" || !-e "$ENV{Home120Proof}/pedal/PEDALS/C" ){
-    warn "Waiting on pedals";
-    sleep(1);
-}
+&One20Proof::run_daemon("$ENV{Home120Proof}/bin/ModhostSimulators Looper  ORGANS ORGANS_Sweet SEQUENCED_DRUMS Test ", 1);
 
 ## Set up the controls for the LPX
-One20Proof::run_daemon($lpx_control);
+&One20Proof::run_daemon($lpx_control);
 
 ## Run the pedal
 &One20Proof::run_daemon("$pedal_driver $ENV{Home120Proof}/pedal/PEDALS ");
@@ -145,4 +138,4 @@ One20Proof::run_daemon($lpx_control);
 my @jack_con = `$ENV{"Home120Proof"}/bin/delete_jack_midi_connections list`;
 @jack_con and warn "Failed to delete JACK Midi connections:\n\t".join("\n\t", @jack_con)."\n";
 
-print STDERR "Mistress is finished with you\n";
+warn "Mistress is finished with you\n";

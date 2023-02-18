@@ -6,6 +6,15 @@ use IO::Socket::INET;
 use lib("$ENV{'Home120Proof'}/Perl");
 use One20Proof qw | $PEDAL_DIR $MODHOST_PORT |;
 
+
+## Probably want to ignore some boards.  Pass the names of boards to
+## ignore on the commandline
+my @ignore_boards = ();
+foreach my $ignored_board (@ARGV){
+    push(@ignore_boards, $ignored_board);
+}
+
+
 ## Get the directory to run in
 my $home_dir = $ENV{"Home120Proof"} or die '$ENV{"Home120Proof"} is not set';
 -d $home_dir or die "\$home_dir($home_dir) not a directory";
@@ -18,7 +27,7 @@ my $pedal_dir = "$One20Proof::PEDAL_DIR";
 
 my $mod_host_port_p = $One20Proof::MODHOST_PORT;
 
-my %modep_simulation_commands = One20Proof::get_modep_simulation_commands();
+my %modep_simulation_commands = One20Proof::get_modep_simulation_commands(\@ignore_boards);
 my @add = @{$modep_simulation_commands{add}};
 my @param = @{$modep_simulation_commands{param}};
 my @jack_initial = @{$modep_simulation_commands{jack_initial}};
@@ -29,6 +38,10 @@ foreach my $p (sort keys %jack_activation){
     ## `$p` is the name of the ttl file.  To be the name of the pedal
     ## file it is best to delete the suffix, as the pedal file is not
     ## a turtle format file
+    $p =~ /(.+)\.ttl$/ or die $p;
+    my $_f = $1;
+    grep {/$_f/} @ignore_boards and next;
+    
     my $fn = "$pedal_dir/$p";
     $fn =~ s/\.ttl$// or die $p;
     open(my $out, ">$fn") or die $fn;
@@ -74,7 +87,6 @@ sub handle_jack( $ ){
 	}
     }elsif($cmd =~ /^disconnect (\S+)\s+(\S+)\s*$/){
 	if(  &One20Proof::test_jack_connection($1, $2)){
-	
 	    print `jack_disconnect $1 $2`;
 	}
     }
@@ -84,6 +96,7 @@ sub handle_jack( $ ){
 ## `mod_host` is passed an array of commands to send to `mod-host`
 sub handle_mh_cmd( $$ ) {
     my ($sock, $cmd) = @_;
+    warn "handle_mh_cmd(SOCK, $cmd)\n";
     print $sock "$cmd\n";
 
     my $result = '';
@@ -92,6 +105,7 @@ sub handle_mh_cmd( $$ ) {
     my ($nfound, $timeleft) =
 	select(my $rout = $r, my $wout = undef, my $eout = undef,
 	       0.5);
+    warn "handle_mh_cmd: \$nfound $nfound\n";
     if($nfound){
 	my $os = 0;
 	while(my $c = read($sock, $res, 1)){
@@ -102,6 +116,7 @@ sub handle_mh_cmd( $$ ) {
 	    $result .=  $res;
 	}
     }
+    warn "handle_mh_cmd: \$result $result\n";
     if($result =~ /resp ([\-0-9]+)/){
 	# If status is a negative number an error has
 	# occurred. The table below shows the number of each
@@ -139,11 +154,8 @@ sub handle_mh_cmd( $$ ) {
 	#     command.
 	if($1 < 0 and $1 != -2){
 	    print  STDERR ">> FAIL $cmd >>  $result\n";
-
-	    # Links into `process_modep.pl` which reads STDOUT
-	    print  ">> FAIL $cmd >>  $result\n";
 	}else{
-	    # print  ">> SUCCESS $cmd >>  $result\n";
+	    print  STDERR ">> SUCCESS $cmd >>  $result\n";
 	}
     }
 }    
@@ -163,17 +175,19 @@ sub mod_host( $ ){
     my $failed = 0;
     
     foreach my $cmd (@cmds){
-
+	warn "Process: \$cmd($cmd) \n";
 	# print STDERR  "mod-host: $cmd\n";
-	if(!$failed){
+	# if(!$failed){
 	    &handle_mh_cmd($sock, $cmd);
-	}
+	# }
 	## If command was an `add` check the effects got added
 	if($cmd =~ /^add.+\s(\d+)/){
 	    # print STDERR "$cmd\n";
+	    warn "Before jack_lsp\n";
 	    my $jack = grep{/effect_$1/} `jack_lsp`;
+	    warn "after jack_lsp\n";
 	    if(!$jack){
-		print STDERR "effect_$1 failed\n";
+		print STDERR "$cmd: effect_$1 failed\n";
 		$failed = 1;
 	    }else{
 		$failed = 0;
