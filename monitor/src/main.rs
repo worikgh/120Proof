@@ -45,6 +45,9 @@ fn complete_path(file_name: &str) -> String {
     format!("{}/{}", get_output_dir(), file_name)
 }
 
+/// Get the status of mod-host instances.  Ther may be 0, 1, or 2
+/// instances.  One run by user "modep"
+
 /// Get the names of all the files in the output directory.
 /// `output_dir_path` is complete path to the output directory
 fn get_file_names(output_dir_path: &Path) -> Vec<String> {
@@ -140,9 +143,11 @@ fn main() -> io::Result<()> {
             .into_iter()
             .find(|x| x.name() == "temp1_input")
             .unwrap();
-        let temp: f64 = sub_feature.get_value().unwrap();
+        let temperature: f64 = sub_feature.get_value().unwrap();
 
+        // Get the time, and modep status every loop and report when they change
         let mut cached_timestamp: String = "".to_string();
+        let mut modep_status: String = "".to_string();
 
         let files = get_file_names(output_dir_path);
 
@@ -179,9 +184,9 @@ fn main() -> io::Result<()> {
         }
 
         // Summarise the data.  Depending on the filename
-        for (f, mut v) in &mut file_store {
+        for (f, mut new_data) in &mut file_store {
             let summary = match decode_file_name(f.as_str()) {
-                Some((name, pid)) => v.summarise(
+                Some((name, pid)) => new_data.summarise(
                     Some(pid),
                     match name.as_str() {
                         "yoshimi.err" => {
@@ -207,19 +212,20 @@ fn main() -> io::Result<()> {
                         _ => &mut default_filter,
                     },
                 ),
-                None => v.summarise(None, &mut default_filter),
+                None => new_data.summarise(None, &mut default_filter),
             };
             if summary.len() > 0 {
+                // Maintain time
                 let now: String = Local::now().format("%Y-%m-%dT%H:%M:%S").to_string();
                 if now != cached_timestamp {
                     cached_timestamp = now;
+                    println!("TS: {} {}", cached_timestamp, temperature);
                 }
-                println!("TS: {} {}", cached_timestamp, temp);
+                for s in summary.iter() {
+                    println!("f: {}: {}", f, s);
+                }
             }
-            for s in summary.iter() {
-                println!("f: {}: {}", f, s);
-            }
-            v.cache = String::new();
+            new_data.cache = String::new();
         }
         thread::sleep(time::Duration::from_millis(100));
     }
