@@ -21,6 +21,7 @@
 #include <dirent.h>
 #include <errno.h>
 #include <fcntl.h>
+#include <stdbool.h>
 #include <jack/jack.h>
 #include <linux/input.h>
 #include <linux/limits.h>
@@ -47,7 +48,7 @@ struct jack_connection;
 struct pedal_config;
 
 void Log(char * sp, ...);
-int load_pedal(char);
+bool load_pedal(char);
 void print_pedal(char pedal);
 void clear_jack();
 void initialise_pedals();
@@ -304,8 +305,11 @@ static void signal_handler(int sig)
  * `add_pedal_effect` is used when setting up. `pedal` is the physical
  * pedal, a single character.  `jc1` and `jc2` are jack ports.
  * Connecting them enables the effect.
+ *
+ * Returns tru on success
  */  
-void add_pedal_effect(char pedal, const char * jc1, const char* jc2){
+
+bool add_pedal_effect(char pedal, const char * jc1, const char* jc2){
 
 #ifdef VERBOSE
   Log("add_pedal_effect(%c, %s, %s)\n", pedal, jc1, jc2);
@@ -326,20 +330,29 @@ void add_pedal_effect(char pedal, const char * jc1, const char* jc2){
     break;
   }
 
-  assert(pc != NULL);
+  if(!pc){
+    Log("%s:%d: Error\n", __FILE__, __LINE__);
+    return false;
+  }
 
   pc->n_connections++;
   pc->connections =
     realloc(pc->connections,
 	    pc->n_connections * (sizeof (struct jack_connection)));
-  assert(pc->connections);
+  if(! pc->connections){
+    Log("%s:%d: Error\n", __FILE__, __LINE__);
+    return false;
+  }
   unsigned jc1_len = strlen(jc1)+1;
   unsigned jc2_len = strlen(jc2)+1;
 
   // Sanity check
   unsigned MAX_COMMAND = 1024;
-  assert(jc1_len < MAX_COMMAND);
-  assert(jc2_len < MAX_COMMAND);
+  if(jc1_len >= MAX_COMMAND ||
+     jc2_len >= MAX_COMMAND){
+    Log("%s:%d: Error\n", __FILE__, __LINE__);
+    return false;
+  }
 
   pc->connections[pc->n_connections - 1].ports[0] =
     malloc(sizeof (char)  * jc1_len);
@@ -349,26 +362,38 @@ void add_pedal_effect(char pedal, const char * jc1, const char* jc2){
   
   strncpy(pc->connections[pc->n_connections - 1].ports[0], jc1, jc1_len);
   strncpy(pc->connections[pc->n_connections - 1].ports[1], jc2, jc2_len);
-
+  return true;
 }
 
 /* Called on setup and when signaled to set up pedal effects, this is
    one line in the configuration file. Pedals are defined by jack
    plumbing.  Each line in a pedal file is the destination (src/sink)
    of a jack pipe.  This sets up those pipes 
+
+   Return true if everything went well and false 
+
 */
-void process_line(char pedal, char * line){
+bool process_line(char pedal, char * line){
   const char * src_port, * dst_port;
   char * tok = strtok(line, " ");
-  tok = strtok(NULL, " ");
   src_port = tok;
-  assert(src_port);
+  if(!src_port){
+    Log("%s:%d: Error  No src_port  src_port(%s) line(%s)\n", __FILE__, __LINE__, src_port, line);
+    return false;
+  }
   dst_port = strtok(NULL, " ");
-  assert(dst_port);
+  if(!dst_port){
+    Log("%s:%d: Error  No dst_port  dst_port(%s) line(%s)\n", __FILE__, __LINE__, dst_port, line);
+    return false;
+  }
 #ifdef VERBOSE
   Log("%s:%d: Load pedal: %c %s %s\n", __FILE__, __LINE__, pedal, src_port, dst_port);
 #endif
-  add_pedal_effect(pedal, src_port, dst_port);
+  if(!add_pedal_effect(pedal, src_port, dst_port)){
+    Log("%s:%d: Error\n", __FILE__, __LINE__);
+    return false;
+  }
+  return true;
 }
 
 /* Disconnect jack pipes to stdin and stdout so the pedal can replace
@@ -398,7 +423,7 @@ void clear_jack(){
  * the description of what this pedal (passed in `p`) does from
  * PEDALS/${p}
  */
-int load_pedal(char p){
+bool load_pedal(char p){
   int i;
   FILE * fd;
   char  scriptname[PATH_MAX + 1];
@@ -417,10 +442,13 @@ int load_pedal(char p){
   case 'C':
     break;
   default:
-    assert(0);
-    break;
+    Log("%s:%d: Error\n", __FILE__, __LINE__);
+    return false;
   }
-  assert(snprintf(scriptname, PATH_MAX, "%s/%c", config_dir, pedal) < PATH_MAX);
+  if(snprintf(scriptname, PATH_MAX, "%s/%c", config_dir, pedal) == PATH_MAX){
+    Log("%s:%d: Error\n", __FILE__, __LINE__);
+    return false;
+  }
 
 #ifdef VERBOSE
   Log( "Opening script: %s\n", scriptname);
@@ -433,7 +461,8 @@ int load_pedal(char p){
 #ifdef VERBOSE
     Log("Failed to open: '%s': %s\n", strerror(errno), scriptname); 
 #endif
-   return -1;
+    Log("%s:%d: Error\n", __FILE__, __LINE__);
+   return false;
   }
   i = 0;
   while((ch = fgetc(fd)) != EOF && i < LINE_MAX){  /* while(!feof(fd)){ */
@@ -446,7 +475,10 @@ int load_pedal(char p){
 
       if(line[i] == '\n'){
 	line[i] = '\0';
-	process_line(pedal, line);
+	if(!process_line(pedal, line)){
+	  Log("%s:%d: Error processing pedal %c\n", __FILE__, __LINE__, p);
+	  return false;
+	}
 	i = 0;
 
       }else{
@@ -463,7 +495,7 @@ int load_pedal(char p){
     Log("i: %d script: %s\n", i, scriptname);
     assert(i < LINE_MAX);
   }
-  return 0;
+  return true;
 }
 
 /* void jack_error_cb(const char * msg){ */
@@ -684,6 +716,7 @@ int main(int argc, char * argv[]) {
   // The keyboard/pedal
   int fd = get_foot_pedal_fd("1a86","e026");
   if(fd < 0){
+    Log("%s:%d: Error\n", __FILE__, __LINE__);
     return fd;
   }
   
