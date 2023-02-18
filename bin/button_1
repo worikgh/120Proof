@@ -1,0 +1,5 @@
+#!/bin/sh
+export Home120Proof=/home/patch/120Proof
+echo  120Proof > ${Home120Proof}/control
+# systemctl stop modep-mod-ui.service
+# sudo --preserve-env=Home120Proof -u patch   ${Home120Proof}/bin/button_1.pl
