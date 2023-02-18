@@ -458,11 +458,7 @@ sub read_turtle( $ ){
 
     ## Turtle is broken up by '.'
     my $input = join("", @lines);
-    # foreach my $key (keys %prefix_lines){
-    # 	my $prefix = $key;
-    # 	my $subject = $prefix_lines{$key};
-    # 	$input =~ s/$prefix:/$subject:/g;
-    # }
+
     my @input = split(' \.', $input);
     ## Process the ";" 
     my @semi_colon_processed = ();
