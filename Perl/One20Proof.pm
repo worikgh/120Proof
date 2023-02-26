@@ -523,8 +523,12 @@ sub process_lv2_turtle( $$ ) {
     ## Break up an effect name and port.  This we do a lot
     my $name_port = sub {
 	my $name_port = shift or die;
-	$name_port =~ /^(\S+)\/(\S+)/ or die "$fn: $name_port ";
-	return [$1, $2];
+	if($name_port =~ /^(\S+)\/(\S+)/){
+	    return [$1, $2];
+	}else{
+	    print "$pedal_board_name bad: $name_port\n";
+	    return undef;
+	}
     };
 
     ## Strip angle brackets from around a value.  We do this a lot as
@@ -723,15 +727,15 @@ sub process_lv2_turtle( $$ ) {
 
 	# Activation connections are connected to system:capture_N
 	if($tail[0]->[2] =~ /^capture_\d+$/){
-	    ## A connection rom th system input
-	    my $name_port = &$name_port($head[0]->[2]);
+	    ## A connection from the system input
+	    my $name_port = &$name_port($head[0]->[2]) or die;
 	    my $number = $name_number{$name_port->[0]};
 	    my $p = "system:$tail[0]->[2] effect_$number:$name_port->[1]";
 	    push(@jack_activation_pipes, $p);
 	    next;
 	}elsif($head[0]->[2] =~ /^playback_\d+$/){
 	    # Output pipe.  An internal pipe
-	    my $name_port = &$name_port($tail[0]->[2]);
+	    my $name_port = &$name_port($tail[0]->[2]) or die;
 	    my $number = $name_number{$name_port->[0]};
 	    my $p = "effect_$number:$name_port->[1] system:$head[0]->[2]";
 	    push(@jack_internal_pipes, $p);
@@ -739,10 +743,10 @@ sub process_lv2_turtle( $$ ) {
 	}
 
 	## This is an internal pipe
-	my $lhs_name_port = &$name_port($tail[0]->[2]);
+	my $lhs_name_port = &$name_port($tail[0]->[2]) or die;
 	my $lhs = "effect_".$name_number{$lhs_name_port->[0]}.":".
 	    $lhs_name_port->[1];
-	my $rhs_name_port = &$name_port($head[0]->[2]);
+	my $rhs_name_port = &$name_port($head[0]->[2]) or die;
 	my $rhs = "effect_".$name_number{$rhs_name_port->[0]}.":".
 	    $rhs_name_port->[1];
 	my $p = "$lhs $rhs";
