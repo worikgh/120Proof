@@ -726,7 +726,12 @@ sub process_lv2_turtle( $$ ) {
 	scalar @head == 1 or  die "Pipeo $pipe is bad";
 
 	# Activation connections are connected to system:capture_N
-	if($tail[0]->[2] =~ /^capture_\d+$/){
+	if($tail[0]->[2] =~ /^capture_\d+$/ and 
+	       $head[0]->[2] =~ /^playback_\d+$/){
+	    ## A connection directly from capture to playback
+	    push(@jack_activation_pipes, "$tail[0]->[2]:$head[0]->[2]");
+	    next;
+	}elsif($tail[0]->[2] =~ /^capture_\d+$/ ){
 	    ## A connection from the system input
 	    my $name_port = &$name_port($head[0]->[2]) or die;
 	    my $number = $name_number{$name_port->[0]};
@@ -824,18 +829,22 @@ sub get_modep_simulation_commands( $ ){
     foreach my $ex (@commands){
 	my %ex = %$ex;
 	my $pedal_board_name = $ex{pedal_board_name} or die;
-	foreach my $effect_name (sort keys %{$ex{effects}}){
+	my @effect_keys = sort keys %{$ex{effects}};
+	push @jack_initial, @{$ex{jack_internal_pipes}} or
+	    die $pedal_board_name;
+	my @act_pipes = @{$ex{jack_activation_pipes}}; 
+	$jack_activation{$pedal_board_name} = 
+	    \@act_pipes or die $pedal_board_name;
+	foreach my $effect_name (@effect_keys){
 	    my $add = $ex{effects}->{$effect_name}->{add} or die $effect_name;
+
 	    map{$number_name{$_} = $ex{number_name}->{$_}} keys %{$ex{number_name}};
+
 	    push @add_mod_host, $ex{effects}->{$effect_name}->{add} or
 		die $effect_name;
 	    push @param_set, @{$ex{effects}->{$effect_name}->{param}} or
 		die $effect_name;
-	    push @jack_initial, @{$ex{jack_internal_pipes}} or
-		die $effect_name;
-	    my @act_pipes = @{$ex{jack_activation_pipes}}; 
-	    $jack_activation{$pedal_board_name} = 
-		\@act_pipes or die $effect_name;
+
 	    
 	}
     }
