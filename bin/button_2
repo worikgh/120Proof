@@ -1,0 +1,4 @@
+#!/bin/sh
+export Home120Proof=/home/patch/120Proof
+echo  MODEP > ${Home120Proof}/control
+
