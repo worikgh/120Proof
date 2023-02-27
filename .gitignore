@@ -44,3 +44,5 @@ pedal/120Proofpd
 */.gdb_history
 pedal/PEDALS/.PEDAL
 pedal/PEDALS/*
+control
+etags_cmd
