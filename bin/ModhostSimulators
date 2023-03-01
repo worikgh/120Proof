@@ -96,7 +96,7 @@ sub handle_jack( $ ){
 ## `mod_host` is passed an array of commands to send to `mod-host`
 sub handle_mh_cmd( $$ ) {
     my ($sock, $cmd) = @_;
-    warn "handle_mh_cmd(SOCK, $cmd)\n";
+    # warn "handle_mh_cmd(SOCK, $cmd)\n";
     print $sock "$cmd\n";
 
     my $result = '';
@@ -105,7 +105,7 @@ sub handle_mh_cmd( $$ ) {
     my ($nfound, $timeleft) =
 	select(my $rout = $r, my $wout = undef, my $eout = undef,
 	       0.5);
-    warn "handle_mh_cmd: \$nfound $nfound\n";
+    # warn "handle_mh_cmd: \$nfound $nfound\n";
     if($nfound){
 	my $os = 0;
 	while(my $c = read($sock, $res, 1)){
@@ -116,7 +116,7 @@ sub handle_mh_cmd( $$ ) {
 	    $result .=  $res;
 	}
     }
-    warn "handle_mh_cmd: \$result $result\n";
+    # warn "handle_mh_cmd: \$result $result\n";
     if($result =~ /resp ([\-0-9]+)/){
 	# If status is a negative number an error has
 	# occurred. The table below shows the number of each
@@ -175,7 +175,7 @@ sub mod_host( $ ){
     my $failed = 0;
     
     foreach my $cmd (@cmds){
-	warn "Process: \$cmd($cmd) \n";
+	# warn "Process: \$cmd($cmd) \n";
 	# print STDERR  "mod-host: $cmd\n";
 	# if(!$failed){
 	    &handle_mh_cmd($sock, $cmd);
@@ -183,9 +183,9 @@ sub mod_host( $ ){
 	## If command was an `add` check the effects got added
 	if($cmd =~ /^add.+\s(\d+)/){
 	    # print STDERR "$cmd\n";
-	    warn "Before jack_lsp\n";
+	    # warn "Before jack_lsp\n";
 	    my $jack = grep{/effect_$1/} `jack_lsp`;
-	    warn "after jack_lsp\n";
+	    # warn "after jack_lsp\n";
 	    if(!$jack){
 		print STDERR "$cmd: effect_$1 failed\n";
 		$failed = 1;
