@@ -40,6 +40,40 @@ sub stack_trace {
     wantarray and return @frames;
     return join("\n", @frames)."\n";
 }
+sub report_hash {
+    my $hashref = shift or die;
+    ref $hashref eq 'HASH' or die ;
+    my $prefix = shift;
+    defined($prefix) or $prefix = "";
+    foreach my $key (sort keys %$hashref){
+	my $next_prefix = "$prefix\t$key\t";
+	$next_prefix =~ s/^\s*//;
+	# print("$next_prefix\n");
+	my $value = $hashref->{$key};
+	if(ref($value) eq ''){
+	    print("$next_prefix$value\n");
+	}elsif(ref($value) eq 'HASH'){
+	    &report_hash($value, $next_prefix);
+	}elsif(ref($value) eq 'ARRAY'){
+	    &report_array($value, $next_prefix);
+	}
+    }
+}
+sub report_array( $$ ) {
+    my $arrayref = shift or die;
+    ref $arrayref eq 'ARRAY' or die ;
+    my $prefix = shift;
+    defined($prefix) or $prefix = "";
+    foreach my $elem (@$arrayref){
+	if(ref($elem) eq ''){
+	    print("$prefix$elem\n");
+	}elsif(ref($elem) eq 'HASH'){
+	    &report_hash($elem, $prefix);
+	}elsif(ref($elem) eq 'ARRAY'){
+	    &report_array($elem, $prefix);
+	}
+    }
+}
 
 ## Kill whatsoever process, owned by us, holds a port
 sub kill_port( $ ) {
@@ -915,7 +949,6 @@ sub get_yoshimi {
     chomp $result;
     return $result;
 }
-
 
 
 1;
