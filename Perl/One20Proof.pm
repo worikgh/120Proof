@@ -405,7 +405,77 @@ sub test_jack_connection( $$ ) {
     return 0;
 }
 
+sub all_jack_connections {
+    my @jack_lsp = `jack_lsp -tc`;
+    my @result = ();
 
+    ## Where connection is from
+    my $lhs = undef;
+    ## What it is connected to
+    my @rhs = ();
+
+    foreach my $l(@jack_lsp){
+	chomp $l;
+
+	## Pipes are arranged so for one LHS there are one or more RHS.
+	##
+	## The lines have three types:
+	## 1. Name the LHS. Line starts with no white space
+	## 2. Name a RHS.  Line starts with three spaces
+	## 3. Kind of pipe.  Can be audio or MIDI
+	## Herein only do audio Jack pipes.
+
+	## LHS: TODO: Is pipe name always non-white space only?
+	if($l =~ /^(\S+)$/){
+	    $lhs = $1;
+	    next;
+	}
+
+	## A RHS
+	if($l =~ /^   (\S+)$/){
+	    push(@rhs, $1);
+	    next;
+	}
+
+	## Type of pipe.  Finished 
+	if($l =~ /^\t(.+)/){
+	    my $type_dfn = $1;
+	    if($type_dfn =~ /audio/){
+		@rhs and push(@result, map{"$lhs $_"} @rhs);
+	    }elsif($type_dfn =~ /midi/){
+		## Do nothing
+	    }
+	    $lhs = undef;
+	    @rhs = ();
+	    next;	    
+	}	    
+	die $l;
+    }
+
+    return @result;
+}
+
+## Handle a connecet or disconnect jack command
+sub handle_jack( $ ){
+    ## Passed a Jack command execute it.  There are two: "connect"
+    ## and "disconnect"
+    my $cmd = shift or die;
+    # warn "$cmd ";
+    if($cmd =~ /^connect (\S+)\s+(\S+)\s*$/){
+	## Commanded to make a connection.  Check first if it exists
+	## and there is nothing to do
+	if( ! &One20Proof::test_jack_connection($1, $2)){
+	    # print STDERR "connect $1\t$2\n";
+	    print `jack_connect $1 $2`;
+	}
+    }elsif($cmd =~ /^disconnect (\S+)\s+(\S+)\s*$/){
+	if(  &One20Proof::test_jack_connection($1, $2)){
+	    print `jack_disconnect $1 $2`;
+	}
+    }
+}
+
+## Remove all jack effects
 ## Musical Instruments.
 
 sub initialise_yoshimi( $$ ) {

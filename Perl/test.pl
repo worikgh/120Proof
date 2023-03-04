@@ -27,6 +27,11 @@ sub test_all {
     print "Passed all tests\n";
 }
 
+
+sub test_all_jack_connections {
+    my @jack_connections = &One20Proof::all_jack_connections;
+    print join("\n", @jack_connections)."\n";    
+}
 sub test_process_lv2_turtle {
 
     my $fn = '/var/modep/pedalboards/Test.pedalboard/Test.ttl';
