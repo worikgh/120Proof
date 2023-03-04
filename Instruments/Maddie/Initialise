@@ -55,4 +55,5 @@ warn "Before IninitialiseMidi";
 print STDERR `$ENV{Home120Proof}/bin/InitialiseMidi $ENV{Home120Proof}/Instruments/Maddie/midi.cfg`;
 
 ## Set up foot pedals
+&One20Proof::initialise_pedals(qw|Maddie_A Maddie_B Maddie_C|);
 
