@@ -742,7 +742,6 @@ int main(int argc, char * argv[]) {
     retval = select(fd+1, &rfds, NULL, NULL, &tv);
 
     if(retval < 0){
-      Log("select Error %s\n", strerror(errno));
 
       // TODO: What is this constant: 4?
       if(errno == 4){
