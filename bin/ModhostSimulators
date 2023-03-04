@@ -32,6 +32,9 @@ my @add = @{$modep_simulation_commands{add}};
 my @param = @{$modep_simulation_commands{param}};
 my @jack_initial = @{$modep_simulation_commands{jack_initial}};
 my %jack_activation =  %{$modep_simulation_commands{jack_activation}};
+open(my $fh_device_map, ">$ENV{Home120Proof}/Device_Map.txt") or die $!;
+print $fh_device_map join "\n", map{$modep_simulation_commands{number_name}->{$_}."\t=>\teffect_".$_} sort{$a<=>$b} keys %{$modep_simulation_commands{number_name}};
+close $fh_device_map or die $!;
 
 ## Create the files of pedal instructions
 foreach my $p (sort keys %jack_activation){
@@ -155,9 +158,13 @@ sub handle_mh_cmd( $$ ) {
 	if($1 < 0 and $1 != -2){
 	    print  STDERR ">> FAIL $cmd >>  $result\n";
 	}else{
-	    print  STDERR ">> SUCCESS $cmd >>  $result\n";
+	    # print  STDERR ">> SUCCESS $cmd >>  $result\n";
+	    return 1;
 	}
+    }else{
+	print STDERR ">> Unexpected result: $result ";
     }
+    return 0;
 }    
 sub mod_host( $ ){
     my $cmds = shift or die;
@@ -177,9 +184,9 @@ sub mod_host( $ ){
     foreach my $cmd (@cmds){
 	# warn "Process: \$cmd($cmd) \n";
 	# print STDERR  "mod-host: $cmd\n";
-	# if(!$failed){
+	if(!$failed){
 	    &handle_mh_cmd($sock, $cmd);
-	# }
+	}
 	## If command was an `add` check the effects got added
 	if($cmd =~ /^add.+\s(\d+)/){
 	    # print STDERR "$cmd\n";
