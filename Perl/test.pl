@@ -27,6 +27,10 @@ sub test_all {
     print "Passed all tests\n";
 }
 
+sub test_list_mod_host_simulators{
+    print join (", ", &One20Proof::list_mod_host_simulators)."\n";
+}
+		
 
 sub test_all_jack_connections {
     my @jack_connections = &One20Proof::all_jack_connections;

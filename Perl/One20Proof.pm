@@ -877,9 +877,7 @@ sub process_lv2_turtle( $$ ) {
     
 }
 
-### MIDI handling
-
-### Handling pedal definitions
+### List all the pedal definitions
 sub list_pedals {
     my $pedal_dir =  &get_pedal_dir;
     opendir(my $dir, $pedal_dir) or die $!;
@@ -891,6 +889,14 @@ sub list_pedals {
     wantarray and return @pedals;
     return join("\n", @pedals);
 }
+
+### List the mod-host simulators.  Assume every simulator has a jack
+### pipe of form: /effect_\d+/
+sub list_mod_host_simulators {
+    my %result = map{/effect_(\d+)/ and $1 => 1} grep {/effect_\d+/} `jack_lsp`;
+    return sort {$a<=>$b} keys %result;
+}
+    
 
 ## The mod-host and jack commands for all the pedal boards
 sub get_modep_simulation_commands( $ ){
