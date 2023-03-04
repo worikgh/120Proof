@@ -48,3 +48,4 @@ control
 etags_cmd
 Device_Map.txt
 bin/test_ms.pl
+pedal/PEDALS/*
