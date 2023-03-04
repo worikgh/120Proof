@@ -1,7 +1,7 @@
 #!/usr/bin/perl -w
 use strict;
 
-use lib(".");
+use lib("$ENV{'Home120Proof'}/Perl");
 use One20Proof;
 
 
