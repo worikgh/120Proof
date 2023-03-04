@@ -46,3 +46,5 @@ pedal/PEDALS/.PEDAL
 pedal/PEDALS/*
 control
 etags_cmd
+Device_Map.txt
+bin/test_ms.pl
