@@ -208,7 +208,7 @@ foreach my $name (sort @names){
 	    if($name_line =~ /name:\s(.+)/){
 		$name = $1;
 	    }else{
-		warn "$name_line \n";
+		warn "Bad name_line, no board name: $name_line \n";
 	    }
 	    push(@commands, [$board, \@board_commands]);
 	    $prefix++;

@@ -27,6 +27,10 @@ sub test_all {
     print "Passed all tests\n";
 }
 
+sub test_remove_all_mod_host_simulators{
+    print  &One20Proof::remove_all_mod_host_simulators."\n";
+}
+
 sub test_list_mod_host_simulators{
     print join (", ", &One20Proof::list_mod_host_simulators)."\n";
 }
@@ -95,7 +99,7 @@ sub test_kill_port {
     One20Proof::kill_port($PORT);
 }
 sub test_get_modep_simulation_commands {
-    my %result = One20Proof::get_modep_simulation_commands([]);
+    my %result = &One20Proof::get_modep_simulation_commands([]);
     print join("\n", @{$result{add}})."\n";
     print join("\n", @{$result{param}})."\n";
     print join("\n", @{$result{jack_initial}})."\n";

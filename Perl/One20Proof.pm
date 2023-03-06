@@ -1,4 +1,5 @@
 package One20Proof;
+use IO::Socket::INET;
 use IPC::Open3;
 use File::Find;
 use POSIX; # "setsid";
@@ -24,6 +25,55 @@ sub blank_lpx {
     my $lpx_blank_screen = &One20Proof::get_lpx_blank_screen();
     -x $lpx_blank_screen or die "$!: $lpx_blank_screen";
     `$lpx_blank_screen`;
+}
+
+## From select(2) section of perlfunc
+sub fhbits {
+    my @fhlist = @_;
+    my $bits = "";
+    for my $fh (@fhlist) {
+	vec($bits, fileno($fh), 1) = 1;
+    }
+    return $bits;
+}
+
+## Remove all mod-host simulators
+sub remove_all_mod_host_simulators {
+    my $port = shift;
+    defined($port) or $port = $MODHOST_PORT;
+    my @simulators = &One20Proof::list_mod_host_simulators;
+    my $result = "";
+    # my ( $name,   $passwd,   $uid,       $gid,     $quota,
+    # 	 $comment,  $gcos,     $dir,       $shell,   $expire ) = getpwuid($$);
+    # warn "Here: $$ $name ";
+    my $sock = new IO::Socket::INET( PeerAddr => 'localhost',
+				     PeerPort => $port,
+				     Proto => 'tcp') or
+	die "$!";
+
+    foreach my $sim (@simulators){
+	my $cmd = "remove $sim";
+	print $sock "$cmd\n";
+	my $cmd_result = '';
+	my $r = &One20Proof::fhbits($sock);
+	my $res = '';
+	my ($nfound, $timeleft) =
+	    select(my $rout = $r, my $wout = undef, my $eout = undef,
+		   0.5);
+	# warn "handle_mh_cmd: \$nfound $nfound\n";
+	if($nfound){
+	    my $os = 0;
+	    while(my $c = read($sock, $res, 1)){
+		if($c != 1 or
+		   ord($res) == 0){
+		    last;
+		}
+		$cmd_result .=  $res;
+	    }
+	}
+	$result .= "$cmd: $cmd_result\n";
+    }
+    return $result;
 }
 
 ## For debugging.  Not very useful
@@ -702,7 +752,7 @@ sub process_lv2_turtle( $$ ) {
     ## effects
     my @persistant_jack_pipes = ();
 
-    ## The input audio pipes .  Connecting these enables the effect
+    ## The input audio pipes, and output.  Connecting these enables the effect
     ## chain that makes up the pedal board.  (TODO: What about MIDI
     ## LV2 effects?)
     my @activation_jack_pipes = ();
@@ -847,7 +897,7 @@ sub process_lv2_turtle( $$ ) {
 	    my $name_port = &$name_port($tail[0]->[2]) or die;
 	    my $number = $name_number{$name_port->[0]};
 	    my $p = "effect_$number:$name_port->[1] system:$head[0]->[2]";
-	    push(@jack_internal_pipes, $p);
+	    push(@jack_activation_pipes, $p);
 	    next;
 	}
 
@@ -918,7 +968,7 @@ sub get_modep_simulation_commands( $ ){
     my @commands = ();
 
     foreach my $fn (@fn){
-	my %ex = One20Proof::process_lv2_turtle($fn, $index);
+	my %ex = &One20Proof::process_lv2_turtle($fn, $index);
 	$index = $ex{index};
 	push(@commands, \%ex);
     }

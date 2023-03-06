@@ -40,6 +40,7 @@ use One20Proof qw | $MODHOST_PORT |;
 ## TODO Make a configuration system for all the executables that might
 ## be involved in 120Proof.
 
+## Debug with: o inhibit_exit=0
 my $lpx_control = &One20Proof::get_lpx_controll;
 my $lpx_manager = &One20Proof::get_lpx_manager;
 my $lpx_scale = &One20Proof::get_lpx_scale;
@@ -60,7 +61,18 @@ my $yoshimi = &One20Proof::get_yoshimi;
 &One20Proof::pkill($lpx_control);
 &One20Proof::pkill($lpx_manager);
 &One20Proof::pkill($lpx_scale);
-&One20Proof::pkill($mod_host);
+
+if(`pgrep -f $mod_host`){
+    ## Need to shutr down simulators before killing modep
+    &One20Proof::remove_all_mod_host_simulators;
+    while(&One20Proof::list_mod_host_simulators){
+	sleep 1;
+	print "Waiting for effects to go\n";
+    }
+    &One20Proof::pkill($mod_host);
+}else{
+    warn "No $mod_host running to kill\n";
+}
 &One20Proof::pkill($pd);
 &One20Proof::pkill($pedal_driver);
 &One20Proof::pkill($yoshimi);

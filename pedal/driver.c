@@ -127,6 +127,10 @@ int implement_pedal(char * pedal){
     char * src_port = pc->connections[i].ports[0];
     char * dst_port = pc->connections[i].ports[1];
     int r = 0;
+#ifdef VERBOSE
+    Log( "%s:%d connect %s %s \n",
+	   __FILE__, __LINE__, src_port, dst_port);
+#endif
     if(!connected(src_port, dst_port)){
       r = jack_connect(CLIENT, src_port, dst_port);
     }else{

@@ -27,7 +27,7 @@ my $pedal_dir = "$One20Proof::PEDAL_DIR";
 
 my $mod_host_port_p = $One20Proof::MODHOST_PORT;
 
-my %modep_simulation_commands = One20Proof::get_modep_simulation_commands(\@ignore_boards);
+my %modep_simulation_commands = &One20Proof::get_modep_simulation_commands(\@ignore_boards);
 my @add = @{$modep_simulation_commands{add}};
 my @param = @{$modep_simulation_commands{param}};
 my @jack_initial = @{$modep_simulation_commands{jack_initial}};
@@ -60,40 +60,39 @@ push(@mh_commands, @param);
 &mod_host(\@mh_commands);
 
 foreach my $jcmd ( @jack_initial ) {
-    
-    &handle_jack( "connect $jcmd" );
+    &One20Proof::handle_jack( "connect $jcmd" );
 }
 
 
 
 ## From select(2) section of perlfunc
-sub fhbits {
-    my @fhlist = @_;
-    my $bits = "";
-    for my $fh (@fhlist) {
-	vec($bits, fileno($fh), 1) = 1;
-    }
-    return $bits;
-}
+# sub fhbits {
+#     my @fhlist = @_;
+#     my $bits = "";
+#     for my $fh (@fhlist) {
+# 	vec($bits, fileno($fh), 1) = 1;
+#     }
+#     return $bits;
+# }
 
-sub handle_jack( $ ){
-    ## Passed a Jack command execute it.  There are two: "connect"
-    ## and "disconnect"
-    my $cmd = shift or die;
-    # warn "$cmd ";
-    if($cmd =~ /^connect (\S+)\s+(\S+)\s*$/){
-	## Commanded to make a connection.  Check first if it exists
-	## and there is nothing to do
-	if( ! &One20Proof::test_jack_connection($1, $2)){
-	    # print STDERR "connect $1\t$2\n";
-	    print `jack_connect $1 $2`;
-	}
-    }elsif($cmd =~ /^disconnect (\S+)\s+(\S+)\s*$/){
-	if(  &One20Proof::test_jack_connection($1, $2)){
-	    print `jack_disconnect $1 $2`;
-	}
-    }
-}
+# sub handle_jack( $ ){
+#     ## Passed a Jack command execute it.  There are two: "connect"
+#     ## and "disconnect"
+#     my $cmd = shift or die;
+#     # warn "$cmd ";
+#     if($cmd =~ /^connect (\S+)\s+(\S+)\s*$/){
+# 	## Commanded to make a connection.  Check first if it exists
+# 	## and there is nothing to do
+# 	if( ! &One20Proof::test_jack_connection($1, $2)){
+# 	    # print STDERR "connect $1\t$2\n";
+# 	    print `jack_connect $1 $2`;
+# 	}
+#     }elsif($cmd =~ /^disconnect (\S+)\s+(\S+)\s*$/){
+# 	if(  &One20Proof::test_jack_connection($1, $2)){
+# 	    print `jack_disconnect $1 $2`;
+# 	}
+#     }
+# }
 
 ## `handle_mh_cmd` and `mod_host` set up the LV2 simulators.
 ## `mod_host` is passed an array of commands to send to `mod-host`
@@ -103,7 +102,7 @@ sub handle_mh_cmd( $$ ) {
     print $sock "$cmd\n";
 
     my $result = '';
-    my $r = fhbits($sock);
+    my $r = &One20Proof::fhbits($sock);
     my $res = '';
     my ($nfound, $timeleft) =
 	select(my $rout = $r, my $wout = undef, my $eout = undef,
