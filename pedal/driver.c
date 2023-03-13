@@ -203,6 +203,7 @@ void deimplement_pedal(char * pedal, char * new_pedal){
     assert(0);
   }
 
+  assert(pc);
   for (unsigned i = 0; i < pc->n_connections; i++){
 
     // The names of the jack ports to disconnect
@@ -333,6 +334,7 @@ bool add_pedal_effect(char pedal, const char * jc1, const char* jc2){
     pc = & pedals.pedal_configC;
     break;
   }
+  Log("%s:%d:Here\n", __FILE__, __LINE__);
 
   if(!pc){
     Log("%s:%d: Error\n", __FILE__, __LINE__);
@@ -340,9 +342,11 @@ bool add_pedal_effect(char pedal, const char * jc1, const char* jc2){
   }
 
   pc->n_connections++;
+  Log("%s:%d:Here\n", __FILE__, __LINE__);
   pc->connections =
     realloc(pc->connections,
 	    pc->n_connections * (sizeof (struct jack_connection)));
+  Log("%s:%d:Here\n", __FILE__, __LINE__);
   if(! pc->connections){
     Log("%s:%d: Error\n", __FILE__, __LINE__);
     return false;
@@ -357,12 +361,14 @@ bool add_pedal_effect(char pedal, const char * jc1, const char* jc2){
     Log("%s:%d: Error\n", __FILE__, __LINE__);
     return false;
   }
+  Log("%s:%d:Here\n", __FILE__, __LINE__);
 
   pc->connections[pc->n_connections - 1].ports[0] =
     malloc(sizeof (char)  * jc1_len);
 
   pc->connections[pc->n_connections - 1].ports[1] =
     malloc(sizeof (char)  * jc2_len);
+  Log("%s:%d:Here\n", __FILE__, __LINE__);
   
   strncpy(pc->connections[pc->n_connections - 1].ports[0], jc1, jc1_len);
   strncpy(pc->connections[pc->n_connections - 1].ports[1], jc2, jc2_len);
@@ -663,6 +669,7 @@ int main(int argc, char * argv[]) {
 
   int retval, res;
   unsigned yalv;//, last_yalv;
+  /* What is KEY_MAX? */
   uint8_t key_b[KEY_MAX/8 + 1];
 
   struct sigaction act;
@@ -717,8 +724,9 @@ int main(int argc, char * argv[]) {
     exit (1);
   }
 
-  // The keyboard/pedal
+  // The keyboard/pedal :
   int fd = get_foot_pedal_fd("1a86","e026");
+ /* int fd = get_foot_pedal_fd("4353","4b4d"); */
   if(fd < 0){
     Log("%s:%d: Error\n", __FILE__, __LINE__);
     return fd;
@@ -763,13 +771,14 @@ int main(int argc, char * argv[]) {
       }
       return -1;
     }else if(retval == 0){
+      /* Time out */
 #ifdef VERBOSE
       Log("Heartbeat...");
 #endif
       continue;
     }
 
-    // Read the keyboard
+    /* Read the keyboard */
     memset(key_b, 0, sizeof(key_b));
     if(ioctl(fd, EVIOCGKEY(sizeof(key_b)), key_b) == -1){
       printf("IOCTL Error %s\n", strerror(errno));

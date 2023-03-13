@@ -3,7 +3,6 @@ name = "midi_driver"
 version = "0.1.0"
 edition = "2021"
 
-# See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
-
 [dependencies]
-midir = "0.9.1"
+regex = "1.7.1"
+subprocess = "0.2.9"
