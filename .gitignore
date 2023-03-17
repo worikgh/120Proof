@@ -50,3 +50,6 @@ Device_Map.txt
 bin/test_ms.pl
 pedal/PEDALS/*
 bin/test_*
+Cargo.lock
+.gdb_history
+target
