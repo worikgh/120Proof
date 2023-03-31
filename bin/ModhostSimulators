@@ -9,10 +9,7 @@ use One20Proof qw | $PEDAL_DIR $MODHOST_PORT |;
 
 ## Probably want to ignore some boards.  Pass the names of boards to
 ## ignore on the commandline
-my @ignore_boards = ();
-foreach my $ignored_board (@ARGV){
-    push(@ignore_boards, $ignored_board);
-}
+my @pedal_boards = &One20Proof::get_pedal_names();
 
 
 ## Get the directory to run in
@@ -27,7 +24,7 @@ my $pedal_dir = "$One20Proof::PEDAL_DIR";
 
 my $mod_host_port_p = $One20Proof::MODHOST_PORT;
 
-my %modep_simulation_commands = &One20Proof::get_modep_simulation_commands(\@ignore_boards);
+my %modep_simulation_commands = &One20Proof::get_modep_simulation_commands(\@pedal_boards);
 my @add = @{$modep_simulation_commands{add}};
 my @param = @{$modep_simulation_commands{param}};
 my @jack_initial = @{$modep_simulation_commands{jack_initial}};
@@ -43,7 +40,7 @@ foreach my $p (sort keys %jack_activation){
     ## a turtle format file
     $p =~ /(.+)\.ttl$/ or die $p;
     my $_f = $1;
-    grep {/$_f/} @ignore_boards and next;
+    grep {/$_f/} @pedal_boards or next;
     
     my $fn = "$pedal_dir/$p";
     $fn =~ s/\.ttl$// or die $p;
