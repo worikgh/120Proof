@@ -43,6 +43,6 @@ my $lpx_manager_cfg = "$ENV{'Home120Proof'}/Instruments/Axel/lpx_manager.cfg";
 #&One20Proof::run_daemon("$ENV{'Home120Proof'}/bin/InitialiseMidi $ENV{'Home120Proof'}/Instruments/Axel/midi.cfg ");
 print STDERR `$ENV{'Home120Proof'}/bin/InitialiseMidi $ENV{'Home120Proof'}/Instruments/Axel/midi.cfg`;
 
-&One20Proof::initialise_pedals(qw|Axel_A Axel_B Axel_C|);
+&One20Proof::initialise_pedals(qw|Axel_A Axel_B Axel_C Axel_D|);
 exit;
 # TODO: Get a way of of confirming MIDI set up correctly
