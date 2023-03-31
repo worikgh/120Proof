@@ -113,7 +113,7 @@ impl<T: std::fmt::Debug + Send> MIDICommunicator<T> {
     fn get_midi_connections<F>(
         other_name: &str,
         this_name: &str,
-        callback: Option<F>, // TODO: Make this an Option
+        callback: Option<F>,
         data: T,
         inout: u8,
     ) -> Result<

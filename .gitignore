@@ -53,3 +53,4 @@ bin/test_*
 Cargo.lock
 .gdb_history
 target
+120ProofPedal

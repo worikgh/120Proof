@@ -134,16 +134,16 @@ while(!`lsof -i:$PORT`){
 }
 
 ## IM: Start simulators MS (47)
-&One20Proof::run_daemon("$ENV{Home120Proof}/bin/ModhostSimulators Looper  ORGANS ORGANS_Sweet SEQUENCED_DRUMS Test ", 1);
+&One20Proof::run_daemon("$ENV{Home120Proof}/bin/ModhostSimulators ", 1);
 
 ## Set up the controls for the LPX
 &One20Proof::run_daemon($lpx_control);
 
-## Run the pedal
-&One20Proof::run_daemon("$pedal_driver $ENV{Home120Proof}/pedal/PEDALS ");
+# ## Run the pedal
+&One20Proof::run_daemon("$pedal_driver SINCO");
+warn "Started $pedal_driver";
 
 # Remove any nasty Jack MIDI connections
-
 &One20Proof::run_daemon("$ENV{Home120Proof}/bin/delete_jack_midi_connections delete");
 
 ## Check that they have been deleted

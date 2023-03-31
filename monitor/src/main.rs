@@ -214,7 +214,7 @@ fn main() -> io::Result<()> {
                 ),
                 None => new_data.summarise(None, &mut default_filter),
             };
-            if summary.len() > 0 {
+            if !summary.is_empty() {
                 // Maintain time
                 let now: String = Local::now().format("%Y-%m-%dT%H:%M:%S").to_string();
                 if now != cached_timestamp {
