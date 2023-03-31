@@ -9,7 +9,7 @@
 //! switch I am using.  One day this will be parameterised.  The
 //! pedals are identified by links 'A'..'D' that point to files with
 //! one jack pipe per line: `<source> <destination>`
-use std::collections::hash_map::HashMap;
+// use std::collections::hash_map::HashMap;
 use std::env::vars;
 use std::fs::read_dir;
 // use std::fs::ReadDir;
@@ -20,7 +20,7 @@ use std::io::BufRead;
 use std::io::BufReader;
 use std::io::Lines;
 pub struct PedalsAvailable {
-    table: HashMap<String, Vec<(String, String)>>,
+    //table: HashMap<String, Vec<(String, String)>>,
 }
 
 pub fn get_files_to_read() -> Vec<String> {
@@ -64,7 +64,7 @@ pub fn get_pipes_from_file(file_name: &str) -> Result<Vec<(String, String)>, Box
 impl PedalsAvailable {
     pub fn new() -> Self {
         Self {
-            table: HashMap::new(),
+            // table: HashMap::new(),
         }
     }
 }

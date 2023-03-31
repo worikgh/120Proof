@@ -4,6 +4,8 @@ version = "0.1.0"
 edition = "2021"
 
 [dependencies]
+alsa = "0.7.0"
 jack = "0.11.4"
+midir = "0.9.1"
 regex = "1.7.1"
 subprocess = "0.2.9"
