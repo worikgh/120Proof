@@ -27,6 +27,9 @@ sub test_all {
     print "Passed all tests\n";
 }
 
+sub test_get_pedal_names {
+    print join("\n", &One20Proof::get_pedal_names())."\n";
+}
 sub test_remove_all_mod_host_simulators{
     print  &One20Proof::remove_all_mod_host_simulators."\n";
 }

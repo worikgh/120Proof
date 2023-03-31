@@ -564,8 +564,8 @@ sub initialise_pedals( @ ) {
 	$die and die "'$name' is not a valid pedal";
     }
 
-    ## Three pedals: A, B, and C
-    scalar(@names) <= 3 or die "Too many pedals passed.  Can only have 3";
+    ## Four pedals: A, B, C, and D
+    scalar(@names) <= 4 or die "Too many pedals passed.  Can only have 4";
 
     my $pedalA = "$pedals_dir/A";
     my $pedalB = "$pedals_dir/B";
@@ -952,13 +952,13 @@ sub list_mod_host_simulators {
 sub get_modep_simulation_commands( $ ){
 
     my $ignore_ref = shift or die;
-    my @ignore_boards = @$ignore_ref;
+    my @pedal_boards = @$ignore_ref;
     
     ## Get the pedal board definitions
     my @fn = ();
     find(sub {$_ ne "manifest.ttl" and 
 		  /(.+)\.ttl/ and
-		  !grep{/$1/} @ignore_boards and
+		  grep{/$1/} @pedal_boards and
 		  push(@fn, $File::Find::name)}, 
 	 ( $MODEP_PEDALS ));
     # my @fn = map{
@@ -990,8 +990,7 @@ sub get_modep_simulation_commands( $ ){
 	my %ex = %$ex;
 	my $pedal_board_name = $ex{pedal_board_name} or die;
 	my @effect_keys = sort keys %{$ex{effects}};
-	push @jack_initial, @{$ex{jack_internal_pipes}} or
-	    die $pedal_board_name;
+	push @jack_initial, @{$ex{jack_internal_pipes}} ;
 	my @act_pipes = @{$ex{jack_activation_pipes}}; 
 	$jack_activation{$pedal_board_name} = 
 	    \@act_pipes or die $pedal_board_name;
@@ -1018,6 +1017,10 @@ sub get_modep_simulation_commands( $ ){
 }
 
 ### Getters for directories
+
+sub get_instruments_dir {
+    return "$ENV{Home120Proof}/Instruments";
+}
 
 sub get_bin {
     return "$ENV{Home120Proof}/bin";
@@ -1067,7 +1070,27 @@ sub get_pd {
 }
 
 sub get_pedal_driver {
-    return &get_bin()."/120Proofpd";
+    return &get_bin()."/120ProofPedal";
+}
+
+## Each instrument defined in "Instruments/" has up to four pedals.
+## Each pedal is named for the instrument with a "_A", "_B", "_C", or
+## "_D", suffixed.
+sub get_pedal_names {
+    my $instrument_dir = &get_instruments_dir();
+    opendir(my $dir, $instrument_dir) or die $!;
+    my @names = grep{$_ !~ /^\./} # No hidden directories
+    grep {$_ ne "xiz"} # A file to store Yoshimi definitions
+    grep {-d "$instrument_dir/$_"} # Only directories
+    readdir($dir);
+    my @res = ();
+    foreach my $name (@names){
+	push(@res, sprintf("%s_A", $name));
+	push(@res, sprintf("%s_B", $name));
+	push(@res, sprintf("%s_C", $name));
+	push(@res, sprintf("%s_D", $name));
+    }
+    return @res;
 }
 
 sub get_yoshimi {
