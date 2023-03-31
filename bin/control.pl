@@ -56,7 +56,7 @@ while(1){
 
     my $temp = `$temp_sense`;
     chomp $temp;
-    if($temp > 70.0){
+    if($temp > 75.0){
 	&$log("Too hot!! $temp \n");
     }
     if ($z =~ /120Proof/){
