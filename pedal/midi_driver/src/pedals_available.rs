@@ -11,7 +11,6 @@
 //! one jack pipe per line: `<source> <destination>`
 // use std::collections::hash_map::HashMap;
 use std::env::vars;
-use std::fs::read_dir;
 // use std::fs::ReadDir;
 // use std::path::Path;
 use std::error::Error;
@@ -19,24 +18,24 @@ use std::fs::File;
 use std::io::BufRead;
 use std::io::BufReader;
 use std::io::Lines;
-pub struct PedalsAvailable {
-    //table: HashMap<String, Vec<(String, String)>>,
-}
+// pub struct PedalsAvailable {
+//     //table: HashMap<String, Vec<(String, String)>>,
+// }
 
-pub fn get_files_to_read() -> Vec<String> {
-    let home_dir: String = match vars().find(|x| x.0 == "Home120Proof") {
-        Some(s) => s.1,
-        None => panic!("Home120Proof not in environment"),
-    };
-    let pedal_dir = format!("{home_dir}/pedal/PEDALS");
-    read_dir(pedal_dir)
-        .expect("Failed to read {pedal_dir}")
-        .filter(|x| {
-            x.as_ref().unwrap().file_name().len() == 1 && x.as_ref().unwrap().file_name() != "."
-        })
-        .map(|x| x.unwrap().file_name().into_string().unwrap())
-        .collect()
-}
+// pub fn get_files_to_read() -> Vec<String> {
+//     let home_dir: String = match vars().find(|x| x.0 == "Home120Proof") {
+//         Some(s) => s.1,
+//         None => panic!("Home120Proof not in environment"),
+//     };
+//     let pedal_dir = format!("{home_dir}/pedal/PEDALS");
+//     read_dir(pedal_dir)
+//         .expect("Failed to read {pedal_dir}")
+//         .filter(|x| {
+//             x.as_ref().unwrap().file_name().len() == 1 && x.as_ref().unwrap().file_name() != "."
+//         })
+//         .map(|x| x.unwrap().file_name().into_string().unwrap())
+//         .collect()
+// }
 
 /// Passed the name of a file that defines a pedal (use just the name,
 /// path will be added here) return the Jack pipe names used to
@@ -61,10 +60,10 @@ pub fn get_pipes_from_file(file_name: &str) -> Result<Vec<(String, String)>, Box
     }
 }
 
-impl PedalsAvailable {
-    pub fn new() -> Self {
-        Self {
-            // table: HashMap::new(),
-        }
-    }
-}
+// impl PedalsAvailable {
+//     pub fn new() -> Self {
+//         Self {
+//             // table: HashMap::new(),
+//         }
+//     }
+// }
