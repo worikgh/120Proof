@@ -35,12 +35,12 @@ if(!`pgrep lpx_control`){
 
 
 warn "Before Yoshimi";
-my $jack_name = 'MaddieLPX';
+my $jack_name = 'BeatriceLPX';
 &One20Proof::initialise_yoshimi($jack_name, $LPX_INSTR);
 
 warn "Before lpx_manager";
 my $lpx_manager = &One20Proof::get_lpx_manager;
-&One20Proof::run_daemon("$lpx_manager $ENV{Home120Proof}/Instruments/Maddie/lpx_manager.cfg  57 5 17 113 1 4 7 8 11  ");
+&One20Proof::run_daemon("$lpx_manager $ENV{Home120Proof}/Instruments/Beatrice/lpx_manager.cfg  57 5 17 113 1 4 7 8 11  ");
 
 # Wait until lpx_manager is running
 &One20Proof::wait_for_midi("120-Proof-MIDI-In-LPX") or
@@ -51,9 +51,9 @@ my $lpx_manager = &One20Proof::get_lpx_manager;
     die "120-Proof-MIDI-Out-PD not found";
 
 warn "Before IninitialiseMidi";
-#&One20Proof::run_daemon("$ENV{Home120Proof}/bin/InitialiseMidi $ENV{Home120Proof}/Instruments/Maddie/midi.cfg ");
-print STDERR `$ENV{Home120Proof}/bin/InitialiseMidi $ENV{Home120Proof}/Instruments/Maddie/midi.cfg`;
+#&One20Proof::run_daemon("$ENV{Home120Proof}/bin/InitialiseMidi $ENV{Home120Proof}/Instruments/Beatrice/midi.cfg ");
+print STDERR `$ENV{Home120Proof}/bin/InitialiseMidi $ENV{Home120Proof}/Instruments/Beatrice/midi.cfg`;
 
 ## Set up foot pedals
-&One20Proof::initialise_pedals(qw|Maddie_A Maddie_B Maddie_C  Maddie_D|);
+&One20Proof::initialise_pedals(qw|Beatrice_A Beatrice_B Beatrice_C  Beatrice_D|);
 

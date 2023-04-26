@@ -24,12 +24,13 @@ fn handle_midi(b: &[u8], connection_cache: &mut Vec<(String, String)>) {
         Ok(_) => (),
         Err(err) => panic!("Cannot handle midi: {err}"),
     };
-    println!("handle_midi {:?}", b);
+    // println!("handle_midi {:?}", b);
 }
 fn handle_midi_real(
     b: &[u8],
     connection_cache: &mut Vec<(String, String)>,
 ) -> Result<(), Box<(dyn std::error::Error + 'static)>> {
+    println!("handle_midi_real {:?}", b);
     let mut jack_connetions = JackConnections::new("client_name");
 
     let a = b[1];
