@@ -1,6 +1,6 @@
 #!/usr/bin/perl -w
 use strict;
-
+my $command = "./novation_lpx/target/release/lpx_colour";
 ## Flash the lights of the LPX pad
 
 my $d = 5;
@@ -25,7 +25,7 @@ while(1){
 	    }
 	}
     }
-    print `./lpx_colour $p $r $g $b 2>&1 > /dev/null`;
+    print `$command $p $r $g $b 2>&1 > /dev/null`;
     print sprintf("$p\t%03i %03i %03i\n", $r, $g, $b);
     select(undef, undef, undef, 0.3);
 }

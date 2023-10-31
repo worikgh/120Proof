@@ -4,11 +4,11 @@ use lib("$ENV{Home120Proof}/Perl");
 use One20Proof;
 
 
-## Instruments
-my $LPX_INSTR = "$ENV{Home120Proof}/Instruments/xiz/Simple Clonewheel.xiz";
+# ## Instruments
+# my $LPX_INSTR = "$ENV{Home120Proof}/Instruments/xiz/Simple Clonewheel.xiz";
 
 ## Pedals
-my @pedals = qw | DISTORTION Straight_GX Gx_Studio_Preamp |;
+my @pedals = qw | Sim Default bigmuff aaron |;
 
 my $TIME =  scalar(localtime()) ;
 warn "MARK $TIME ";
@@ -19,40 +19,40 @@ if($?){
     die "Failed waiting jack: $?\n";
 }
 
-## lpx_control must be running
-if(!`pgrep lpx_control`){
-    die "lpx_control must be running";
-}
+# ## lpx_control must be running
+# if(!`pgrep lpx_control`){
+#     die "lpx_control must be running";
+# }
 
 
 ## Set up the pedals
 &One20Proof::initialise_pedals(@pedals);
 
-## Kill these if they exist.  They would conflict with what is run here
-## TODO: Put all the executable files in a configuration file
-&One20Proof::pkill(&One20Proof::get_lpx_manager());
-&One20Proof::pkill(&One20Proof::get_yoshimi());
+# ## Kill these if they exist.  They would conflict with what is run here
+# ## TODO: Put all the executable files in a configuration file
+# &One20Proof::pkill(&One20Proof::get_lpx_manager());
+# &One20Proof::pkill(&One20Proof::get_yoshimi());
 
 
-warn "Before Yoshimi";
-my $jack_name = 'BeatriceLPX';
-&One20Proof::initialise_yoshimi($jack_name, $LPX_INSTR);
+# warn "Before Yoshimi";
+# my $jack_name = 'BeatriceLPX';
+# &One20Proof::initialise_yoshimi($jack_name, $LPX_INSTR);
 
-warn "Before lpx_manager";
-my $lpx_manager = &One20Proof::get_lpx_manager;
-&One20Proof::run_daemon("$lpx_manager $ENV{Home120Proof}/Instruments/Beatrice/lpx_manager.cfg  57 5 17 113 1 4 7 8 11  ");
+# warn "Before lpx_manager";
+# my $lpx_manager = &One20Proof::get_lpx_manager;
+# &One20Proof::run_daemon("$lpx_manager $ENV{Home120Proof}/Instruments/Beatrice/lpx_manager.cfg  57 5 17 113 1 4 7 8 11  ");
 
-# Wait until lpx_manager is running
-&One20Proof::wait_for_midi("120-Proof-MIDI-In-LPX") or
-    die "120-Proof-MIDI-In-LPX not found";
-&One20Proof::wait_for_midi("120-Proof-MIDI-Out-LPX") or
-    die "120-Proof-MIDI-Out-LPX not found";
-&One20Proof::wait_for_midi("120-Proof-MIDI-Out-PD") or
-    die "120-Proof-MIDI-Out-PD not found";
+# # Wait until lpx_manager is running
+# &One20Proof::wait_for_midi("120-Proof-MIDI-In-LPX") or
+#     die "120-Proof-MIDI-In-LPX not found";
+# &One20Proof::wait_for_midi("120-Proof-MIDI-Out-LPX") or
+#     die "120-Proof-MIDI-Out-LPX not found";
+# &One20Proof::wait_for_midi("120-Proof-MIDI-Out-PD") or
+#     die "120-Proof-MIDI-Out-PD not found";
 
 warn "Before IninitialiseMidi";
 #&One20Proof::run_daemon("$ENV{Home120Proof}/bin/InitialiseMidi $ENV{Home120Proof}/Instruments/Beatrice/midi.cfg ");
-print STDERR `$ENV{Home120Proof}/bin/InitialiseMidi $ENV{Home120Proof}/Instruments/Beatrice/midi.cfg`;
+# print STDERR `$ENV{Home120Proof}/bin/InitialiseMidi $ENV{Home120Proof}/Instruments/Beatrice/midi.cfg`;
 
 ## Set up foot pedals
 &One20Proof::initialise_pedals(qw|Beatrice_A Beatrice_B Beatrice_C  Beatrice_D|);

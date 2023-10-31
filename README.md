@@ -19,6 +19,20 @@ It uses MIDI, USB, and audio inputs.
 
 * [Raspberry Pi IV](https://www.raspberrypi.com/products/raspberry-pi-4-model-b/)
 
+## MIDI Pedal
+
+### Driver
+
+The pedal this was developed with is: `ID 4353:4b4d Jieli Technology SINCO`
+
+* The driver in in `pedal/midi_pedal`
+* Converts the four buttons into 'A',...,'D'
+* Looks for a configuration file in: $Home120Proof/pedal/PEDALS/
+* Named 'A', 'B', 'C', or 'D'
+
+
+
+
 ## Third Party Software
 
 * [Pure Data - `pd`](https://puredata.info/) 
@@ -34,6 +48,14 @@ It uses MIDI, USB, and audio inputs.
 * Clone this repo 
 
 * Set environment variable `Home120Proof` to point at the root of the repository  and run `bin/Mistress`.  Works first time....
+* Make links from $Home120Proof/bin
+120Proofpd -> /home/patch/120Proof/pedal/120Proofpd
+lpx_blank_screen -> /home/patch/120Proof/novation_lpx/target/release/lpx_blank_screen
+lpx_colour -> /home/patch/120Proof/novation_lpx/target/release/lpx_colour
+lpx_controll -> /home/patch/120Proof/novation_lpx/target/release/lpx_controll
+lpx_manager -> /home/patch/120Proof/novation_lpx/target/release/lpx_manager
+lpx_mode -> /home/patch/120Proof/novation_lpx/target/release/lpx_mode
+lpx_scale -> /home/patch/120Proof/novation_lpx/target/release/lpx_scale
 
 ## Configuration
 

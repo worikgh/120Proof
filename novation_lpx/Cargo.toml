@@ -1,5 +1,7 @@
 [workspace]
 
+resolver = "2"
+
 members = [
     "lpx_colour",
     "lpx_control",
@@ -9,3 +11,4 @@ members = [
     "lpx_scale",
     "lpx_blank_screen",
 ]
+

@@ -15,7 +15,7 @@ use std::error::Error;
 // use std::time;
 fn main() -> Result<(), Box<dyn Error>> {
     let mut midi_communicator1 = MIDICommunicator::new(
-        "Launchpad X:Launchpad X MIDI 1",
+        "Launchpad X:Launchpad X LPX MIDI In",
         "120-Proof-1",
         |_, _, _| {},
         (),
@@ -37,7 +37,7 @@ fn main() -> Result<(), Box<dyn Error>> {
             Ok(mode) => {
                 let msg: [u8; 9] = [240, 0, 32, 41, 2, 12, 0, mode, 247];
                 midi_communicator1.send(&msg).unwrap()
-            },
+            }
             Err(err) => eprintln!("Mode {}: {:?}", mode, err),
         };
     }

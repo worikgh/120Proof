@@ -9,6 +9,9 @@ use One20Proof qw | $PEDAL_DIR $MODHOST_PORT |;
 
 ## Probably want to ignore some boards.  Pass the names of boards to
 ## ignore on the commandline
+
+## Pedals are based on the names of the instruments.  Four for each
+## instrument
 my @pedal_boards = &One20Proof::get_pedal_names();
 
 

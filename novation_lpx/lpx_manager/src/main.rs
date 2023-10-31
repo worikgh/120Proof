@@ -174,7 +174,7 @@ struct DeviceNames {
 impl DeviceNames {
     fn new(cfg_fn: &str) -> io::Result<DeviceNames> {
         // Read a configuration file for midi_source_lpx, midi_sink_lpx, midi_sink_synth
-        let mut midi_source_lpx = "".to_string(); //"Launchpad X:Launchpad X MIDI 2".to_string();
+        let mut midi_source_lpx = "".to_string();
         let mut midi_sink_lpx = "".to_string();
         let mut midi_sink_synth = "".to_string();
 
@@ -195,13 +195,13 @@ impl DeviceNames {
             }
         }
         Ok(DeviceNames {
-            midi_source_lpx: midi_source_lpx, //"Launchpad X:Launchpad X MIDI 2",
+            midi_source_lpx, //"Launchpad X:Launchpad X MIDI 2",
             midi_source_lpx_120: "120-Proof-MIDI-In-LPX".to_string(),
 
-            midi_sink_lpx: midi_sink_lpx, //"Launchpad X:Launchpad X MIDI 1".to_string(),
+            midi_sink_lpx, //"Launchpad X:Launchpad X MIDI 1".to_string(),
             midi_sink_lpx_120: "120-Proof-MIDI-Out-LPX".to_string(),
 
-            midi_sink_synth: midi_sink_synth, //"Pure Data:Pure Data Midi-In 2".to_string(),
+            midi_sink_synth, //"Pure Data:Pure Data Midi-In 2".to_string(),
             midi_sink_synth_120: "120-Proof-MIDI-Out-PD".to_string(),
         })
     }

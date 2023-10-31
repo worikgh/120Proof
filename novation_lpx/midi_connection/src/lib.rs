@@ -136,6 +136,7 @@ impl<T: std::fmt::Debug + Send> MIDICommunicator<T> {
             // related to MIDI output
             let midi_out = midir::MidiOutput::new(this_name)?;
 
+            println!("other_name: {other_name}");
             let source_port = other_name.to_string().into_bytes();
 
             for (index, port) in midi_out.ports().iter().enumerate() {
@@ -143,6 +144,7 @@ impl<T: std::fmt::Debug + Send> MIDICommunicator<T> {
                 match midi_out.port_name(port) {
                     Err(_) => continue,
                     Ok(port_name) => {
+                        println!("port_name: {port_name}");
                         let port_name = port_name.into_bytes();
                         let mut accept: bool = true;
 
@@ -268,7 +270,7 @@ mod tests {
     }
     #[test]
     fn test_midi_connections() {
-        let port_names = MIDICommunicator::get_midi_inputs().unwrap();
+        let port_names: Vec<String> = MIDICommunicator::get_midi_inputs().unwrap();
         let midiConnections = MIDICommunicator::new(
             port_names.first().unwrap().as_str(),
             "120-Proof-Test",

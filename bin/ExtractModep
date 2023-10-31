@@ -98,7 +98,7 @@ sub process_file( $$ ) {
     ## Set up the effect in the way it was saved from mod-ui
 
     ## Tripples and their meanings
-    ## predicate == "lv2:prototype" => subject is an effect, objecty is the URL.
+    ## predicate == "lv2:prototype" => subject is an effect, object is the URL.
     ## ......... <DS1> lv2:prototype <http://moddevices.com/plugins/mod-devel/DS1> 
     ## _________ Use for the "add" command
     ## predicate == ingen:arc => object names a Jack connection.

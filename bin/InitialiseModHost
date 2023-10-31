@@ -1,23 +1,23 @@
 #!/usr/bin/perl -w
 use strict;
 use lib("$ENV{'Home120Proof'}/bin/");
-use Daemon;
+# use Daemon;
 my $PORT = 9116;
 
 if(`lsof -i :$PORT`){
     `echo quit | nc 127.0.0.1 $PORT`;
     for(0..5){
-	if(`lsof -i :$PORT`){
-	    warn "wait for port $PORT to be free";
-	    sleep 1;
-	}else{
-	    last;
-	}
+        if(`lsof -i :$PORT`){
+            warn "wait for port $PORT to be free";
+            sleep 1;
+        }else{
+            last;
+        }
     }
     `lsof -i :$PORT` and die "Port $PORT in use";
 }
 
-## Copy the definitiuons of mod-host simulator's made by modep front
+## Copy the definitions of mod-host simulator's made by modep front
 ## end
 print `$ENV{"Home120Proof"}/bin/ExtractModep`;
 
@@ -27,7 +27,7 @@ print `$ENV{"Home120Proof"}/bin/ExtractModep`;
 
 $ENV{LV2_PATH} = '/usr/modep/lv2';
 
-print `/home/patch/mod-host/mod-host -p $PORT`;
+print `/usr/bin/mod-host -p $PORT`;
 
 
 ## Wait for it to get started

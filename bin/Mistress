@@ -61,25 +61,26 @@ my $yoshimi = &One20Proof::get_yoshimi;
 &One20Proof::pkill($lpx_control);
 &One20Proof::pkill($lpx_manager);
 &One20Proof::pkill($lpx_scale);
-
-if(`pgrep -f $mod_host`){
-    ## Need to shutr down simulators before killing modep
+my $user = `whoami`;
+chomp $user;
+if(`pgrep -u $user-f $mod_host`){
+    ## Need to shut down simulators before killing modep
     &One20Proof::remove_all_mod_host_simulators;
     while(&One20Proof::list_mod_host_simulators){
-	sleep 1;
 	print "Waiting for effects to go\n";
+	sleep 0.5;
     }
     &One20Proof::pkill($mod_host);
 }else{
     warn "No $mod_host running to kill\n";
 }
-&One20Proof::pkill($pd);
-&One20Proof::pkill($pedal_driver);
-&One20Proof::pkill($yoshimi);
+# &One20Proof::pkill($pd);
+# &One20Proof::pkill($pedal_driver);
+# &One20Proof::pkill($yoshimi);
 
 ## Set up the LPX into programmer mode
-&One20Proof::run_daemon("$ENV{'Home120Proof'}/bin/lpx_mode 1", 1);
-&One20Proof::run_daemon("$ENV{Home120Proof}/bin/lpx_mode 127", 1);
+# &One20Proof::run_daemon("$ENV{'Home120Proof'}/bin/lpx_mode 1", 1);
+# &One20Proof::run_daemon("$ENV{Home120Proof}/bin/lpx_mode 127", 1);
 
 ## Clean up the modep commands file that will be written again by ExtractModep
 my $modep_command_fn = "$ENV{Home120Proof}/modep_commands.txt";
@@ -96,7 +97,7 @@ while(my $fn = readdir($dir)){
 }
 
 
-## If the argument KILL was passed (`mistree KILL`) then stop now.
+## If the argument KILL was passed (`Mistress KILL`) then stop now.
 my $arg = shift;
 if(defined($arg)){
     if($arg eq "KILL"){
@@ -128,6 +129,7 @@ if(`lsof -i:$PORT`){
 
 &One20Proof::run_daemon( "$mod_host -p $PORT ");
 
+sleep .1;
 while(!`lsof -i:$PORT`){
     sleep 1;
     warn "$?: Failed to start $mod_host on $PORT";

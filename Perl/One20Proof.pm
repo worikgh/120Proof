@@ -32,7 +32,7 @@ sub fhbits {
     my @fhlist = @_;
     my $bits = "";
     for my $fh (@fhlist) {
-	vec($bits, fileno($fh), 1) = 1;
+        vec($bits, fileno($fh), 1) = 1;
     }
     return $bits;
 }
@@ -47,31 +47,31 @@ sub remove_all_mod_host_simulators {
     # 	 $comment,  $gcos,     $dir,       $shell,   $expire ) = getpwuid($$);
     # warn "Here: $$ $name ";
     my $sock = new IO::Socket::INET( PeerAddr => 'localhost',
-				     PeerPort => $port,
-				     Proto => 'tcp') or
-	die "$!";
+                                     PeerPort => $port,
+                                     Proto => 'tcp') or
+        die "$!";
 
     foreach my $sim (@simulators){
-	my $cmd = "remove $sim";
-	print $sock "$cmd\n";
-	my $cmd_result = '';
-	my $r = &One20Proof::fhbits($sock);
-	my $res = '';
-	my ($nfound, $timeleft) =
-	    select(my $rout = $r, my $wout = undef, my $eout = undef,
-		   0.5);
-	# warn "handle_mh_cmd: \$nfound $nfound\n";
-	if($nfound){
-	    my $os = 0;
-	    while(my $c = read($sock, $res, 1)){
-		if($c != 1 or
-		   ord($res) == 0){
-		    last;
-		}
-		$cmd_result .=  $res;
-	    }
-	}
-	$result .= "$cmd: $cmd_result\n";
+        my $cmd = "remove $sim";
+        print $sock "$cmd\n";
+        my $cmd_result = '';
+        my $r = &One20Proof::fhbits($sock);
+        my $res = '';
+        my ($nfound, $timeleft) =
+            select(my $rout = $r, my $wout = undef, my $eout = undef,
+                   0.5);
+        # warn "handle_mh_cmd: \$nfound $nfound\n";
+        if($nfound){
+            my $os = 0;
+            while(my $c = read($sock, $res, 1)){
+                if($c != 1 or
+                   ord($res) == 0){
+                    last;
+                }
+                $cmd_result .=  $res;
+            }
+        }
+        $result .= "$cmd: $cmd_result\n";
     }
     return $result;
 }
@@ -81,11 +81,11 @@ sub stack_trace {
     my $frame = 0;
     my @frames = ();
     while(1){
-	my @frame = caller($frame++);
-	if(!@frame or @frame == 0 or $frame > 100){
-	    last;
-	}
-	push(@frames, "$frame[3] \@ $frame[1]:$frame[2]");
+        my @frame = caller($frame++);
+        if(!@frame or @frame == 0 or $frame > 100){
+            last;
+        }
+        push(@frames, "$frame[3] \@ $frame[1]:$frame[2]");
     }
     wantarray and return @frames;
     return join("\n", @frames)."\n";
@@ -96,17 +96,17 @@ sub report_hash {
     my $prefix = shift;
     defined($prefix) or $prefix = "";
     foreach my $key (sort keys %$hashref){
-	my $next_prefix = "$prefix\t$key\t";
-	$next_prefix =~ s/^\s*//;
-	# print("$next_prefix\n");
-	my $value = $hashref->{$key};
-	if(ref($value) eq ''){
-	    print("$next_prefix$value\n");
-	}elsif(ref($value) eq 'HASH'){
-	    &report_hash($value, $next_prefix);
-	}elsif(ref($value) eq 'ARRAY'){
-	    &report_array($value, $next_prefix);
-	}
+        my $next_prefix = "$prefix\t$key\t";
+        $next_prefix =~ s/^\s*//;
+        # print("$next_prefix\n");
+        my $value = $hashref->{$key};
+        if(ref($value) eq ''){
+            print("$next_prefix$value\n");
+        }elsif(ref($value) eq 'HASH'){
+            &report_hash($value, $next_prefix);
+        }elsif(ref($value) eq 'ARRAY'){
+            &report_array($value, $next_prefix);
+        }
     }
 }
 sub report_array( $$ ) {
@@ -115,13 +115,13 @@ sub report_array( $$ ) {
     my $prefix = shift;
     defined($prefix) or $prefix = "";
     foreach my $elem (@$arrayref){
-	if(ref($elem) eq ''){
-	    print("$prefix$elem\n");
-	}elsif(ref($elem) eq 'HASH'){
-	    &report_hash($elem, $prefix);
-	}elsif(ref($elem) eq 'ARRAY'){
-	    &report_array($elem, $prefix);
-	}
+        if(ref($elem) eq ''){
+            print("$prefix$elem\n");
+        }elsif(ref($elem) eq 'HASH'){
+            &report_hash($elem, $prefix);
+        }elsif(ref($elem) eq 'ARRAY'){
+            &report_array($elem, $prefix);
+        }
     }
 }
 
@@ -131,19 +131,19 @@ sub kill_port( $ ) {
     my @lsof = `lsof -i :$port -F`;
     my @pids = ();
     foreach my $l (@lsof){
-	chomp $l;
-	$l =~ /^p(\d+)/ or next;
-	my $pid = $1;
-	push(@pids, $pid);
+        chomp $l;
+        $l =~ /^p(\d+)/ or next;
+        my $pid = $1;
+        push(@pids, $pid);
     }
-	    
+    
     foreach my $pid (@pids){
-	my $cmd = "kill $pid";
-	my $output = `$cmd`;
-	if($?){
-	    ## `kill` failed
-	    die "$output: $!: Could not kill $pid";
-	}
+        my $cmd = "kill $pid";
+        my $output = `$cmd`;
+        if($?){
+            ## `kill` failed
+            die "$output: $!: Could not kill $pid";
+        }
     }
 }
 
@@ -158,12 +158,12 @@ sub pkill( $ ){
     defined($signal) or $signal = SIGTERM;
     my @pgrep = `pgrep -f $prog_name -u $ENV{USER} `;
     if(`pgrep -f $prog_name -u $ENV{USER} `){
-	`pkill --signal $signal -f $prog_name  -u $ENV{USER} `;
-	if($? && $? != 256){
-	    ## $? is eight bits.  256 is nine.
-	    warn join("\n", @pgrep);
-	    ## Could not kill the programme.  Do some diagnostics
-	    my $die_msg = "$?: Failed to kill $prog_name: ".scalar(stack_trace());
+        `pkill --signal $signal -f $prog_name  -u $ENV{USER} `;
+        if($? && $? != 256){
+            ## $? is eight bits.  256 is nine.
+            warn join("\n", @pgrep);
+            ## Could not kill the programme.  Do some diagnostics
+            my $die_msg = "$?: Failed to kill $prog_name: ".scalar(stack_trace());
 
 
             #  0 dev      device number of filesystem
@@ -182,18 +182,18 @@ sub pkill( $ ){
             # 12 blocks   actual number of system-specific blocks allocated
             #             on disk (often, but not always, 512 bytes each)
 
-	    
-	    warn "Info: Stating \$prog_name: $prog_name";
-	    my @stat = stat($prog_name);
-	    my $owner = getpwuid($stat[4]);
-	    warn "Info: Stating \$prog_name: $prog_name.  Owner: $owner";
-	    if($owner){
-		$die_msg .= " Owner: $owner ";
-	    }else{
-		$die_msg .= " No stat data for $prog_name";
-	    }
-	    die $die_msg;
-	}
+            
+            warn "Info: Stating \$prog_name: $prog_name";
+            my @stat = stat($prog_name);
+            my $owner = getpwuid($stat[4]);
+            warn "Info: Stating \$prog_name: $prog_name.  Owner: $owner";
+            if($owner){
+                $die_msg .= " Owner: $owner ";
+            }else{
+                $die_msg .= " No stat data for $prog_name";
+            }
+            die $die_msg;
+        }
     }
 }
 
@@ -215,36 +215,36 @@ sub all_midi_devices {
     ## Lines like "Connected To: 32:1" as [$device, $port, 32, 1]
 
     while(my $ac = shift(@aconnect_l)){
-	chomp $ac;
-	# client 132: 'yoshimi-UltimatePartyKeys' [type=user,pid=17053]
+        chomp $ac;
+        # client 132: 'yoshimi-UltimatePartyKeys' [type=user,pid=17053]
 
-	if($ac =~ /^client (\d+):\s\'(.+)\'\s\[type=\S+,(.+)\]$/){
-	    $card = $3;
-	    $device = $1;
-	    $device_name = $2;
-	    $port = undef;
-	    $port_name = undef;
-	    next;
-	}
-	if($ac =~ /^client/){
-	    $card = undef;
-	    $device = undef;
-	    $device_name = undef;
-	    $port = undef;
-	    $port_name = undef;
-	    next;
-	}
-	defined($device_name) or next;
-	
-	# 0 'Launchpad X MIDI 1'
-	if($ac =~ /^\s+(\d+)\s\'(.+)\'$/){
-	    defined($card) or die $ac;
-	    defined($device) or die $ac;
-	    $device_name or die $ac;
-	    $port = $1;
-	    $port_name = $2;
-	    $result{"$device:$port"} = "$device_name/$port_name $card";
-	}
+        if($ac =~ /^client (\d+):\s\'(.+)\'\s\[type=\S+,(.+)\]$/){
+            $card = $3;
+            $device = $1;
+            $device_name = $2;
+            $port = undef;
+            $port_name = undef;
+            next;
+        }
+        if($ac =~ /^client/){
+            $card = undef;
+            $device = undef;
+            $device_name = undef;
+            $port = undef;
+            $port_name = undef;
+            next;
+        }
+        defined($device_name) or next;
+        
+        # 0 'Launchpad X MIDI 1'
+        if($ac =~ /^\s+(\d+)\s\'(.+)\'$/){
+            defined($card) or die $ac;
+            defined($device) or die $ac;
+            $device_name or die $ac;
+            $port = $1;
+            $port_name = $2;
+            $result{"$device:$port"} = "$device_name/$port_name $card";
+        }
     }
 
     return %result;
@@ -268,68 +268,68 @@ sub list_all_midi_connections {
     ## Lines like "Connected To: 32:1" as [$device, $port, 32, 1]
     my @connections = ();
     while(my $ac = shift(@aconnect_l)){
-	chomp $ac;
-	# client 132: 'yoshimi-UltimatePartyKeys' [type=user,pid=17053]
-	if($ac =~ /^client (\d+):\s\'(.+)\'\s\[type=\S+,pid=(\d+)\]$/){
-	    $card = undef;
-	    $device = $1;
-	    $device_name = $2;
-	    $pid = $3;
-	    $port = undef;
-	    $port_name = undef;
-	    next;
-	}
-	
-	if($ac =~ /^client (\d+):\s\'(.+)\'\s\[type=\S+,card=(\d+)\]$/){
-	    $card = $3;
-	    $device = $1;
-	    $device_name = $2;
-	    $pid = undef;
-	    $port = undef;
-	    $port_name = undef;
-	    next;
-	}
-	if($ac =~ /^client/){
-	    $card = undef;
-	    $device = undef;
-	    $device_name = undef;
-	    $pid = undef;
-	    $port = undef;
-	    $port_name = undef;
-	    next;
-	}
-	defined($device_name) or next;
-	
-	# 0 'Launchpad X MIDI 1'
-	if($ac =~ /^\s+(\d+)\s\'(.+)\'$/){
-	    defined($card) or defined($pid) or die $ac;
-	    defined($device) or die $ac;
-	    $device_name or die $ac;
-	    $port = $1;
-	    $port_name = $2;
-	    next;
-	}
-	# Connecting To: 128:0[real:0], 130:1
-	if($ac =~ /^\s+Connecting To: (.+)/){
-	    my @targets = split(/,/, $1);
+        chomp $ac;
+        # client 132: 'yoshimi-UltimatePartyKeys' [type=user,pid=17053]
+        if($ac =~ /^client (\d+):\s\'(.+)\'\s\[type=\S+,pid=(\d+)\]$/){
+            $card = undef;
+            $device = $1;
+            $device_name = $2;
+            $pid = $3;
+            $port = undef;
+            $port_name = undef;
+            next;
+        }
+        
+        if($ac =~ /^client (\d+):\s\'(.+)\'\s\[type=\S+,card=(\d+)\]$/){
+            $card = $3;
+            $device = $1;
+            $device_name = $2;
+            $pid = undef;
+            $port = undef;
+            $port_name = undef;
+            next;
+        }
+        if($ac =~ /^client/){
+            $card = undef;
+            $device = undef;
+            $device_name = undef;
+            $pid = undef;
+            $port = undef;
+            $port_name = undef;
+            next;
+        }
+        defined($device_name) or next;
+        
+        # 0 'Launchpad X MIDI 1'
+        if($ac =~ /^\s+(\d+)\s\'(.+)\'$/){
+            defined($card) or defined($pid) or die $ac;
+            defined($device) or die $ac;
+            $device_name or die $ac;
+            $port = $1;
+            $port_name = $2;
+            next;
+        }
+        # Connecting To: 128:0[real:0], 130:1
+        if($ac =~ /^\s+Connecting To: (.+)/){
+            my @targets = split(/,/, $1);
 
-	    ## Filter outy the perverse target "128:0[real:0]"
-	    @targets = map{s/\s//g; $_} grep{$_ !~ /128:0]+$/} @targets;
-	    foreach my $t (@targets){
-		my $real = undef;
-		$t  =~ s/\[(.+)\:.+\]// and $real = $1; 
-		my @t = split(/\:/, $t);
-		scalar(@t) == 2 or die $ac;
+            ## Filter outy the perverse target "128:0[real:0]"
+            @targets = map{s/\s//g; $_} grep{$_ !~ /128:0]+$/} @targets;
+            foreach my $t (@targets){
+                my $real = undef;
+                $t  =~ s/\[(.+)\:.+\]// and $real = $1; 
+                my @t = split(/\:/, $t);
+                scalar(@t) == 2 or die $ac;
 
-		## FIXME What is device 128? (0-127 is MIDI range)
-		$t[0] == 128 and next;
-		
-		push(@connections, [$device, $port, $t[0], $t[1],
-				    $device_name, $port_name,
-				    defined($card) ? "card" : "programme",
-				    defined($card) ? $card : $pid]);
-	    }
-	}
+                ## FIXME What is device 128? (0-127 is MIDI range)
+                $t[0] == 128 and next;
+                
+                push(@connections, [$device, $port, $t[0], $t[1],
+                                    $device_name, $port_name,
+                                    defined($card) ? "card" : "programme",
+                                    defined($card) ? $card : $pid]);
+            }
+        }
     }
     return @connections;
 }
@@ -347,34 +347,34 @@ sub run_daemon( $;$ ) {
     defined(my $pid = fork())   or die "can't fork: $!";
     $wait and waitpid($pid, 0);
     if (!$pid){ 
-	
-	## Create logs for stderr and stdout
+        
+        ## Create logs for stderr and stdout
 
-	# Get the name of the command by separating it from the path
-	my $command_file = $_x;
-	$command_file =~ s/^.+\/([^\/]+)$/$1/;
-	
-	my $stderr_fn = $ENV{'Home120Proof'}."/output/$command_file.$$.err";
-	$stderr_fn =~ /\/\.err$/ and
-	    die "No file name for err: \$cmd: '$cmd' ".
-	    join("\n", stack_trace());
-	my $stdout_fn = $ENV{'Home120Proof'}."/output/$command_file.$$.out";
-	$stdout_fn =~ /\/\.out$/ and
-	    die "No file name for out: \$cmd: '$cmd' ".
-	    join("\n", stack_trace());
-	open(my $stderr, ">>", $stderr_fn) or
-	    die "$!: Cannot open $stderr_fn for append";
-	open(my $stdout, ">>", $stdout_fn) or
-	    die "$!: Cannot open $stdout_fn for append";
+        # Get the name of the command by separating it from the path
+        my $command_file = $_x;
+        $command_file =~ s/^.+\/([^\/]+)$/$1/;
+        
+        my $stderr_fn = $ENV{'Home120Proof'}."/output/$command_file.$$.err";
+        $stderr_fn =~ /\/\.err$/ and
+            die "No file name for err: \$cmd: '$cmd' ".
+            join("\n", stack_trace());
+        my $stdout_fn = $ENV{'Home120Proof'}."/output/$command_file.$$.out";
+        $stdout_fn =~ /\/\.out$/ and
+            die "No file name for out: \$cmd: '$cmd' ".
+            join("\n", stack_trace());
+        open(my $stderr, ">>", $stderr_fn) or
+            die "$!: Cannot open $stderr_fn for append";
+        open(my $stdout, ">>", $stdout_fn) or
+            die "$!: Cannot open $stdout_fn for append";
 
-	# Turn on autoflush
-	select($stdout);
-	$|++;
-	select($stderr);
-	$|++;
+        # Turn on autoflush
+        select($stdout);
+        $|++;
+        select($stderr);
+        $|++;
 
-	open3(undef, '>&' . fileno($stdout),  '>&' . fileno($stderr), $cmd);
-	exit;
+        open3(undef, '>&' . fileno($stdout),  '>&' . fileno($stderr), $cmd);
+        exit;
     }
     return $pid;
 }
@@ -389,18 +389,18 @@ sub wait_for_midi {
     my $loops = $time_out / $delay; ## How many loops until time out
     my $counter = 0;
     while(1){
-	$counter++;
-	if($counter > $loops){
-	    return 0;
-	}else{
-	    foreach my $client (grep{/^client \d+:\s+\'([^\']+)\'/} `aconnect -l`){
-		$client =~ /^client \d+:\s+\'([^\']+)\'/ or die ;
-		if($midi_name eq $1 ){
-		    return 1;
-		}
-	    }
-	}
-	select(undef, undef, undef, 0.05);
+        $counter++;
+        if($counter > $loops){
+            return 0;
+        }else{
+            foreach my $client (grep{/^client \d+:\s+\'([^\']+)\'/} `aconnect -l`){
+                $client =~ /^client \d+:\s+\'([^\']+)\'/ or die ;
+                if($midi_name eq $1 ){
+                    return 1;
+                }
+            }
+        }
+        select(undef, undef, undef, 0.05);
     }
 }    
 
@@ -414,15 +414,15 @@ sub wait_for_jack {
     my $loops = $time_out / $delay; ## How many loops until time out
     my $counter = 0;
     while(1){
-	$counter++;
-	if($counter > $loops){
-	    return 0;
-	}else{
-	    if(grep{/$jack_name/} `jack_lsp`){
-		return 1;
-	    }
-	}
-	select(undef, undef, undef, 0.05);
+        $counter++;
+        if($counter > $loops){
+            return 0;
+        }else{
+            if(grep{/$jack_name/} `jack_lsp`){
+                return 1;
+            }
+        }
+        select(undef, undef, undef, 0.05);
     }
 }
 
@@ -438,19 +438,19 @@ sub test_jack_connection( $$ ) {
     my $result = 0;
     my $state = "";
     foreach my $line (@jack_lsp){
-	chomp $line;
-	if($line =~ /^$lhs$/){
-	    $state = $lhs;
-	    next;
-	}elsif($line =~ /^\S/){
-	    $state = "";
-	    next;
-	}elsif($line =~ /^\s+$rhs$/){
-	    if($state){
-		return 1;
-		exit;
-	    }
-	}
+        chomp $line;
+        if($line =~ /^$lhs$/){
+            $state = $lhs;
+            next;
+        }elsif($line =~ /^\S/){
+            $state = "";
+            next;
+        }elsif($line =~ /^\s+$rhs$/){
+            if($state){
+                return 1;
+                exit;
+            }
+        }
     }
     return 0;
 }
@@ -465,41 +465,41 @@ sub all_jack_connections {
     my @rhs = ();
 
     foreach my $l(@jack_lsp){
-	chomp $l;
+        chomp $l;
 
-	## Pipes are arranged so for one LHS there are one or more RHS.
-	##
-	## The lines have three types:
-	## 1. Name the LHS. Line starts with no white space
-	## 2. Name a RHS.  Line starts with three spaces
-	## 3. Kind of pipe.  Can be audio or MIDI
-	## Herein only do audio Jack pipes.
+        ## Pipes are arranged so for one LHS there are one or more RHS.
+        ##
+        ## The lines have three types:
+        ## 1. Name the LHS. Line starts with no white space
+        ## 2. Name a RHS.  Line starts with three spaces
+        ## 3. Kind of pipe.  Can be audio or MIDI
+        ## Herein only do audio Jack pipes.
 
-	## LHS: TODO: Is pipe name always non-white space only?
-	if($l =~ /^(\S+)$/){
-	    $lhs = $1;
-	    next;
-	}
+        ## LHS: TODO: Is pipe name always non-white space only?
+        if($l =~ /^(\S+)$/){
+            $lhs = $1;
+            next;
+        }
 
-	## A RHS
-	if($l =~ /^   (\S+)$/){
-	    push(@rhs, $1);
-	    next;
-	}
+        ## A RHS
+        if($l =~ /^   (\S+)$/){
+            push(@rhs, $1);
+            next;
+        }
 
-	## Type of pipe.  Finished 
-	if($l =~ /^\t(.+)/){
-	    my $type_dfn = $1;
-	    if($type_dfn =~ /audio/){
-		@rhs and push(@result, map{"$lhs $_"} @rhs);
-	    }elsif($type_dfn =~ /midi/){
-		## Do nothing
-	    }
-	    $lhs = undef;
-	    @rhs = ();
-	    next;	    
-	}	    
-	die $l;
+        ## Type of pipe.  Finished 
+        if($l =~ /^\t(.+)/){
+            my $type_dfn = $1;
+            if($type_dfn =~ /audio/){
+                @rhs and push(@result, map{"$lhs $_"} @rhs);
+            }elsif($type_dfn =~ /midi/){
+                ## Do nothing
+            }
+            $lhs = undef;
+            @rhs = ();
+            next;	    
+        }	    
+        die $l;
     }
 
     return @result;
@@ -512,16 +512,16 @@ sub handle_jack( $ ){
     my $cmd = shift or die;
     # warn "$cmd ";
     if($cmd =~ /^connect (\S+)\s+(\S+)\s*$/){
-	## Commanded to make a connection.  Check first if it exists
-	## and there is nothing to do
-	if( ! &One20Proof::test_jack_connection($1, $2)){
-	    # print STDERR "connect $1\t$2\n";
-	    print `jack_connect $1 $2`;
-	}
+        ## Commanded to make a connection.  Check first if it exists
+        ## and there is nothing to do
+        if( ! &One20Proof::test_jack_connection($1, $2)){
+            # print STDERR "connect $1\t$2\n";
+            print `jack_connect $1 $2`;
+        }
     }elsif($cmd =~ /^disconnect (\S+)\s+(\S+)\s*$/){
-	if(  &One20Proof::test_jack_connection($1, $2)){
-	    print `jack_disconnect $1 $2`;
-	}
+        if(  &One20Proof::test_jack_connection($1, $2)){
+            print `jack_disconnect $1 $2`;
+        }
     }
 }
 
@@ -546,8 +546,8 @@ sub initialise_yoshimi( $$ ) {
     
 }
 
-## Initialise foot pedal files.  Three: A, B, and C.  Pass the names o
-## fthe pedal boards in the input array.  It must be three long
+## Initialise foot pedal files.  Four: A, B, C, and D.  Pass the names
+## of the pedal boards in the input array.  It must be four long
 sub initialise_pedals( @ ) {
     my @names = @_;
     my @pedals = &list_pedals;
@@ -556,41 +556,41 @@ sub initialise_pedals( @ ) {
     ## Make sure the pedals passed are all valid
     ## `@names` are the pedals we want. `@pedals` are the pedals available.
     foreach my $name (@names){
-	## Restet this if `$name` in @pedals
-	my $die = 1;
-	foreach my $pedal (@pedals){
-	    $pedal eq $name and $die = 0;
-	}
-	$die and die "'$name' is not a valid pedal";
+        ## Restet this if `$name` in @pedals
+        my $die = 1;
+        foreach my $pedal (@pedals){
+            $pedal eq $name and $die = 0;
+        }
+        $die and die "'$name' is not a valid pedal";
     }
 
     ## Four pedals: A, B, C, and D
-    scalar(@names) <= 4 or die "Too many pedals passed.  Can only have 4";
+    scalar(@names) == 4 or die "Must have exactly four pedals ";
 
     my $pedalA = "$pedals_dir/A";
     my $pedalB = "$pedals_dir/B";
     my $pedalC = "$pedals_dir/C";
+    my $pedalD = "$pedals_dir/D";
 
     !-e $pedalA or -l $pedalA or die "$pedalA is not a link";
     !-e $pedalB or -l $pedalB or die "$pedalB is not a link";
     !-e $pedalC or -l $pedalC or die "$pedalC is not a link";
+    !-e $pedalD or -l $pedalD or die "$pedalD is not a link";
 
     -e $pedalA and (unlink $pedalA or die "$!");
     -e $pedalB and unlink $pedalB;
     -e $pedalC and unlink $pedalC;
+    -e $pedalD and unlink $pedalD;
 
-    my @pedal_names = qw | A B C |;
+    my @pedal_names = qw | A B C D |;
     foreach my $name (@names){
 
-	## This will not fail.  Checked @names ,= 3 elements
-	my $p = shift(@pedal_names) or die;
+        ## This will not fail.  Checked @names
+        my $p = shift(@pedal_names) or die;
 
-	symlink("$pedals_dir/$name", "$pedals_dir/$p") or die
-	    "$pedals_dir/$name $pedals_dir/$p";
+        symlink("$pedals_dir/$name", "$pedals_dir/$p") or die
+            "$pedals_dir/$name $pedals_dir/$p";
     }
-
-    ## Signal the pedal driver
-    &One20Proof::pkill(&One20Proof::get_pedal_driver(), SIGHUP)
 }
 
 ## Read a ttl, Turtle, document
@@ -602,10 +602,10 @@ sub read_turtle( $ ){
 
     ## Create prefixs
     my %prefix_lines = map{
-	/^\@prefix (\S*):\s+<(\S*)> \.$/;
-	defined($1) or die "Prefix undefined";
-	defined($2) or die "Prefix subject undefined";
-	$1 => $2
+        /^\@prefix (\S*):\s+<(\S*)> \.$/;
+        defined($1) or die "Prefix undefined";
+        defined($2) or die "Prefix subject undefined";
+        $1 => $2
     } grep{/^\@prefix /} @lines;
     @lines = grep {$_ !~ /^\@prefix /} @lines;
     my @result = ();
@@ -617,44 +617,44 @@ sub read_turtle( $ ){
     ## Process the ";" 
     my @semi_colon_processed = ();
     foreach my $statement  (@input) {
-	if($statement =~ / ; /){
-	    ## There is a ' ; ' on this line
-	    ## The ; symbol may be used to repeat the subject of of triples that vary only in predicate and object RDF terms.semi_colon_processed
-	    $statement =~ s/^\s*(\S+)\s+(\S+)\s+([^;]*[^;\s])\s+;// or die $statement;
-	    my ($subject, $predicate, $object) = ($1, $2, $3);
-	    if($object =~ /\s/){
-		## Must be a quoted string
-		$object =~ /"(.+)"$/ or die $statement;
-	    }
-	    push(@semi_colon_processed, "$subject $predicate $object");
-	    ## This next line will break if and predicate or object
-	    ## has an embedded ';'
-	    while(1){
-		$statement =~ s/^\s*(\S+)\s+([^;]*[^;\s])\s*;?// or last;
-		defined($1) and defined($2) or last;
-		($predicate, $object) = ($1, $2);
-		push(@semi_colon_processed, "$subject $predicate $object");
-	    }
-	    
-	}else{
-	    push(@semi_colon_processed, $statement);
-	}
+        if($statement =~ / ; /){
+            ## There is a ' ; ' on this line
+            ## The ; symbol may be used to repeat the subject of of triples that vary only in predicate and object RDF terms.semi_colon_processed
+            $statement =~ s/^\s*(\S+)\s+(\S+)\s+([^;]*[^;\s])\s+;// or die $statement;
+            my ($subject, $predicate, $object) = ($1, $2, $3);
+            if($object =~ /\s/){
+                ## Must be a quoted string
+                $object =~ /"(.+)"$/ or die $statement;
+            }
+            push(@semi_colon_processed, "$subject $predicate $object");
+            ## This next line will break if and predicate or object
+            ## has an embedded ';'
+            while(1){
+                $statement =~ s/^\s*(\S+)\s+([^;]*[^;\s])\s*;?// or last;
+                defined($1) and defined($2) or last;
+                ($predicate, $object) = ($1, $2);
+                push(@semi_colon_processed, "$subject $predicate $object");
+            }
+            
+        }else{
+            push(@semi_colon_processed, $statement);
+        }
     }
 
     ## Process ' , '
     my @comma_processed = ();
     foreach my $semi (@semi_colon_processed){
-	if($semi =~ / , /){
-	    $semi =~ s/^(\S+)\s+(\S+)\s+(\S+)\s+,//;
-	    my($subject, $predicate, $object) = ($1, $2, $3);
-	    push(@comma_processed, "$subject $predicate $object");
-	    my @objects = split(' , ', $semi);
-	    foreach $object (@objects){
-		push(@comma_processed, "$subject $predicate $object");
-	    }
-	}else{
-	    push(@comma_processed, $semi);
-	}
+        if($semi =~ / , /){
+            $semi =~ s/^(\S+)\s+(\S+)\s+(\S+)\s+,//;
+            my($subject, $predicate, $object) = ($1, $2, $3);
+            push(@comma_processed, "$subject $predicate $object");
+            my @objects = split(' , ', $semi);
+            foreach $object (@objects){
+                push(@comma_processed, "$subject $predicate $object");
+            }
+        }else{
+            push(@comma_processed, $semi);
+        }
     }
     return @comma_processed;
 }
@@ -676,33 +676,33 @@ sub process_lv2_turtle( $$ ) {
 
     ## Break up an effect name and port.  This we do a lot
     my $name_port = sub {
-	my $name_port = shift or die;
-	if($name_port =~ /^(\S+)\/(\S+)/){
-	    return [$1, $2];
-	}else{
-	    print "$pedal_board_name bad: $name_port\n";
-	    return undef;
-	}
+        my $name_port = shift or die;
+        if($name_port =~ /^(\S+)\/(\S+)/){
+            return [$1, $2];
+        }else{
+            print "$pedal_board_name bad: $name_port\n";
+            return undef;
+        }
     };
 
     ## Strip angle brackets from around a value.  We do this a lot as
     ## it turns out
     my $strip_ang = sub {
-	my $v = shift or die;
-	$v =~ s/^<//;
-	$v =~ s/>$//;
-	$v
+        my $v = shift or die;
+        $v =~ s/^<//;
+        $v =~ s/>$//;
+        $v
     };
 
     my $fh = undef;
     unless( -r $fn and open($fh, $fn)){
-	return ();
+        return ();
     }
 
     ## Decode the Turtle file
     my @lines = read_turtle($fn) or die "Cannot process $fn";
 
-  
+    
 
     ## We need to get the instructions needed to initialise this
     ## effect and turn it on.
@@ -761,9 +761,9 @@ sub process_lv2_turtle( $$ ) {
     ## array of arrays, each with three elements: subject, predicate,
     ## object
     my @tripples = map {
-	chomp;
-	/^(\S+)\s+(\S+)\s+(.+)/ or die $_;
-	[$1, $2, $3]
+        chomp;
+        /^(\S+)\s+(\S+)\s+(.+)/ or die $_;
+        [$1, $2, $3]
     } @lines;
 
     ## Get the commands to add
@@ -774,78 +774,78 @@ sub process_lv2_turtle( $$ ) {
     my %number_name = ();
     
     foreach my $prototype (@prototypes){
-	my ($name, $predicate, $uri) = @$prototype;
+        my ($name, $predicate, $uri) = @$prototype;
 
-	## The name and uri are in angle brackets
-	$name = &$strip_ang($name);
-	$uri = &$strip_ang($uri);
+        ## The name and uri are in angle brackets
+        $name = &$strip_ang($name);
+        $uri = &$strip_ang($uri);
 
-	$predicate eq "lv2:prototype" or die "Error in prototypes: $predicate";
+        $predicate eq "lv2:prototype" or die "Error in prototypes: $predicate";
 
-	## Initialise the effect hash 
-	$effects{$name} = {};
-	$effects{$name}->{param} = [];
-	$effects{$name}->{add} = "add $uri $index";
-	$name_number{$name} = $index;
-	$number_name{$index} = $name;
-	$index += 1;
+        ## Initialise the effect hash 
+        $effects{$name} = {};
+        $effects{$name}->{param} = [];
+        $effects{$name}->{add} = "add $uri $index";
+        $name_number{$name} = $index;
+        $number_name{$index} = $name;
+        $index += 1;
     }
 
     ## Get all the control ports.  As a hash so it can be used to
     ## identify `ingen:value` commands directed at the control ports
     ## of effects in the pedal board
     my $filter_port = sub {
-	## Filter for the p[orts wanted and get the name/port from
-	## inside the angle brackets
-	my $raw = shift or die;
-	$raw =~ /^([a-z0-9_]+\/[a-z0-9_\:]+)$/i or 
-	    # Not a name/port
-	    return undef; 
-	return $1;
+        ## Filter for the p[orts wanted and get the name/port from
+        ## inside the angle brackets
+        my $raw = shift or die;
+        $raw =~ /^([a-z0-9_]+\/[a-z0-9_\:]+)$/i or 
+            # Not a name/port
+            return undef; 
+        return $1;
     };
 
     my %control_ports = map{
-	&$strip_ang($_) => 1
+        &$strip_ang($_) => 1
     } grep {
-	defined
+        defined
     }map{
-	&$filter_port(&$strip_ang($_->[0]))
+        &$filter_port(&$strip_ang($_->[0]))
     }grep {
-	$_->[1] eq 'a' && $_->[2] eq 'lv2:ControlPort'
+        $_->[1] eq 'a' && $_->[2] eq 'lv2:ControlPort'
     } @tripples;
 
     ## Get all the values for control ports
     my %control_port_values = map {
-	&$strip_ang($_->[0]) => $_->[2]
+        &$strip_ang($_->[0]) => $_->[2]
     } grep {
-	defined($control_ports{&$strip_ang($_->[0])})
+        defined($control_ports{&$strip_ang($_->[0])})
     }grep{
-	$_->[1] eq 'ingen:value'
+        $_->[1] eq 'ingen:value'
     }grep{
-	## These are some sort of global setting
-	## TODO: Document
-	$_->[0] !~ /^:/
+        ## These are some sort of global setting
+        ## TODO: Document
+        $_->[0] !~ /^:/
     }@tripples;
 
     ## Set up the `param set` commands in effects
     foreach my $port (keys %control_port_values){
-	my $value = $control_port_values{$port};
-	$port =~ /([a-z_0-9]+)\/([\:a-z0-9_]+)/i or 
-    die "Badly formed port: $port";
-	my $name = $1;
-	my $port = $2;
-	my $number = $name_number{$name};
-	defined($number) or die "Unknown name: $name";
-	my $command = "param_set $number $port $value";
-	push(@{$effects{$name}->{param}}, $command);
+        my $value = $control_port_values{$port};
+        $port =~ /([a-z_0-9]+)\/([\:a-z0-9_]+)/i or 
+            die "Badly formed port: $port";
+        my $name = $1;
+        my $port = $2;
+        my $number = $name_number{$name};
+        defined($number) or die "Unknown name: $name";
+        my $command = "param_set $number $port $value";
+        push(@{$effects{$name}->{param}}, $command);
     }
 
     ## Build jack connections
     my @jack_pipes = map {
-	# Store the name of the pipe
-	$_->[0]
+        # Store the name of the pipe
+        $_->[0]
     }grep{
-	$_->[1] eq "ingen:tail"
+        $_->[1] eq "ingen:tail"
     }@tripples;
 
     # There are two sorts of pipe: Internal pipes between effects, and
@@ -854,75 +854,75 @@ sub process_lv2_turtle( $$ ) {
     my @jack_internal_pipes = ();
     my @jack_activation_pipes = ();
     foreach my $pipe (@jack_pipes){
-	# `$pipe` is the name of the pipe.  The subject of the triple
+        # `$pipe` is the name of the pipe.  The subject of the triple
 
-	# Get the subject, predicate, and object for both ends of the pipe
-	my @records = map {
-	    [$_->[0], $_->[1], &$strip_ang($_->[2])]
-	} grep {
-	    # Filter by name
-	    $_->[0] eq $pipe
-		# ## Do not implement MIDI yet.  MIDI pipes eq
-		# ## 'midi_merger_out' for now, the only one I have
-		# ## seen.  TODO: Make some more pedal boards with MIDI
-		# ## controls and watch this die here
-		# and $->[2] ne 'midi_merger_out'
-	}@tripples;
-	join("", map{$_->[2]} @records) =~ /midi_merger_out/ and next;
-	join("", map{$_->[2]} @records) =~ /midi_capture_2/ and next;
-	# One "ingen:tail" and one "ingen:head"
-	scalar(@records) == 2 or die "Pipeo $pipe is bad";
+        # Get the subject, predicate, and object for both ends of the pipe
+        my @records = map {
+            [$_->[0], $_->[1], &$strip_ang($_->[2])]
+        } grep {
+            # Filter by name
+            $_->[0] eq $pipe
+                # ## Do not implement MIDI yet.  MIDI pipes eq
+                # ## 'midi_merger_out' for now, the only one I have
+                # ## seen.  TODO: Make some more pedal boards with MIDI
+                # ## controls and watch this die here
+                # and $->[2] ne 'midi_merger_out'
+        }@tripples;
+        join("", map{$_->[2]} @records) =~ /midi_merger_out/ and next;
+        join("", map{$_->[2]} @records) =~ /midi_capture_2/ and next;
+        # One "ingen:tail" and one "ingen:head"
+        scalar(@records) == 2 or die "Pipeo $pipe is bad";
 
-	my @tail = grep {$_->[1] eq "ingen:tail"} @records;
-	scalar @tail == 1 or  die "Pipeo $pipe is bad";
+        my @tail = grep {$_->[1] eq "ingen:tail"} @records;
+        scalar @tail == 1 or  die "Pipeo $pipe is bad";
 
-	my @head = grep {$_->[1] eq "ingen:head"} @records;
-	scalar @head == 1 or  die "Pipeo $pipe is bad";
+        my @head = grep {$_->[1] eq "ingen:head"} @records;
+        scalar @head == 1 or  die "Pipeo $pipe is bad";
 
-	# Activation connections are connected to system:capture_N
-	if($tail[0]->[2] =~ /^capture_\d+$/ and 
+        # Activation connections are connected to system:capture_N
+        if($tail[0]->[2] =~ /^capture_\d+$/ and 
 	       $head[0]->[2] =~ /^playback_\d+$/){
-	    ## A connection directly from capture to playback
-	    push(@jack_activation_pipes, "$tail[0]->[2]:$head[0]->[2]");
-	    next;
-	}elsif($tail[0]->[2] =~ /^capture_\d+$/ ){
-	    ## A connection from the system input
-	    my $name_port = &$name_port($head[0]->[2]) or die;
-	    my $number = $name_number{$name_port->[0]};
-	    my $p = "system:$tail[0]->[2] effect_$number:$name_port->[1]";
-	    push(@jack_activation_pipes, $p);
-	    next;
-	}elsif($head[0]->[2] =~ /^playback_\d+$/){
-	    # Output pipe.  An internal pipe
-	    my $name_port = &$name_port($tail[0]->[2]) or die;
-	    my $number = $name_number{$name_port->[0]};
-	    my $p = "effect_$number:$name_port->[1] system:$head[0]->[2]";
-	    push(@jack_activation_pipes, $p);
-	    next;
-	}
+            ## A connection directly from capture to playback
+            push(@jack_activation_pipes, "$tail[0]->[2]:$head[0]->[2]");
+            next;
+        }elsif($tail[0]->[2] =~ /^capture_\d+$/ ){
+            ## A connection from the system input
+            my $name_port = &$name_port($head[0]->[2]) or die;
+            my $number = $name_number{$name_port->[0]};
+            my $p = "system:$tail[0]->[2] effect_$number:$name_port->[1]";
+            push(@jack_activation_pipes, $p);
+            next;
+        }elsif($head[0]->[2] =~ /^playback_\d+$/){
+            # Output pipe.  An internal pipe
+            my $name_port = &$name_port($tail[0]->[2]) or die;
+            my $number = $name_number{$name_port->[0]};
+            my $p = "effect_$number:$name_port->[1] system:$head[0]->[2]";
+            push(@jack_activation_pipes, $p);
+            next;
+        }
 
-	## This is an internal pipe
-	my $lhs_name_port = &$name_port($tail[0]->[2]) or die;
-	my $lhs = "effect_".$name_number{$lhs_name_port->[0]}.":".
-	    $lhs_name_port->[1];
-	my $rhs_name_port = &$name_port($head[0]->[2]) or die;
-	my $rhs = "effect_".$name_number{$rhs_name_port->[0]}.":".
-	    $rhs_name_port->[1];
-	my $p = "$lhs $rhs";
-	push(@jack_internal_pipes, $p);
+        ## This is an internal pipe
+        my $lhs_name_port = &$name_port($tail[0]->[2]) or die;
+        my $lhs = "effect_".$name_number{$lhs_name_port->[0]}.":".
+            $lhs_name_port->[1];
+        my $rhs_name_port = &$name_port($head[0]->[2]) or die;
+        my $rhs = "effect_".$name_number{$rhs_name_port->[0]}.":".
+            $rhs_name_port->[1];
+        my $p = "$lhs $rhs";
+        push(@jack_internal_pipes, $p);
     }
 
     # my  = ();
     # my @jack_activation_pipes = ();
 
     my %result = (
-	"effects" => \%effects,
-	"index" => $index,
-	"jack_activation_pipes" => \@jack_activation_pipes,
-	"jack_internal_pipes" => \@jack_internal_pipes,
-	"number_name" => \%number_name,
-	"pedal_board_name" => $pedal_board_name
-	);
+        "effects" => \%effects,
+        "index" => $index,
+        "jack_activation_pipes" => \@jack_activation_pipes,
+        "jack_internal_pipes" => \@jack_internal_pipes,
+        "number_name" => \%number_name,
+        "pedal_board_name" => $pedal_board_name
+        );
     return %result;
     
 }
@@ -933,7 +933,7 @@ sub list_pedals {
     opendir(my $dir, $pedal_dir) or die $!;
     my @files =     readdir($dir);
     my @pedals =
-	grep{$_ !~ /^\./} ## Not hidden file
+        grep{$_ !~ /^\./} ## Not hidden file
     grep{/\S\S/} ## Not just one character
     @files;
     wantarray and return @pedals;
@@ -946,7 +946,7 @@ sub list_mod_host_simulators {
     my %result = map{/effect_(\d+)/ and $1 => 1} grep {/effect_\d+/} `jack_lsp`;
     return sort {$a<=>$b} keys %result;
 }
-    
+
 
 ## The mod-host and jack commands for all the pedal boards
 sub get_modep_simulation_commands( $ ){
@@ -957,20 +957,29 @@ sub get_modep_simulation_commands( $ ){
     ## Get the pedal board definitions
     my @fn = ();
     find(sub {$_ ne "manifest.ttl" and 
-		  /(.+)\.ttl/ and
-		  grep{/$1/} @pedal_boards and
-		  push(@fn, $File::Find::name)}, 
-	 ( $MODEP_PEDALS ));
+                  /(.+)\.ttl/ and
+                  grep{/$1/} @pedal_boards and
+                  push(@fn, $File::Find::name)}, 
+         ( $MODEP_PEDALS ));
     # my @fn = map{
     # 	"$MODEP_PEDALS/$_\.pedalboard/$_.ttl"
     # } One20Proof::list_pedals;
+
+    ## Find the start index.  SOmetimes, dispite our best efforts,
+    ## there are effects in place already
     my $index = 1;
+    my @effects = sort {$a <=> $b} map{/effect_(\d+)/; $1} grep{/^effect_\d+/} `jack_lsp`;
+    if(@effects){
+        $index = $effects[$#effects];
+        $index++;
+    }
+
     my @commands = ();
 
     foreach my $fn (@fn){
-	my %ex = &One20Proof::process_lv2_turtle($fn, $index);
-	$index = $ex{index};
-	push(@commands, \%ex);
+        my %ex = &One20Proof::process_lv2_turtle($fn, $index);
+        $index = $ex{index};
+        push(@commands, \%ex);
     }
     # The add commands for the mod-host initialisation
     my @add_mod_host = ();
@@ -987,33 +996,33 @@ sub get_modep_simulation_commands( $ ){
     
     my %number_name = ();
     foreach my $ex (@commands){
-	my %ex = %$ex;
-	my $pedal_board_name = $ex{pedal_board_name} or die;
-	my @effect_keys = sort keys %{$ex{effects}};
-	push @jack_initial, @{$ex{jack_internal_pipes}} ;
-	my @act_pipes = @{$ex{jack_activation_pipes}}; 
-	$jack_activation{$pedal_board_name} = 
-	    \@act_pipes or die $pedal_board_name;
-	foreach my $effect_name (@effect_keys){
-	    my $add = $ex{effects}->{$effect_name}->{add} or die $effect_name;
+        my %ex = %$ex;
+        my $pedal_board_name = $ex{pedal_board_name} or die;
+        my @effect_keys = sort keys %{$ex{effects}};
+        push @jack_initial, @{$ex{jack_internal_pipes}} ;
+        my @act_pipes = @{$ex{jack_activation_pipes}}; 
+        $jack_activation{$pedal_board_name} = 
+            \@act_pipes or die $pedal_board_name;
+        foreach my $effect_name (@effect_keys){
+            my $add = $ex{effects}->{$effect_name}->{add} or die $effect_name;
 
-	    map{$number_name{$_} = $ex{number_name}->{$_}} keys %{$ex{number_name}};
+            map{$number_name{$_} = $ex{number_name}->{$_}} keys %{$ex{number_name}};
 
-	    push @add_mod_host, $ex{effects}->{$effect_name}->{add} or
-		die $effect_name;
-	    push @param_set, @{$ex{effects}->{$effect_name}->{param}} or
-		die $effect_name;
+            push @add_mod_host, $ex{effects}->{$effect_name}->{add} or
+                die $effect_name;
+            push @param_set, @{$ex{effects}->{$effect_name}->{param}} or
+                die $effect_name;
 
-	    
-	}
+            
+        }
     }
     return (
-	add => \@add_mod_host,
-	param => \@param_set,
-	jack_initial => \@jack_initial,
-	jack_activation => \%jack_activation,
-	number_name => \%number_name
-	);
+        add => \@add_mod_host,
+        param => \@param_set,
+        jack_initial => \@jack_initial,
+        jack_activation => \%jack_activation,
+        number_name => \%number_name
+        );
 }
 
 ### Getters for directories
@@ -1070,7 +1079,7 @@ sub get_pd {
 }
 
 sub get_pedal_driver {
-    return &get_bin()."/120ProofPedal";
+    return &get_bin()."/120Proofpd";
 }
 
 ## Each instrument defined in "Instruments/" has up to four pedals.
@@ -1085,10 +1094,10 @@ sub get_pedal_names {
     readdir($dir);
     my @res = ();
     foreach my $name (@names){
-	push(@res, sprintf("%s_A", $name));
-	push(@res, sprintf("%s_B", $name));
-	push(@res, sprintf("%s_C", $name));
-	push(@res, sprintf("%s_D", $name));
+        push(@res, sprintf("%s_A", $name));
+        push(@res, sprintf("%s_B", $name));
+        push(@res, sprintf("%s_C", $name));
+        push(@res, sprintf("%s_D", $name));
     }
     return @res;
 }
@@ -1097,6 +1106,115 @@ sub get_yoshimi {
     my $result = `which yoshimi`;
     chomp $result;
     return $result;
+}
+
+## `handle_mh_cmd` and `mod_host` set up the LV2 simulators.
+## `mod_host` is passed an array of commands to send to `mod-host`
+sub handle_mh_cmd( $$ ) {
+    my ($sock, $cmd) = @_;
+    # warn "handle_mh_cmd(SOCK, $cmd)\n";
+    print $sock "$cmd\n";
+
+    my $result = '';
+    my $r = &One20Proof::fhbits($sock);
+    my $res = '';
+    my ($nfound, $timeleft) =
+        select(my $rout = $r, my $wout = undef, my $eout = undef,
+               0.5);
+    # warn "handle_mh_cmd: \$nfound $nfound\n";
+    if($nfound){
+        my $os = 0;
+        while(my $c = read($sock, $res, 1)){
+            if($c != 1 or
+               ord($res) == 0){
+                last;
+            }
+            $result .=  $res;
+        }
+    }
+    # warn "handle_mh_cmd: \$result $result\n";
+    if($result =~ /resp ([\-0-9]+)/){
+        # If status is a negative number an error has
+        # occurred. The table below shows the number of each
+        # error.
+        
+        # status 	error
+        # -1 	ERR_INSTANCE_INVALID
+        # -2 	ERR_INSTANCE_ALREADY_EXISTS
+        # -3 	ERR_INSTANCE_NON_EXISTS
+        # -4 	ERR_INSTANCE_UNLICENSED
+        # -101 	ERR_LV2_INVALID_URI
+        # -102 	ERR_LV2_INSTANTIATION
+        # -103 	ERR_LV2_INVALID_PARAM_SYMBOL
+        # -104 	ERR_LV2_INVALID_PRESET_URI
+        # -105 	ERR_LV2_CANT_LOAD_STATE
+        # -201 	ERR_JACK_CLIENT_CREATION
+        # -202 	ERR_JACK_CLIENT_ACTIVATION
+        # -203 	ERR_JACK_CLIENT_DEACTIVATION
+        # -204 	ERR_JACK_PORT_REGISTER
+        # -205 	ERR_JACK_PORT_CONNECTION
+        # -206 	ERR_JACK_PORT_DISCONNECTION
+        # -301 	ERR_ASSIGNMENT_ALREADY_EXISTS
+        # -302 	ERR_ASSIGNMENT_INVALID_OP
+        # -303 	ERR_ASSIGNMENT_LIST_FULL
+        # -304 	ERR_ASSIGNMENT_FAILED
+        # -401 	ERR_CONTROL_CHAIN_UNAVAILABLE
+        # -402 	ERR_LINK_UNAVAILABLE
+        # -901 	ERR_MEMORY_ALLOCATION
+        # -902 	ERR_INVALID_OPERATION
+
+        #     A status zero or positive means that the command was
+        #     executed successfully. In case of the add command,
+        #     the status returned is the instance number. The
+        #     value field currently only exists for the param_get
+        #     command.
+        if($1 < 0 and $1 != -2){
+            print  STDERR ">> FAIL $cmd >>  $result\n";
+        }else{
+            # print  STDERR ">> SUCCESS $cmd >>  $result\n";
+            return 1;
+        }
+    }else{
+        print STDERR ">> Unexpected result: $result ";
+    }
+    return 0;
+}    
+sub mod_host( $ ){
+    my $cmds = shift or die;
+    my @cmds = @$cmds;
+
+    my $remote = "localhost";
+    my $mod_host_port_p = $One20Proof::MODHOST_PORT;
+    my $sock = new IO::Socket::INET( PeerAddr => 'localhost',
+                                     PeerPort => $mod_host_port_p, 
+                                     Proto => 'tcp') or
+        die "$!: Failed to connect to mod-host localhost:$mod_host_port_p ".
+        "lsof -i :$mod_host_port_p: ".`lsof -i :$mod_host_port_p` . ' '; 
+
+    ## Debugging why some effects randomly fail to be added
+    my $failed = 0;
+    
+    foreach my $cmd (@cmds){
+        # warn "Process: \$cmd($cmd) \n";
+        # print STDERR  "mod-host: $cmd\n";
+        if(!$failed){
+            &handle_mh_cmd($sock, $cmd);
+        }
+        ## If command was an `add` check the effects got added
+        if($cmd =~ /^add.+\s(\d+)/){
+            # print STDERR "$cmd\n";
+            # warn "Before jack_lsp\n";
+            my $jack = grep{/effect_$1/} `jack_lsp`;
+            # warn "after jack_lsp\n";
+            if(!$jack){
+                print STDERR "$cmd: effect_$1 failed\n";
+                $failed = 1;
+            }else{
+                $failed = 0;
+                # print STDERR "Got effect_$1\n";
+            }
+        }
+    }
 }
 
 

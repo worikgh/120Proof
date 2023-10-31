@@ -198,7 +198,7 @@ impl LpxControl {
             // For controlling the colours of the control pads
             lpx_midi: Arc::new(Mutex::new(
                 MIDICommunicator::new(
-                    "Launchpad X:Launchpad X MIDI 1",
+                    "Launchpad X:Launchpad X LPX MIDI In",
                     "120-Proof-CTL",
                     move |_, _, _| {},
                     (),
@@ -281,8 +281,8 @@ impl MidiCommTools {
         let lpx_control = LpxControl::new();
         lpx_control.start();
         Self {
-            lpx_control: lpx_control,
-            dispatcher: dispatcher,
+            lpx_control,
+            dispatcher,
         }
     }
 }
@@ -385,7 +385,7 @@ fn run() -> Result<(), Box<dyn Error>> {
 
     // The main loop is the closure in this communicator
     let _foo = MIDICommunicator::new(
-        "Launchpad X:Launchpad X MIDI 2",
+        "Launchpad X:Launchpad X LPX MIDI In",
         "120-Proof-CTL",
         move |_stamp, message, midi_comm_tools| {
             // The messages that wil be processed here are length

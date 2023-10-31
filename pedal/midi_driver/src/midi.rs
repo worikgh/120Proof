@@ -44,6 +44,8 @@ impl Midi {
         &self,
         mut f: impl FnMut(&[u8], &mut Vec<(String, String)>) + Send + 'static,
     ) -> Result<(), Box<dyn error::Error>> {
+        // TODO: Should allow name to be controlled fom command line.
+        // May be more than one pedal in use.
         let this_name = "120Proof_pedal".to_string();
         let midi_in = midir::MidiInput::new(this_name.as_str())?;
         let connection_cache: Vec<(String, String)> = vec![];
@@ -63,7 +65,7 @@ impl Midi {
                             .ok_or("Invalid port number")
                             .unwrap()
                             .clone();
-
+                        eprintln!("this_port");
                         _ = match midi_in.connect(
                             &this_port,
                             format!("{}-in", this_name).as_str(),
