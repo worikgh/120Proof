@@ -74,20 +74,17 @@ impl Dispatcher {
             let off_cmd = format!("{}OFF-CTL.{}9", home_dir, i);
             // If `off_cmd` is executable, add it
             let off_path = Path::new(off_cmd.as_str());
-            match off_path.metadata() {
-                Ok(metadata) => {
-                    let permissions = metadata.permissions();
-                    if metadata.is_file() && permissions.mode() & 0o111 != 0 {
-                        down_table.insert(10 * i + 9, off_cmd);
-                    }
+            if let Ok(metadata) = off_path.metadata() {
+                let permissions = metadata.permissions();
+                if metadata.is_file() && permissions.mode() & 0o111 != 0 {
+                    down_table.insert(10 * i + 9, off_cmd);
                 }
-                Err(_) => (),
-            };
+            }
         }
         Self {
-            down_table: down_table,
-            up_table: up_table,
-            last: last,
+            down_table,
+            up_table,
+            last,
         }
     }
 
@@ -101,9 +98,9 @@ impl Dispatcher {
         // 	.expect(format!("Cannot change directory to: {}", home_dir.display()).as_str());
         // let command = format!("{}/{}", home_dir.display(), &cmd);
 
-        let mut child = process::Command::new(&cmd)
+        let mut child = process::Command::new(cmd)
             .spawn()
-            .expect(format!("Failed to execute {}", &cmd).as_str());
+            .unwrap_or_else(|_| panic!("Failed to execute {}", &cmd));
         eprintln!("Wait for child {}", child.id());
         child.wait().expect(" not running");
         eprintln!("Waited for child {}", child.id());
@@ -171,7 +168,8 @@ impl Dispatcher {
 
 #[derive(Debug)]
 struct LpxControl {
-    // The source of truth for the state of the controls.  Includes the selected pad if there is one
+    // The source of truth for the state of the controls.  Includes
+    // the selected pad if there is one
     lpx_state: Arc<Mutex<LPXState>>,
 
     // The counter the monitoring thread uses.  When put to sleep
