@@ -37,7 +37,7 @@ fn select_port<T: midir::MidiIO>(midi_io: &T, name: &str) -> Result<T::Port, Box
         let prefix_port_name = port_name
             .as_str()
             .chars()
-            .skip(0)
+            // .skip(0) Unsure what this was for.  `skip(0)` does nothing
             .take(len)
             .collect::<String>();
 
@@ -88,12 +88,12 @@ impl<T: std::fmt::Debug + Send> MIDICommunicator<T> {
                 out_conn: o_conn_out,
                 _in_conn: o_conn_in,
             }),
-            Err(err) => Err(err.into()),
+            Err(err) => Err(err),
         }
     }
     pub fn send(&mut self, msg: &[u8]) -> Result<(), Box<dyn Error>> {
         match self.out_conn.as_mut() {
-            Some(midi_out_conn) => match midi_out_conn.send(&msg) {
+            Some(midi_out_conn) => match midi_out_conn.send(msg) {
                 Ok(()) => Ok(()),
                 Err(err) => Err(Box::new(err)),
             },
@@ -131,7 +131,7 @@ impl<T: std::fmt::Debug + Send> MIDICommunicator<T> {
         let mut result_out: Option<midir::MidiOutputConnection> = None;
 
         // if the caller asked for it make an outgoing connection
-        if inout > 1 && other_name != "" {
+        if inout > 1 && !other_name.is_empty() {
             // An instance of MidiOutput is required for anything
             // related to MIDI output
             let midi_out = midir::MidiOutput::new(this_name)?;
@@ -270,8 +270,8 @@ mod tests {
     }
     #[test]
     fn test_midi_connections() {
-        let port_names: Vec<String> = MIDICommunicator::get_midi_inputs().unwrap();
-        let midiConnections = MIDICommunicator::new(
+        let port_names: Vec<String> = MIDICommunicator::<()>::get_midi_inputs().unwrap();
+        let _midi_connections = MIDICommunicator::new(
             port_names.first().unwrap().as_str(),
             "120-Proof-Test",
             move |_, _, _| (),
