@@ -1,13 +1,17 @@
 /// A `Section` is a collection of pads on a LPX that constitutes on
 /// "drum".  ALl the pads in it ar one colour and do the same thing
+use std::error::Error;
+use serde::{Deserialize, Serialize};
 use crate::lpx_drum_error::LpxDrumError;
 #[allow(unused)]
-struct Section {
+#[derive(Serialize, Deserialize, Debug, Copy, Clone)]
+pub struct Section {
     pad: usize,    // 11-88
     width: usize,  // 0-7
     height: usize, // 0-7
     main_colour: [usize; 3],
     active_colour: [usize; 3],
+    midi_note: usize,
 }
 
 impl Section {
@@ -19,6 +23,7 @@ impl Section {
         height: usize,
         main_colour: [usize; 3],
         active_colour: [usize; 3],
+        midi_note: usize,
     ) -> Result<Self, LpxDrumError> {
         // -> Result<Self, LpxDrumError>
         let result = Self {
@@ -27,6 +32,7 @@ impl Section {
             height,
             main_colour,
             active_colour,
+            midi_note,
         };
         if result.valid() {
             // Ok(result)
@@ -57,17 +63,49 @@ impl Section {
           || !self.active_colour.iter().all(|x| x <= &127))
     }
 
+    // Check a set of `Section` to see if they are valid as a grouop
+    pub fn check_sections(sections:&Vec<Section>) -> Result<(), LpxDrumError> {
+        for i in 0..sections.len() {
+            for j in (i + 1)..sections.len() {
+                if sections[i].intersect(&sections[j]) {
+                    return Err(LpxDrumError::IntersectingSections(
+                        sections[i], sections[j],
+                    ));
+                }
+                if sections[i].main_colour == sections[j].main_colour {
+                    return Err(LpxDrumError::DuplicateMainColour(
+                        sections[i], sections[j],
+                    ));
+                }
+                if sections[i].midi_note == sections[j].midi_note {
+                    return Err(LpxDrumError::DuplicateMIDI(
+                        sections[i], sections[j],
+                    ));
+                }
+                    
+            }
+        }
+        Ok(())
+    }
     #[allow(dead_code)]
-    fn intersect(&self, other: &Self) -> bool {
+    pub fn intersect(&self, other: &Self) -> bool {
         let self_x = self.pad / 10; //  5
         let self_y = self.pad % 10; //  4
         let other_x = other.pad / 10; //  5
         let other_y = other.pad % 10; //  4
 
-        !(self_y + self.height < other_y
-            || self_y > other_y + other.height
-            || self_x + self.width < other_x
-            || self_x > other_x + other.width)
+        !(self_y + self.height - 1 < other_y
+            || self_y > other_y - 1 + other.height
+            || self_x + self.width - 1 < other_x
+            || self_x > other_x + other.width - 1)
+    }
+
+    pub fn parse_json(input: &str) -> Result<Vec<Section>, Box<dyn Error>> {
+        let result: Vec<Section> = serde_json::from_str(input)?;
+        match Self::check_sections(&result) {
+            Ok(()) =>         Ok(result),
+            Err(err) => Err(Box::new(err)),
+        }
     }
 
     fn row(&self) -> usize {
@@ -105,14 +143,14 @@ mod tests {
     fn test_valid() {
         // this is an invalid pad (1).
         let test = move || -> Result<Section, LpxDrumError> {
-            let section = Section::new(1, 1, 1, [0, 0, 0], [0, 0, 0])?;
+            let section = Section::new(1, 1, 1, [0, 0, 0], [0, 0, 0], 22)?;
             Ok(section)
         };
         assert!(test().is_err());
 
         // this is an invalid main_colour (128).
         let test = move || -> Result<Section, LpxDrumError> {
-            let section = Section::new(11, 1, 1, [128, 0, 0], [0, 0, 0])?;
+            let section = Section::new(11, 1, 1, [128, 0, 0], [0, 0, 0], 23)?;
             Ok(section)
         };
         let test = test();
@@ -120,13 +158,13 @@ mod tests {
 
         // this is an invalid activate_colour (128).
         let test = move || -> Result<Section, LpxDrumError> {
-            let section = Section::new(11, 1, 1, [0, 0, 0], [0, 128, 0])?;
+            let section = Section::new(11, 1, 1, [0, 0, 0], [0, 128, 0], 24)?;
             Ok(section)
         };
         assert!(test().is_err());
         // this is a valid section
         let test = move || -> Result<Section, LpxDrumError> {
-            let section = Section::new(11, 1, 1, [0, 0, 0], [0, 12, 0])?;
+            let section = Section::new(11, 1, 1, [0, 0, 0], [0, 12, 0], 25)?;
             Ok(section)
         };
         assert!(test().is_ok());
@@ -136,8 +174,8 @@ mod tests {
     fn test_intersect() {
         // Test two sections that intersect
         let test = move || -> Result<bool, LpxDrumError> {
-            let section_1 = Section::new(11, 8, 8, [0, 0, 0], [0, 0, 0])?;
-            let section_2 = Section::new(11, 8, 8, [0, 0, 0], [0, 0, 0])?;
+            let section_1 = Section::new(11, 8, 8, [0, 0, 0], [0, 0, 0], 26)?;
+            let section_2 = Section::new(11, 8, 8, [0, 0, 0], [0, 0, 0], 27)?;
             Ok(section_1.intersect(&section_2))
         };
         let test = test();
@@ -146,12 +184,38 @@ mod tests {
 
         // Two that do not
         let test = move || -> Result<bool, LpxDrumError> {
-            let section_1 = Section::new(11, 4, 3, [0, 0, 0], [0, 0, 0])?;
-            let section_2 = Section::new(15, 3, 3, [0, 0, 0], [0, 0, 0])?;
+            let section_1 = Section::new(11, 4, 3, [0, 0, 0], [0, 0, 0], 28)?;
+            let section_2 = Section::new(15, 3, 3, [0, 0, 0], [0, 0, 0], 29)?;
             Ok(section_1.intersect(&section_2))
         };
         let test = test();
         assert!(test.is_ok());
         assert!(!test.unwrap());
+    }
+
+    #[test]
+    fn test_json(){
+        let json:&str = r#"
+[
+    {
+        "pad": 11,
+        "width": 1,
+        "height": 1,
+        "main_colour": [1, 1, 127],
+        "active_colour": [1, 127, 1],
+        "midi_note": 25
+    },
+    {
+        "pad": 12,
+        "width": 2,
+        "height": 2,
+        "main_colour": [1, 127, 127],
+        "active_colour": [1, 127, 1],
+        "midi_note": 26
+    }
+]
+"#.trim();
+        let sections:Vec<Section> = Section::parse_json(json).unwrap();
+        assert!(Section::check_sections(&sections).is_ok());
     }
 }

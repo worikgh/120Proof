@@ -25,12 +25,16 @@ The definition of the drum patern is in a file that is the first argument: `lpx 
 
 It is a JSON file.
 
-An array of JSON Objects.  Each object has the following properties:
+An array of JSON Objects.  Each object, is a `Section` has the
+following properties:
 
 * pad: Number (int).  11 - 88.  Top left of the section
-* main_colour: [Number, Number, Number] ([usize;3]) RGB colour.  Each in range 0-127
-* active_colour: [Number, Number, Number] ([usize;3]) RGB colour.  Each in range 0-127
+* main_colour: [Number, Number, Number] ([usize;3]) RGB colour.  Each
+  in range 0-127, each unique for every section
+* active_colour: [Number, Number, Number] ([usize;3]) RGB colour.
+  Each in range 0-127
 * midi_note: The note to attach note-on and note-off MIDI events to.
+  It is unique for every section
 
 
 
