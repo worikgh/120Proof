@@ -19,56 +19,56 @@ sub wait_for_midi( $ ) {
     my %connections = ();
     my $flag = 0;
     while(my $line = <$cfg>){
-	$line =~ /MIDI_Connections/ and $flag = 1 and next;
-	$line =~ /^\s*#/ and next;
-	$line =~ /^\s*$/ and $flag = 0;
-	if($flag){
-	    my ($c1, $c2) = process_line($line);
-	    $connections{$c1} = 0;
-	    $connections{$c2} = 0;
-	}
+        $line =~ /MIDI_Connections/ and $flag = 1 and next;
+        $line =~ /^\s*#/ and next;
+        $line =~ /^\s*$/ and $flag = 0;
+        if($flag){
+            my ($c1, $c2) = process_line($line);
+            $connections{$c1} = 0;
+            $connections{$c2} = 0;
+        }
     }
 
     my $start = time();
     while(1){
-	my @aconnect_l = `aconnect -l`;
-	
-	my $lhs = undef;
-	foreach my $ac (@aconnect_l){
-	    chomp $ac;
-	    ## client 28: 'Launchpad X' [type=kernel,card=3]
-	    if ($ac =~ /^client \d+: '([^\']+)'/){
-		$lhs = $1;
-		next;
-	    }
-	    
-	    ##     0 'Launchpad X MIDI 1'
-	    if($ac =~ /^\s+\d+\s+'\s*(\S[^']+\S)\s*'/){
-		my $rhs = $1;
-		defined($lhs) or die "No \$lhs.  \$ac: $ac ";
-		$connections{"$lhs:$rhs"} = 1;
-		next;
-	    }
+        my @aconnect_l = `aconnect -l`;
+        
+        my $lhs = undef;
+        foreach my $ac (@aconnect_l){
+            chomp $ac;
+            ## client 28: 'Launchpad X' [type=kernel,card=3]
+            if ($ac =~ /^client \d+: '([^\']+)'/){
+                $lhs = $1;
+                next;
+            }
+            
+            ##     0 'Launchpad X MIDI 1'
+            if($ac =~ /^\s+\d+\s+'\s*(\S[^']+\S)\s*'/){
+                my $rhs = $1;
+                defined($lhs) or die "No \$lhs.  \$ac: $ac ";
+                $connections{"$lhs:$rhs"} = 1;
+                next;
+            }
 
-	    ##      Connecting To: 128:0, 131:0
-	    ##      Connected From: 128:0
+            ##      Connecting To: 128:0, 131:0
+            ##      Connected From: 128:0
 
-	    if($ac =~ /^\s+Conn/){
-		next;
-	    }
-	    die "\"$ac\"";
-	}
-	## Loop exit condition
-	my @disconnected = grep{$connections{$_} == 0} keys(%connections);
-	@disconnected or last;
-	warn "Not connected:\n\t".join("\n\t", @disconnected);
+            if($ac =~ /^\s+Conn/){
+                next;
+            }
+            die "\"$ac\"";
+        }
+        ## Loop exit condition
+        my @disconnected = grep{$connections{$_} == 0} keys(%connections);
+        @disconnected or last;
+        warn "Not connected:\n\t".join("\n\t", @disconnected);
 
-	## Failure condition.  
-	my $now = time();
-	$now - $start > 5 and die "These MIDI endpoints never appeared: " .
-	    join(', ', grep{$connections{$_} == 0} keys(%connections));
-	
-	sleep 1;
+        ## Failure condition.  
+        my $now = time();
+        $now - $start > 5 and die "These MIDI endpoints never appeared: " .
+            join(', ', grep{$connections{$_} == 0} keys(%connections));
+        
+        sleep 1;
     }
 }
 
@@ -105,71 +105,71 @@ sub set_up_midi( $ ) {
     my $dev_str =  undef;
 
     foreach my $ac  (@aconnect_l){
-	chomp $ac;
-	# client 24: 'pisound' [type=kernel,card=2]
-	if ($ac =~ /^client (\d+): '([^\']+)'/){
-	    $port_num = $1;
-	    $port_str = $2;
-	    next;
-	}
+        chomp $ac;
+        # client 24: 'pisound' [type=kernel,card=2]
+        if ($ac =~ /^client (\d+): '([^\']+)'/){
+            $port_num = $1;
+            $port_str = $2;
+            next;
+        }
 
-	#     0 'pisound MIDI PS-0N78HB5'
-	if($ac =~ /^\s+(\d+)\s+'\s*(\S[^']+\S)\s*'/){
-	    $dev_num = $1;
-	    $dev_str =  $2;
-	    defined($port_num) or die "No \$port_num.  \$ac $ac ";
-	    defined($port_str) or die "No \$port_str.  \$ac $ac ";
-	    ## Have port:dev as string and number
-	    $midi_devices_by_str{"$port_str:$dev_str"} = [$port_num, $dev_num];
-	    $midi_devices_by_num{"$port_num:$dev_num"} = [$port_str, $dev_str];
-	    next;
-	}
-	#	Connecting To: 129:0[real:0], 130:0, 131:0
-	if($ac =~ /^\s+Connecting To: (.+)\s*$/){
-	    my $con_str = $1;
-	    my @con_str = split(/,\s*/, $con_str);
+        #     0 'pisound MIDI PS-0N78HB5'
+        if($ac =~ /^\s+(\d+)\s+'\s*(\S[^']+\S)\s*'/){
+            $dev_num = $1;
+            $dev_str =  $2;
+            defined($port_num) or die "No \$port_num.  \$ac $ac ";
+            defined($port_str) or die "No \$port_str.  \$ac $ac ";
+            ## Have port:dev as string and number
+            $midi_devices_by_str{"$port_str:$dev_str"} = [$port_num, $dev_num];
+            $midi_devices_by_num{"$port_num:$dev_num"} = [$port_str, $dev_str];
+            next;
+        }
+        #	Connecting To: 129:0[real:0], 130:0, 131:0
+        if($ac =~ /^\s+Connecting To: (.+)\s*$/){
+            my $con_str = $1;
+            my @con_str = split(/,\s*/, $con_str);
 
-	    ## @con_str is an array of port:dev that this device is
-	    ## connectred to
-	    
-	    foreach my $pair (map{/^\s*(\d+):(\d+)/; [$1,$2]} @con_str){
-		defined($port_num) or die "No \$port_num.  \$ac $ac ";
-		defined($dev_num) or die "No \$dev_num.  \$ac $ac ";
-		my $delete_args = "$port_num:$dev_num $$pair[0]:$$pair[1]";
+            ## @con_str is an array of port:dev that this device is
+            ## connectred to
+            
+            foreach my $pair (map{/^\s*(\d+):(\d+)/; [$1,$2]} @con_str){
+                defined($port_num) or die "No \$port_num.  \$ac $ac ";
+                defined($dev_num) or die "No \$dev_num.  \$ac $ac ";
+                my $delete_args = "$port_num:$dev_num $$pair[0]:$$pair[1]";
 
-		# One side of the equation
-		# warn "connecting to: $delete_args";
-		$existing_connections_to{$delete_args} = 1;
-	    }
-	    next;
-	}
-	#	Connected From: 24:0, 28:0, 28:1, 32:0, 129:0
-	if($ac =~ /^\s+Connected From:\s+(.+)/){
-	    my $con_str = $1;
-	    my @con_str = split(/,\s*/, $con_str);
+                # One side of the equation
+                # warn "connecting to: $delete_args";
+                $existing_connections_to{$delete_args} = 1;
+            }
+            next;
+        }
+        #	Connected From: 24:0, 28:0, 28:1, 32:0, 129:0
+        if($ac =~ /^\s+Connected From:\s+(.+)/){
+            my $con_str = $1;
+            my @con_str = split(/,\s*/, $con_str);
 
-	    ## @con_str is an array of port:dev that connets to this
-	    ## device
+            ## @con_str is an array of port:dev that connets to this
+            ## device
 
-	    foreach my $pair (map{/^\s*(\d+):(\d+)/; [$1,$2]} @con_str){
-		defined($port_num) or die "No \$port_num.  \$ac $ac ";
-		defined($dev_num) or die "No \$dev_num.  \$ac $ac ";
-		my $delete_args = "$$pair[0]:$$pair[1] $port_num:$dev_num";
+            foreach my $pair (map{/^\s*(\d+):(\d+)/; [$1,$2]} @con_str){
+                defined($port_num) or die "No \$port_num.  \$ac $ac ";
+                defined($dev_num) or die "No \$dev_num.  \$ac $ac ";
+                my $delete_args = "$$pair[0]:$$pair[1] $port_num:$dev_num";
 
-		# # The otehr side of the equation
-		$existing_connections_from{$delete_args} = 1;
-	    }
-	    next;
-	}	    
+                # # The otehr side of the equation
+                $existing_connections_from{$delete_args} = 1;
+            }
+            next;
+        }	    
     }
 
     ## The connections that have to be deleted will be in both HASHs.
     ## Initialise the list of connections to delete to all connections
     my %connections_to_delete = ();
     foreach my $to (sort keys(%existing_connections_from)){
-	if (defined($existing_connections_to{"$to"})){
-	    $connections_to_delete{$to} = 1;
-	}
+        if (defined($existing_connections_to{"$to"})){
+            $connections_to_delete{$to} = 1;
+        }
     }
     ## %connections_to_delete the keys are strings to pass to
     ## %`aconnect -d` and are all MIDI connections
@@ -186,45 +186,45 @@ sub set_up_midi( $ ) {
     open(my $cfg, $cfg_fn) or die $!;
     my $flag = 0;
     while(my $line = <$cfg>){
-	$line =~ /^MIDI_Connections/ and $flag = 1 and next;
-	$line =~ /^\s*#/ and next; ## Comments
-	if($line =~ /^\s*$/){
-	    $flag = 0;  # End of a section
-	    next;
-	}
-	if($flag){
-	    my ($c1, $c2) = process_line($line);
-	    push(@connections, [$c1, $c2]);
-	}
+        $line =~ /^MIDI_Connections/ and $flag = 1 and next;
+        $line =~ /^\s*#/ and next; ## Comments
+        if($line =~ /^\s*$/){
+            $flag = 0;  # End of a section
+            next;
+        }
+        if($flag){
+            my ($c1, $c2) = process_line($line);
+            push(@connections, [$c1, $c2]);
+        }
     }
 
     ## Filter %connections_to_delete to remove the ones from the
     ## configuration file that are to keep
     my %delt_with = (); ## The same pair can be in @connections more than once
     foreach my $pair (@connections){
-	my $from_dev = $midi_devices_by_str{"$$pair[0]"};
-	defined $from_dev or die "No MIDI device for: $$pair[0]";
-	my $to_dev = $midi_devices_by_str{"$$pair[1]"};
-	defined $to_dev or die "No MIDI device for: $$pair[1]";
-	my $key = join(":", @$from_dev)." ".  join(":", @$to_dev);
-	defined($delt_with{$key}) and next;
-	$delt_with{$key} = 1;
-	if(defined($connections_to_delete{"$key"})){
-	    delete($connections_to_delete{"$key"});
-	}else{
-	    ## Connection in config but not made
-	    $connections_to_make{"$key"} = 1;
-	}
+        my $from_dev = $midi_devices_by_str{"$$pair[0]"};
+        defined $from_dev or die "No MIDI device for: $$pair[0]";
+        my $to_dev = $midi_devices_by_str{"$$pair[1]"};
+        defined $to_dev or die "No MIDI device for: $$pair[1]";
+        my $key = join(":", @$from_dev)." ".  join(":", @$to_dev);
+        defined($delt_with{$key}) and next;
+        $delt_with{$key} = 1;
+        if(defined($connections_to_delete{"$key"})){
+            delete($connections_to_delete{"$key"});
+        }else{
+            ## Connection in config but not made
+            $connections_to_make{"$key"} = 1;
+        }
     }
 
     ## Got all the connections that need to be deleted.
     my @to_delete =  keys(%connections_to_delete);
 
     sub del_con( $ ) {
-	my ($l) = @_;
-	my $cmd = "aconnect -d $l";
-	`$cmd`;
-	$? == 0 or print STDERR "Failed $?: $cmd \n";
+        my ($l) = @_;
+        my $cmd = "aconnect -d $l";
+        `$cmd`;
+        $? == 0 or print STDERR "Failed $?: $cmd \n";
     }
     map {&del_con($_)} @to_delete;
     # print("Finished\n");
@@ -232,13 +232,13 @@ sub set_up_midi( $ ) {
     ## Now make the connections
     ## Make new connections
     sub make_con( $ ) {
-	my ($l) = @_;
-	my $cmd = "aconnect $l";
-	`$cmd`;
-	$? == 0 or print STDERR "Failed $?: $cmd \n";
+        my ($l) = @_;
+        my $cmd = "aconnect $l";
+        `$cmd`;
+        $? == 0 or print STDERR "Failed $?: $cmd \n";
     }
     foreach my $l (keys %connections_to_make){
-	&make_con($l);
+        &make_con($l);
     }
 }
 
@@ -278,9 +278,9 @@ sub set_up_midi( $ ) {
 sub delete_all(){
     my @all_midi = &One20Proof::list_all_midi();
     foreach my $midi_desc (@all_midi){
-	my $disconnect_string =
-	    "aconnect -d $$midi_desc[0]:$$midi_desc[1] $$midi_desc[2]:$$midi_desc[3]"; 
-	print `$disconnect_string`;
+        my $disconnect_string =
+            "aconnect -d $$midi_desc[0]:$$midi_desc[1] $$midi_desc[2]:$$midi_desc[3]"; 
+        print `$disconnect_string`;
     }
 }
 
@@ -306,56 +306,56 @@ sub list_all_midi {
     my $dev_str =  undef;
 
     foreach my $ac  (@aconnect_l){
-	chomp $ac;
-	# client 24: 'pisound' [type=kernel,card=2]
-	if ($ac =~ /^client (\d+): '([^\']+)'/){
-	    $port_num = $1;
-	    $port_str = $2;
-	    next;
-	}
+        chomp $ac;
+        # client 24: 'pisound' [type=kernel,card=2]
+        if ($ac =~ /^client (\d+): '([^\']+)'/){
+            $port_num = $1;
+            $port_str = $2;
+            next;
+        }
 
-	#     0 'pisound MIDI PS-0N78HB5'
-	if($ac =~ /^\s+(\d+)\s+'\s*(\S[^']+\S)\s*'/){
-	    $dev_num = $1;
-	    $dev_str =  $2;
+        #     0 'pisound MIDI PS-0N78HB5'
+        if($ac =~ /^\s+(\d+)\s+'\s*(\S[^']+\S)\s*'/){
+            $dev_num = $1;
+            $dev_str =  $2;
 
-	    ## Have port:dev as string and number
-	    $midi_devices_by_str{"$port_str:$dev_str"} = [$port_num, $dev_num];
-	    $midi_devices_by_num{"$port_num:$dev_num"} = [$port_str, $dev_str];
-	    next;
-	}
-	#	Connecting To: 129:0[real:0], 130:0, 131:0
-	if($ac =~ /^\s+Connecting To: (.+)\s*$/){
-	    my $con_str = $1;
-	    my @con_str = split(/,\s*/, $con_str);
+            ## Have port:dev as string and number
+            $midi_devices_by_str{"$port_str:$dev_str"} = [$port_num, $dev_num];
+            $midi_devices_by_num{"$port_num:$dev_num"} = [$port_str, $dev_str];
+            next;
+        }
+        #	Connecting To: 129:0[real:0], 130:0, 131:0
+        if($ac =~ /^\s+Connecting To: (.+)\s*$/){
+            my $con_str = $1;
+            my @con_str = split(/,\s*/, $con_str);
 
-	    ## @con_str is an array of port:dev that this device is
-	    ## connectred to
-	    
-	    foreach my $pair (map{/^\s*(\d+):(\d+)/; [$1,$2]} @con_str){
-		my $delete_args = "$port_num:$dev_num $$pair[0]:$$pair[1]";
+            ## @con_str is an array of port:dev that this device is
+            ## connectred to
+            
+            foreach my $pair (map{/^\s*(\d+):(\d+)/; [$1,$2]} @con_str){
+                my $delete_args = "$port_num:$dev_num $$pair[0]:$$pair[1]";
 
-		# One side of the equation
-		$existing_connections_to{$delete_args} = 1;
-	    }
-	    next;
-	}
-	#	Connected From: 24:0, 28:0, 28:1, 32:0, 129:0
-	if($ac =~ /^\s+Connected From:\s+(.+)/){
-	    my $con_str = $1;
-	    my @con_str = split(/,\s*/, $con_str);
+                # One side of the equation
+                $existing_connections_to{$delete_args} = 1;
+            }
+            next;
+        }
+        #	Connected From: 24:0, 28:0, 28:1, 32:0, 129:0
+        if($ac =~ /^\s+Connected From:\s+(.+)/){
+            my $con_str = $1;
+            my @con_str = split(/,\s*/, $con_str);
 
-	    ## @con_str is an array of port:dev that connets to this
-	    ## device
+            ## @con_str is an array of port:dev that connets to this
+            ## device
 
-	    foreach my $pair (map{/^\s*(\d+):(\d+)/; [$1,$2]} @con_str){
-		my $delete_args = "$$pair[0]:$$pair[1] $port_num:$dev_num";
+            foreach my $pair (map{/^\s*(\d+):(\d+)/; [$1,$2]} @con_str){
+                my $delete_args = "$$pair[0]:$$pair[1] $port_num:$dev_num";
 
-		# # The otehr side of the equation
-		$existing_connections_from{$delete_args} = 1;
-	    }
-	    next;
-	}	    
+                # # The otehr side of the equation
+                $existing_connections_from{$delete_args} = 1;
+            }
+            next;
+        }	    
     }
     
     my @ret = ();
@@ -363,67 +363,67 @@ sub list_all_midi {
     push(@ret, keys(%existing_connections_from));
     return @ret;
 }
-			  
+
 my $arg = shift or die "pass an argument";
 
-    
+
 if($arg eq "list"){
     ## List all alsa NIDI  connections
     my %devices = &One20Proof::all_midi_devices;
     
     my $sort = sub {
-	## Sort by PID if possible
-	## Sort lexicographically otherwise
-	## Records with PIDs go first
-	## client 28: 'Launchpad X' [type=kernel,card=3]
-	## client 28: 'Launchpad X' [type=user,PID=332]
-	my $va = $devices{$a};
-	my $vb = $devices{$b};
-	my $pida = 0;
-	my $pidb = 0;
-	$va =~ /pid=(\d+)/ and $pida = $1;
-	$vb =~ /pid=(\d+)/ and $pidb = $1;
-	if($pida and !$pidb){
-	    # $va has pid but not $vb
-	    return -1;
-	}
-	if(!$pida and $pidb){
-	    # $vb has pid but not $va
-	    return 1;
-	}
-	if($pida && $pidb){
-	    $pida <  $pidb and return -1;
-	    $pida >  $pidb and return 1;
-	}
-	## Neither $va nor $vb have PID or $pida == $pidb
-	return $va cmp $vb;
+        ## Sort by PID if possible
+        ## Sort lexicographically otherwise
+        ## Records with PIDs go first
+        ## client 28: 'Launchpad X' [type=kernel,card=3]
+        ## client 28: 'Launchpad X' [type=user,PID=332]
+        my $va = $devices{$a};
+        my $vb = $devices{$b};
+        my $pida = 0;
+        my $pidb = 0;
+        $va =~ /pid=(\d+)/ and $pida = $1;
+        $vb =~ /pid=(\d+)/ and $pidb = $1;
+        if($pida and !$pidb){
+            # $va has pid but not $vb
+            return -1;
+        }
+        if(!$pida and $pidb){
+            # $vb has pid but not $va
+            return 1;
+        }
+        if($pida && $pidb){
+            $pida <  $pidb and return -1;
+            $pida >  $pidb and return 1;
+        }
+        ## Neither $va nor $vb have PID or $pida == $pidb
+        return $va cmp $vb;
     };
     
     foreach my $key (sort $sort keys(%devices)){
-	# perl -e '$t = <>; $t =~ s/.+\/([^\/]+)/$1/; print $t;'`;
-	my $line = $devices{$key};
-	if($line =~ /pid=(\d+)/){
-	    my $pid = $1;
-	    # 27209 pts/6    Sl+    0:00 /home/patch/120Proof/bin/lpx_controll
-	    #  9061 ?        SLl  119:03 /usr/local/bin/pd -jack -path /home/patch/120Proof/pd_patches/ -send ; pd dsp 1 -stdpath -nogui /home/patch/120Proof/pd_patches/instruments/HarpPoly.pd
+        # perl -e '$t = <>; $t =~ s/.+\/([^\/]+)/$1/; print $t;'`;
+        my $line = $devices{$key};
+        if($line =~ /pid=(\d+)/){
+            my $pid = $1;
+            # 27209 pts/6    Sl+    0:00 /home/patch/120Proof/bin/lpx_controll
+            #  9061 ?        SLl  119:03 /usr/local/bin/pd -jack -path /home/patch/120Proof/pd_patches/ -send ; pd dsp 1 -stdpath -nogui /home/patch/120Proof/pd_patches/instruments/HarpPoly.pd
 
-	    my $name;
-	    my $_name;
-	    if($_name = join "", map{/$ENV{'Home120Proof'}\/bin\/(\S+)/ and $1} grep{/$pid/} `ps x`
-	       or
-	       $_name = join "", map{/usr\/local\/bin\/(\S+)/ and $1} grep{/$pid/} `ps x`){
-		$name = $_name;
-	    }else{
-		$name = "???";
-	    }
-	    $line .= " $name";
-	}
-	print "$key\t$line\n";
+            my $name;
+            my $_name;
+            if($_name = join "", map{/$ENV{'Home120Proof'}\/bin\/(\S+)/ and $1} grep{/$pid/} `ps x`
+               or
+               $_name = join "", map{/usr\/local\/bin\/(\S+)/ and $1} grep{/$pid/} `ps x`){
+                $name = $_name;
+            }else{
+                $name = "???";
+            }
+            $line .= " $name";
+        }
+        print "$key\t$line\n";
     }
     my @connections = &One20Proof::list_all_midi_connections; 
     foreach my $c (@connections){
-	
-	print join("\t", @$c)."\n";
+        
+        print join("\t", @$c)."\n";
     }
 }elsif($arg eq "delete"){
     &delete_all();
