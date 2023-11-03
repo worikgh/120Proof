@@ -64,6 +64,7 @@ impl Section {
     }
 
     // Check that a `pad` is valid
+    #[allow(dead_code)]
     fn valid_pad(pad: u8) -> bool {
         (11..=88).contains(&pad) && pad % 10 != 0 && pad % 10 != 9
     }
@@ -134,10 +135,8 @@ impl Section {
         let self_row = Self::pad_to_row(self.pad);
         let self_col = Self::pad_to_col(self.pad);
         if row >= self_row && row < self_row + self.height && col >= self_col && col < self_col + self.width {
-            eprintln!("Pad {pad} in {self}"); // 
             true
         }else{
-            eprintln!("Pad {pad} not in {self}");
             false
         }
     }

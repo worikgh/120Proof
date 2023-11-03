@@ -73,9 +73,8 @@ fn main() -> Result<(), Box<dyn Error>> {
     let msg: [u8; 9] = [240, 0, 32, 41, 2, 12, 0, 127, 247];
     colour_port.send(&msg).expect("Failed to send msg to LPX");
     // Initialise the pad clours
-    for section in sections.iter() {
+    let make_colour = |section: &Section, colour: [u8; 3]| -> Vec<u8> {
         let mut colour_message: Vec<u8> = vec![240, 0, 32, 41, 2, 12, 3];
-        let colour: [u8; 3] = section.main_colour;
         let pads: Vec<u8> = section.pads();
         for pad in pads.iter() {
             colour_message.push(3);
@@ -83,27 +82,46 @@ fn main() -> Result<(), Box<dyn Error>> {
             colour_message.extend(colour.to_vec());
         }
         colour_message.push(247);
-        eprintln!("Sending: {colour_message:?}");
-        colour_port.send(&colour_message).unwrap();
+        colour_message
+    };
+    for section in sections.iter() {
+        colour_port
+            .send(&make_colour(section, section.main_colour))
+            .unwrap();
     }
     loop {
         let message: [u8; 3] = match rx.recv() {
             Ok(m) => m,
             Err(err) => panic!("{}", err),
         };
-
+        eprintln!("loop message:{message:?}");
         if message[0] == 144 {
             // All MIDI notes from LPX start with 144
             let velocity = message[2];
-            if velocity > 0 {
-                // Note on.
-                eprintln!("In main loop Send note: {message:?}");
-                // Find the section the pad is in
-                let pad: u8 = message[1];
-                for section in sections.iter() {
-                    if section.pad_in(pad) {
-                        // got the section for a pad
-                        out_port.send(&message)?;
+
+            // Find the section the pad is in
+            let pad: u8 = message[1];
+            for section in sections.iter() {
+                if section.pad_in(pad) {
+                    // got the section for a pad
+                    eprintln!("Found section: Pad: {pad} message: {message:?} Section: {section}");
+                    // Send out the note
+                    let velocity = message[2];
+                    let message: [u8; 3] = [message[0], section.midi_note, velocity];
+                    out_port.send(&message)?;
+
+                    if velocity > 0 {
+                        // Note on
+                        // Set colour of section to "active_colour"
+                        let active_colour = make_colour(section, section.active_colour);
+                        eprintln!("Send active colour: {active_colour:?}");
+                        colour_port.send(&active_colour).unwrap();
+                    } else {
+                        // Not off
+                        // Restore the colour
+                        let main_colour = make_colour(section, section.main_colour);
+                        eprintln!("Send main colour: {main_colour:?}");
+                        colour_port.send(&main_colour).unwrap();
                     }
                 }
             }
