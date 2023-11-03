@@ -1,0 +1,10 @@
+[
+    {
+        "pad": 11,
+        "width": 8,
+        "height": 8,
+        "main_colour": [1, 1, 127],
+        "active_colour": [1, 62, 127],
+        "midi_note": 25
+    }
+]
