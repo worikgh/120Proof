@@ -56,6 +56,7 @@ lpx_controll -> /home/patch/120Proof/novation_lpx/target/release/lpx_controll
 lpx_manager -> /home/patch/120Proof/novation_lpx/target/release/lpx_manager
 lpx_mode -> /home/patch/120Proof/novation_lpx/target/release/lpx_mode
 lpx_scale -> /home/patch/120Proof/novation_lpx/target/release/lpx_scale
+lpx_drum -> /home/patch/120Proof/novation_lpx/target/release/lpx_drum
 
 ## Configuration
 
@@ -139,6 +140,12 @@ Use `aconnect` to ensure that these connections are made and all other cnnection
 ### Invocation
 
 `bin/InitialiseMidi <Config file>`
+
+## lpx_drum
+
+* Runs with Hydrogen to make the drum sounds
+* A JSON configuration file to configure the LPX pads into regions (sections) as drums.
+* Instrument/Drums/midi.cfg has midi configuration (for bin/InitialiseMidi)
 
 ## lpx_mode
 
