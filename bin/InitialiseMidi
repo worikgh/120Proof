@@ -219,7 +219,7 @@ sub set_up_midi( $ ) {
 
     ## Got all the connections that need to be deleted.
     my @to_delete =  keys(%connections_to_delete);
-
+    print "To Delete:\n".join("\n", @to_delete)."\n";
     sub del_con( $ ) {
         my ($l) = @_;
         my $cmd = "aconnect -d $l";
@@ -237,7 +237,9 @@ sub set_up_midi( $ ) {
         `$cmd`;
         $? == 0 or print STDERR "Failed $?: $cmd \n";
     }
-    foreach my $l (keys %connections_to_make){
+    my @to_connect = keys %connections_to_make;
+    print "To Connect:\n".join("\n", @to_connect)."\n";
+    foreach my $l (@to_connect){
         &make_con($l);
     }
 }

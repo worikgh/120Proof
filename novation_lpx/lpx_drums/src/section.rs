@@ -6,24 +6,24 @@ use crate::lpx_drum_error::LpxDrumError;
 #[allow(unused)]
 #[derive(Serialize, Deserialize, Debug, Copy, Clone)]
 pub struct Section {
-    pad: usize,    // 11-88
-    width: usize,  // 0-7
-    height: usize, // 0-7
-    main_colour: [usize; 3],
-    active_colour: [usize; 3],
-    midi_note: usize,
+    pad: u8,    // 11-88
+    width: u8,  // 1-8
+    height: u8, // 1-8
+    pub main_colour: [u8; 3],
+    pub active_colour: [u8; 3],
+    pub midi_note: u8,
 }
 
 impl Section {
     /// FIXME: This must validate and return an error for invalid values
     #[allow(unused)]
     pub fn new(
-        pad: usize,
-        width: usize,
-        height: usize,
-        main_colour: [usize; 3],
-        active_colour: [usize; 3],
-        midi_note: usize,
+        pad: u8,
+        width: u8,
+        height: u8,
+        main_colour: [u8; 3],
+        active_colour: [u8; 3],
+        midi_note: u8,
     ) -> Result<Self, LpxDrumError> {
         // -> Result<Self, LpxDrumError>
         let result = Self {
@@ -63,6 +63,10 @@ impl Section {
           || !self.active_colour.iter().all(|x| x <= &127))
     }
 
+    // Check that a `pad` is valid
+    fn valid_pad(pad: u8) -> bool {
+        (11..=88).contains(&pad) && pad % 10 != 0 && pad % 10 != 9
+    }
     // Check a set of `Section` to see if they are valid as a grouop
     pub fn check_sections(sections:&Vec<Section>) -> Result<(), LpxDrumError> {
         for i in 0..sections.len() {
@@ -107,12 +111,54 @@ impl Section {
             Err(err) => Err(Box::new(err)),
         }
     }
-
-    fn row(&self) -> usize {
-        self.pad / 10
+    pub fn row_col_to_pad(row:u8, col:u8) -> Result<u8, LpxDrumError> {
+        let result = row * 10 + col;
+        Ok(result)
     }
-    fn col(&self) -> usize {
-        self.pad % 10
+    pub fn pad_to_row(pad:u8) -> u8 {
+        pad / 10
+    }        
+    pub fn pad_to_col(pad:u8) -> u8 {
+        pad % 10
+    }        
+    pub fn row(&self) -> u8 {
+        Self::pad_to_row(self.pad)
+    }
+    pub fn col(&self) -> u8 {
+        Self::pad_to_col(self.pad)
+    }
+    /// Detect if a pad on the LPX is in this section
+    pub fn pad_in(&self, pad:u8) -> bool {
+        let row = Self::pad_to_row(pad);
+        let col = Self::pad_to_col(pad);
+        let self_row = Self::pad_to_row(self.pad);
+        let self_col = Self::pad_to_col(self.pad);
+        if row >= self_row && row < self_row + self.height && col >= self_col && col < self_col + self.width {
+            eprintln!("Pad {pad} in {self}"); // 
+            true
+        }else{
+            eprintln!("Pad {pad} not in {self}");
+            false
+        }
+    }
+
+    // Return all pad indexes in this section
+    pub fn pads(&self) -> Vec<u8> {
+        let mut result:Vec<u8> = vec![];
+        let  row:u8 = Self::pad_to_row(self.pad);
+        let  col:u8 = Self::pad_to_col(self.pad);
+        
+        for w in 0..self.width {
+            for h in 0..self.height{
+                // Sections tested for validity on construction so
+                // this forced unwrap is OK
+                let pad = Self::row_col_to_pad(row+h, col+w).unwrap();
+                if self.pad_in(pad){
+                    result.push(pad);
+                }
+            }
+        }
+        result
     }
 }
 
@@ -217,5 +263,26 @@ mod tests {
 "#.trim();
         let sections:Vec<Section> = Section::parse_json(json).unwrap();
         assert!(Section::check_sections(&sections).is_ok());
+        // Check each pad is in at most one section
+        for pad in 11..89 {
+            if pad % 10 == 0 || pad % 10 == 9 {
+                continue;
+            }
+            let mut flag = false;
+            for section in sections.iter() {
+                if section.pad_in(pad) {
+                    if flag {
+                        // More than one section
+                        panic!("Pad: {pad} is in more than one section");
+                    }
+                    flag = true;
+                }
+            }
+        }
+        // Check there are pads in each section
+        let pads = sections[0].pads();
+        eprintln!("Pads: {pads:?}");
+        assert!(pads.len() == 1);
+        assert!(sections[1].pads().len() == 4);
     }
 }

@@ -85,8 +85,8 @@ impl<T: std::fmt::Debug + Send> MIDICommunicator<T> {
             Self::get_midi_connections(other_name, this_name, Some(callback), data, inout);
         match connections {
             Ok((o_conn_in, o_conn_out)) => Ok(MIDICommunicator {
-                out_conn: o_conn_out,
                 _in_conn: o_conn_in,
+                out_conn: o_conn_out,
             }),
             Err(err) => Err(err),
         }
@@ -144,7 +144,8 @@ impl<T: std::fmt::Debug + Send> MIDICommunicator<T> {
                 match midi_out.port_name(port) {
                     Err(_) => continue,
                     Ok(port_name) => {
-                        println!("port_name: {port_name}");
+                        eprintln!("port_name: {port_name}");
+                        eprintln!("source_port: {other_name}");
                         let port_name = port_name.into_bytes();
                         let mut accept: bool = true;
 
@@ -155,6 +156,7 @@ impl<T: std::fmt::Debug + Send> MIDICommunicator<T> {
                             }
                         }
                         if accept {
+                            eprintln!("Accepted: ");
                             // Can build an output connection
                             let port = midi_out
                                 .ports()
