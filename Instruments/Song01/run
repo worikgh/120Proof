@@ -1,0 +1,87 @@
+#!/usr/bin/perl -w
+use strict;
+use lib("$ENV{'Home120Proof'}/Perl");
+use One20Proof;
+
+my $name = "Song01";
+
+## Directory to write files to
+my $data_dir_name = "$ENV{'Home120Proof'}/Instruments/$name/data";
+-d $data_dir_name or mkdir($data_dir_name) or die "$!: Cannot mkdir $data_dir_name ";
+
+my $fn = 1;  ## Name files with this
+my $dub = 1; ## Name dubs with this
+# Set to the raw recording file name, and dub name, not extension, of a recording
+my $fn_rec = undef;
+my $fn_dub = undef;
+my $pfx = undef;
+
+my $JACKT = &One20Proof::get_bin()."/jackt_qzt";
+my $PLAY = "/usr/bin/mplayer";
+-x $JACKT or die "$!: $JACKT";
+
+## 
+
+## State machine:
+## init => started up
+## recording => recording audio
+## resting => recorded audio, transformed it to wav
+## dubbing => playing back main track and recording 
+my $state = "init";
+
+## The jack connection  to record
+my $jack_lhs = "Hydrogen:out_L";
+my $jack_in = "jin";
+my $jack_rhs = "qzt:jin";
+
+my $jt_pid;  ## PID of JackTee 
+my $key;
+while(my $inp = <STDIN>){
+    chomp $inp;
+    $inp eq 'q' and last;
+    $inp eq 'n' and $state = 'init';
+    if($state eq "init"){
+        ## Start recording
+
+        my @t = localtime();
+        
+         $pfx = sprintf("%04d%02d%02d%02d%02d%02d_", $t[5]+1900, $t[4]+1, $t[3], $t[2], $t[1], $t[0]);
+        $fn_rec = "$data_dir_name/$pfx$fn";
+        $fn++; # Finished with this for now, get ready for next recording
+        $jt_pid = &One20Proof::run_daemon("$JACKT -i $jack_in -o jout -f $fn_rec.raw") or die;
+        &One20Proof::handle_jack("connect $jack_lhs $jack_rhs");
+        $state = "recording";
+        print "STATE: RECORDING\n";
+        next;
+    } elsif($state eq "recording"){
+        &One20Proof::pkill($JACKT);
+        my $infn = "$fn_rec.raw";
+        my $outfn = "$fn_rec.wav";
+        my $sox_cmd = "sox -t raw -b 32 -e float -c 1 -r 48k $infn $outfn";
+        print `$sox_cmd`;
+        $state = "resting";
+        print "STATE: RESTING\n";
+        next;
+    }elsif($state eq "resting"){
+        $fn_dub = "$data_dir_name/$pfx$fn-$dub";
+        $dub++; # Finished with this for now, get ready for next dub
+        $jt_pid = &One20Proof::run_daemon("$JACKT -i $jack_in -o jout -f $fn_dub.raw") or die;
+        &One20Proof::handle_jack("connect $jack_lhs $jack_rhs");
+        &One20Proof::run_daemon("$PLAY -ao jack $fn_rec.wav") or die;
+        $state = "dubbing";        
+        print "STATE: DUBING\n";
+        next;
+    }elsif($state eq "dubbing"){
+        &One20Proof::pkill($JACKT);
+        &One20Proof::pkill($PLAY);
+        my $infn = "$fn_dub.raw";
+        my $outfn = "$fn_dub.wav";
+        my $sox_cmd = "sox -t raw -b 32 -e float -c 1 -r 48k $infn $outfn";
+        print `$sox_cmd`;
+        $state = "resting";
+        print "STATE: RESTING\n";
+        next;
+    }
+    
+}
+
