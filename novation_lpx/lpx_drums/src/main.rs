@@ -46,7 +46,7 @@ fn main() -> Result<(), Box<dyn Error>> {
         "read_input",
         move |_stamp, message, tx| {
             // let message = MidiMessage::from_bytes(message.to_vec());
-            eprintln!("MIDI From LPX: {message:?}");
+            // eprintln!("MIDI From LPX: {message:?}");
             if message.len() == 3 {
                 let message: [u8; 3] = message.try_into().unwrap();
                 tx.send(message).unwrap();
@@ -60,19 +60,19 @@ fn main() -> Result<(), Box<dyn Error>> {
     let midi_out: MidiOutput = MidiOutput::new("LpxDrumNote")?;
     let port_name = "port";
     let mut midi_note_out_port: MidiOutputConnection = midi_out.create_virtual(port_name)?;
-    eprintln!("Virtual MIDI Output port '{port_name}' is open");
+    // eprintln!("Virtual MIDI Output port '{port_name}' is open");
 
     // Establish the output for control signals
     let midi_out: MidiOutput = MidiOutput::new("LpxDrumCtl")?;
     let port_name = "port";
     let mut midi_ctl_out_port: MidiOutputConnection = midi_out.create_virtual(port_name)?;
-    eprintln!("Virtual MIDI Output port '{port_name}' is open");
+    // eprintln!("Virtual MIDI Output port '{port_name}' is open");
 
     // Create an output port to the LPX for sending it colour.
     let colour_out: MidiOutput = MidiOutput::new("LpxDrum")?;
     let port_name = "LpxDrumColourOut";
     let mut colour_port: MidiOutputConnection = colour_out.create_virtual(port_name)?;
-    eprintln!("Virtual MIDI Output port '{port_name}' is open");
+    // eprintln!("Virtual MIDI Output port '{port_name}' is open");
 
     // Initialise the LPX
     let msg: [u8; 9] = [240, 0, 32, 41, 2, 12, 0, 1, 247];
@@ -101,10 +101,10 @@ fn main() -> Result<(), Box<dyn Error>> {
             Ok(m) => m,
             Err(err) => panic!("{}", err),
         };
-        eprintln!("loop message:{message:?}");
+        //eprintln!("loop message:{message:?}");
         if message[0] == 144 {
             // All MIDI notes from LPX start with 144, for initial noteon and noteoff
-            let velocity = message[2];
+            let _velocity = message[2];
 
             // Find the section the pad is in
             let pad: u8 = message[1];
