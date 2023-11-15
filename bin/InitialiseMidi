@@ -78,7 +78,7 @@ sub process_line( $ ){
     my $line = shift or die;
     chomp $line;
 
-    $line =~ /^([^\t]+)\t([^\t]+)$/  or die $line;
+    $line =~ /^([^\t]+)\t([^\t]+)$/  or die "'$line'";
     return ($1, $2);
 }    
 

@@ -3,7 +3,7 @@
         "pad": 11,
         "width": 4,
         "height": 4,
-        "main_colour": [1, 1, 127],
+        "main_colour": [127, 0, 0],
         "active_colour": [1, 62, 127],
         "midi_note": 36
     },
@@ -11,7 +11,7 @@
         "pad": 15,
         "width": 4,
         "height": 4,
-        "main_colour": [1, 127, 127],
+        "main_colour": [0, 0, 127],
         "active_colour": [1, 62, 127],
         "midi_note": 37
     },
@@ -19,7 +19,7 @@
         "pad": 51,
         "width": 2,
         "height": 2,
-        "main_colour": [127, 1, 127],
+        "main_colour": [0, 127, 0],
         "active_colour": [1, 62, 127],
         "midi_note": 38
     },
@@ -27,7 +27,7 @@
         "pad": 53,
         "width": 2,
         "height": 2,
-        "main_colour": [127, 127, 127],
+        "main_colour": [127, 0, 127],
         "active_colour": [1, 62, 127],
         "midi_note": 39
     },
@@ -43,7 +43,7 @@
         "pad": 57,
         "width": 2,
         "height": 2,
-        "main_colour": [65, 127, 127],
+        "main_colour": [127, 127, 0],
         "active_colour": [1, 62, 127],
         "midi_note": 41
     }
@@ -52,7 +52,7 @@
         "pad": 71,
         "width": 2,
         "height": 2,
-        "main_colour": [127, 127, 65],
+        "main_colour": [0, 127, 127],
         "active_colour": [1, 62, 127],
         "midi_note": 42
     },
@@ -60,7 +60,7 @@
         "pad": 73,
         "width": 2,
         "height": 2,
-        "main_colour": [127, 1, 65],
+        "main_colour": [65, 0, 0],
         "active_colour": [1, 62, 127],
         "midi_note": 43
     },
@@ -68,7 +68,7 @@
         "pad": 75,
         "width": 2,
         "height": 2,
-        "main_colour": [65, 127, 65],
+        "main_colour": [65, 65, 0],
         "active_colour": [1, 62, 127],
         "midi_note": 44
     },
@@ -76,7 +76,7 @@
         "pad": 77,
         "width": 2,
         "height": 2,
-        "main_colour": [65, 1, 65],
+        "main_colour": [65, 0, 65],
         "active_colour": [1, 62, 127],
         "midi_note": 45
     }

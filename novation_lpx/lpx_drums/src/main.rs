@@ -46,6 +46,7 @@ fn main() -> Result<(), Box<dyn Error>> {
         "read_input",
         move |_stamp, message, tx| {
             // let message = MidiMessage::from_bytes(message.to_vec());
+            eprintln!("MIDI From LPX: {message:?}");
             if message.len() == 3 {
                 let message: [u8; 3] = message.try_into().unwrap();
                 tx.send(message).unwrap();
@@ -56,9 +57,15 @@ fn main() -> Result<(), Box<dyn Error>> {
 
     // Establish the output to the drum sythesiser that will make the
     // drum sounds
-    let midi_out: MidiOutput = MidiOutput::new("LpxDrum")?;
-    let port_name = "LpxDrumMidiOut";
-    let mut out_port: MidiOutputConnection = midi_out.create_virtual(port_name)?;
+    let midi_out: MidiOutput = MidiOutput::new("LpxDrumNote")?;
+    let port_name = "port";
+    let mut midi_note_out_port: MidiOutputConnection = midi_out.create_virtual(port_name)?;
+    eprintln!("Virtual MIDI Output port '{port_name}' is open");
+
+    // Establish the output for control signals
+    let midi_out: MidiOutput = MidiOutput::new("LpxDrumCtl")?;
+    let port_name = "port";
+    let mut midi_ctl_out_port: MidiOutputConnection = midi_out.create_virtual(port_name)?;
     eprintln!("Virtual MIDI Output port '{port_name}' is open");
 
     // Create an output port to the LPX for sending it colour.
@@ -96,7 +103,7 @@ fn main() -> Result<(), Box<dyn Error>> {
         };
         eprintln!("loop message:{message:?}");
         if message[0] == 144 {
-            // All MIDI notes from LPX start with 144
+            // All MIDI notes from LPX start with 144, for initial noteon and noteoff
             let velocity = message[2];
 
             // Find the section the pad is in
@@ -104,27 +111,30 @@ fn main() -> Result<(), Box<dyn Error>> {
             for section in sections.iter() {
                 if section.pad_in(pad) {
                     // got the section for a pad
-                    eprintln!("Found section: Pad: {pad} message: {message:?} Section: {section}");
+
                     // Send out the note
                     let velocity = message[2];
                     let message: [u8; 3] = [message[0], section.midi_note, velocity];
-                    out_port.send(&message)?;
+                    midi_note_out_port.send(&message)?;
 
                     if velocity > 0 {
                         // Note on
                         // Set colour of section to "active_colour"
                         let active_colour = make_colour(section, section.active_colour);
-                        eprintln!("Send active colour: {active_colour:?}");
+
                         colour_port.send(&active_colour).unwrap();
                     } else {
                         // Not off
                         // Restore the colour
                         let main_colour = make_colour(section, section.main_colour);
-                        eprintln!("Send main colour: {main_colour:?}");
+
                         colour_port.send(&main_colour).unwrap();
                     }
                 }
             }
+        } else if message[0] == 176 {
+            // A control signal
+            midi_ctl_out_port.send(&message).unwrap();
         }
     }
     // Ok(())
