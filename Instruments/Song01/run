@@ -3,6 +3,14 @@ use strict;
 use lib("$ENV{'Home120Proof'}/Perl");
 use One20Proof;
 
+## Any files that match this template, created during the recording
+## state, are used as backing in the dubbing state
+my $output_template = shift or die "Must have an output template";
+my $backing_track = undef;
+
+## Process output files and discard silent ones
+use Audio::Wav;
+
 my $name = "Song01";
 
 ## Directory to write files to
@@ -16,72 +24,134 @@ my $fn_rec = undef;
 my $fn_dub = undef;
 my $pfx = undef;
 
-my $JACKT = &One20Proof::get_bin()."/jackt_qzt";
+my $JACKREC = &One20Proof::get_bin()."/jackrec_qzt";
+-x $JACKREC or die "$!: $JACKREC";
 my $PLAY = "/usr/bin/mplayer";
--x $JACKT or die "$!: $JACKT";
+-x $PLAY or die "$!: $PLAY";
 
-## 
 
 ## State machine:
-## init => started up
-## recording => recording audio
-## resting => recorded audio, transformed it to wav
+## init => get ready to record a track
+## recording => recording a track
 ## dubbing => playing back main track and recording 
 my $state = "init";
 
-## The jack connection  to record
-my $jack_lhs = "Hydrogen:out_L";
-my $jack_in = "jin";
-my $jack_rhs = "qzt:jin";
 
-my $jt_pid;  ## PID of JackTee 
 my $key;
-while(my $inp = <STDIN>){
+my $inp = "n";
+while(1){
     chomp $inp;
     $inp eq 'q' and last;
-    $inp eq 'n' and $state = 'init';
+    if($inp eq 'n'){
+        # Finished with `$fn`  for now, get it ready for the next recording
+        $fn++; 
+        $state = 'init';
+    }
     if($state eq "init"){
-        ## Start recording
 
+        ## Prepare to record a new track
+        $backing_track = undef;
         my @t = localtime();
         
-         $pfx = sprintf("%04d%02d%02d%02d%02d%02d_", $t[5]+1900, $t[4]+1, $t[3], $t[2], $t[1], $t[0]);
+        $pfx = sprintf("%04d%02d%02d%02d%02d%02d_",
+                       $t[5]+1900, $t[4]+1, $t[3], $t[2], $t[1], $t[0]);
         $fn_rec = "$data_dir_name/$pfx$fn";
-        $fn++; # Finished with this for now, get ready for next recording
-        $jt_pid = &One20Proof::run_daemon("$JACKT -i $jack_in -o jout -f $fn_rec.raw") or die;
-        &One20Proof::handle_jack("connect $jack_lhs $jack_rhs");
+
+        print "Press <enter> to  record  (q to quit)\n";
+
         $state = "recording";
-        print "STATE: RECORDING\n";
-        next;
-    } elsif($state eq "recording"){
-        &One20Proof::pkill($JACKT);
-        my $infn = "$fn_rec.raw";
-        my $outfn = "$fn_rec.wav";
-        my $sox_cmd = "sox -t raw -b 32 -e float -c 1 -r 48k $infn $outfn";
-        print `$sox_cmd`;
-        $state = "resting";
-        print "STATE: RESTING\n";
-        next;
-    }elsif($state eq "resting"){
+     } elsif($state eq "recording"){
+        print "Press <enter> to stop recording\n";
+        ## This blocks and returns a JSON object
+        my $result = `$JACKREC $fn_rec`;
+        print "Processing...\n";
+        my %out_file_stats = process_jackrec($result);
+        my @possible_backing = grep{/$output_template/} keys %out_file_stats;
+        my $avg = -9999999;
+        foreach my $p (@possible_backing){
+            my $_a = $out_file_stats{$p};
+            if($_a != 0 and $_a > $avg){
+                $avg = $_a;
+                $backing_track = $p;
+            }
+        }
+        defined($backing_track) or die "No matching file has audio in it.  Cannot make a backing track for dubbing";
+
+        $state = "dubbing";
+        #print "STATE: RESTING\n";
+        print "$backing_track\nPress <enter> to overdub\n";
+     }elsif($state eq "dubbing"){
         $fn_dub = "$data_dir_name/$pfx$fn-$dub";
         $dub++; # Finished with this for now, get ready for next dub
-        $jt_pid = &One20Proof::run_daemon("$JACKT -i $jack_in -o jout -f $fn_dub.raw") or die;
-        &One20Proof::handle_jack("connect $jack_lhs $jack_rhs");
-        &One20Proof::run_daemon("$PLAY -ao jack $fn_rec.wav") or die;
-        $state = "dubbing";        
-        print "STATE: DUBING\n";
-        next;
-    }elsif($state eq "dubbing"){
-        &One20Proof::pkill($JACKT);
-        &One20Proof::pkill($PLAY);
-        my $infn = "$fn_dub.raw";
-        my $outfn = "$fn_dub.wav";
-        my $sox_cmd = "sox -t raw -b 32 -e float -c 1 -r 48k $infn $outfn";
-        print `$sox_cmd`;
-        $state = "resting";
-        print "STATE: RESTING\n";
-        next;
-    }
-    
+        ## This blocks and returns a JSON object
+        print "Press <enter> to stop overdubbing\n";
+        &One20Proof::run_daemon("$PLAY -ao jack $backing_track") or die;
+        my $result = `$JACKREC $fn_dub`;
+        print "Processing\n";
+        process_jackrec($result);
+        
+        print "Press <enter> to overdub again  (q to quit.  n for another track\n";
+        #print "STATE: DUBING\n";
+     }
+    $inp = <STDIN>;    
 }
 
+sub process_jackrec {
+
+    ## Process the raw audio
+    ## Return a hash of the wav files generated and their stats
+    my %result = ();
+    my $result = shift or die "Pass jackrec_qzt output";
+    $result =~ /output_files\": \[\s+(.+)\s+\]\s+}$/s;
+    my $fns = $1;
+    $fns =~ s/\s*\n\s*//g;
+    my @fns = map{s/\"(.+)\"$/$1/; $_} split(/,/, $fns);
+
+    
+    foreach my $fn (@fns) {
+        #        open(my $fh, $fn) or die "$!: $fn";
+        
+        my $fn2 = $fn;
+        $fn2 =~ s/raw$/wav/;
+        print `sox -t raw -b 32 -e float -c 1 -r 48k "$fn" -e signed-integer -b 16  "$fn2"`;
+        if(!$?){
+            unlink $fn or die "$!: unlink $fn";
+        }
+        $result{$fn2} = peaks($fn2);
+    }
+    return %result;
+    
+}
+# ffmpeg -i fooooo.wav -af astats=metadata=1:reset=1,ametadata=print:key=lavfi.astats.Overall.RMS_level:file=log.txt -f null -
+
+
+## Calculate the maximum, the average, and the minimum volume
+sub peaks {
+    my $fn = shift or die;
+    -r $fn or die "$!: Cannot read: $fn ";
+    my $result = `ffmpeg -loglevel quiet -i $fn -af astats=metadata=1:reset=1,ametadata=print:key=lavfi.astats.Overall.RMS_level:file=- -f null - `;
+    my @result = grep {/lavfi.astats.Overall.RMS_level=/} map{chomp; $_}split(/\n/, $result);
+    my @data = map{/lavfi.astats.Overall.RMS_level=(\S+)/; $1} grep {$_ ne "lavfi.astats.Overall.RMS_level=-inf"} @result;
+    my $positive_infinity = 99999999999;
+    my $negative_infinity = -1 * $positive_infinity;
+    
+    my ($avg, $sum, $max, $min) = (0, 0, $negative_infinity, $positive_infinity);
+    my $denom = scalar(@data);
+    
+    if ($denom ){
+        foreach my $datum (@data){
+            $sum += $datum;
+            $datum > $max and $max = $datum;
+            $datum < $min and $min = $datum;
+            $avg = $sum / $denom;
+        }
+    }else{
+        $max = 0;
+        $min = 0;
+        $avg = 0;
+    }
+    print sprintf("%0.3f %0.3f %0.3f $fn \n", $avg, $min, $max);
+    return $avg;
+}
+        
+    
