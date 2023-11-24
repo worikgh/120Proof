@@ -14,16 +14,33 @@ use One20Proof;
 ## as backing in the over dubbing 
 my $template = undef;
 my $prefix = undef;
+my $directory = undef;
+
 my $ARGC = @ARGV;
-for(my $i = 0; $i < ($ARGC - 1); $i++){
+my $backing_track = undef;
+## State machine:
+## init => get ready to record a track
+## recording => recording a track
+## dubbing => playing back main track and recording 
+my $state = "init";
+
+for(my $i = 0; $i < ($ARGC - 1); $i+=2){
+    ## The template for choosing which recorded audio to make a backing track
     $ARGV[$i] eq "-t" and $template = $ARGV[$i+1];
+
+    ## The prefix to use (defaults to YYYYMMDDhhmmss)
     $ARGV[$i] eq "-p" and $prefix = $ARGV[$i+1];
-    
+
+    ## If a backing track passed go straight to dubbing
+    $ARGV[$i] eq "-b" and $backing_track = $$ARGV[$i+1] and $state = "dubbing";
+
+    ## A directory can be passed.  This is used in audio/
+    $ARGV[$i] eq "-d" and $directory = $ARGV[$i+1];
 }
+
 defined $template  or die "Must have an output template";
 defined $prefix or $prefix = &std_pfx();
 
-my $backing_track = undef;
 
 ## Process output files and discard silent ones
 use Audio::Wav;
@@ -51,11 +68,6 @@ my $PLAY = "/usr/bin/mplayer";
 -x $PLAY or die "$!: $PLAY";
 
 
-## State machine:
-## init => get ready to record a track
-## recording => recording a track
-## dubbing => playing back main track and recording 
-my $state = "init";
 
 ## If the output template is in fact a readable file, go straight to
 ## dubbing state
@@ -81,11 +93,17 @@ my $inp = "\n";
 while(1){
     chomp $inp;
     $inp eq 'q' and last;
-    if($inp eq 'n'){
+    if($inp =~ /n(.*)\s*$/){
         # Finished with `$fn`  for now, get it ready for the next recording
         $fn++; 
         $state = 'init';
+
+        ## If passed a word starting wth 'n' update $dirctory
+        $directory = $1;
     }
+    defined($directory ) and
+        $audio_dir = "$ENV{'Home120Proof'}/.compositions/audio/$directory";
+       
     if($state eq "init"){
 
         ## Prepare to record a new track
@@ -127,7 +145,7 @@ while(1){
         print "Processing\n";
         process_jackrec($result);
         
-        print "Press <enter> to overdub again  (q to quit.  n for another track\n";
+        print "Press <enter> to overdub again  (q to quit.  n[directory] for another track\n";
 
      }
     $inp = <STDIN>;    
@@ -170,6 +188,7 @@ sub process_jackrec {
             my $fn2 = $fn;
             $fn2 =~ s/raw$/wav/;
             $fn2 =~ s/$data_dir/$audio_dir/;
+            -d $audio_dir or mkdir($audio_dir) or die "$!: $audio_dir";
             print `sox -t raw -b 32 -e float -c 1 -r 48k "$fn" -e signed-integer -b 16  "$fn2"`;
             # if(!$?){
             #     # unlink $fn or die "$!: unlink $fn";
