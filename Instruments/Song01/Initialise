@@ -2,7 +2,7 @@
 use strict;
 use lib("$ENV{'Home120Proof'}/Perl");
 use One20Proof;
-
+# o inhibit_exit=0
 my $HOME=$ENV{'Home120Proof'};
 -d $HOME or die "$!: $HOME";
 
@@ -12,6 +12,7 @@ my $PD=&One20Proof::get_pd;
 &One20Proof::run_daemon("$PD  -jack -path $HOME/Instruments/Song01/patches/ -send \"; pd dsp 1\"  -realtime -stdpath  -nogui  MidiLoops.pd");
 
 my $LPX_DRUMS="$HOME/bin/lpx_drums";
+-x $LPX_DRUMS or die "$!: $LPX_DRUMS";
 &One20Proof::pkill($LPX_DRUMS);
 &One20Proof::run_daemon("$LPX_DRUMS $HOME/Instruments/Song01/drum_pattern_02.json");
 

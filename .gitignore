@@ -54,3 +54,15 @@ Cargo.lock
 .gdb_history
 target
 120ProofPedal
+Instruments/GuitarEffects1/
+# Instruments/Song01/_Inline/
+Instruments/Song01/data/
+Instruments/Song01/log.txt
+Instruments/Song01/patches/
+Instruments/Song01/samples/
+*/_Inline
+_Inline
+bin/120ProofPd
+bin/commands
+bin/jackrec_qzt
+bin/jackt_qzt
