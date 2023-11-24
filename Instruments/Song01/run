@@ -6,6 +6,7 @@ use One20Proof;
 ## Any files that match this template, created during the recording
 ## state, are used as backing in the dubbing state
 my $output_template = shift or die "Must have an output template";
+
 my $backing_track = undef;
 
 ## Process output files and discard silent ones
@@ -36,9 +37,27 @@ my $PLAY = "/usr/bin/mplayer";
 ## dubbing => playing back main track and recording 
 my $state = "init";
 
+## If the output template is in fact a readable file, go straight to
+## dubbing state
+if(-r $output_template){
+    $state = "dubbing";
+    $backing_track = $output_template;
+
+    ## If the backing track is one this programme has made that can be
+    ## used to help in the file name
+    my $id = "";
+    if($backing_track =~ /\d{14}(\S+).wav$/){
+        $id = $1.'_';
+    }
+    ## Other wise if the file name is a reasonable name use it as id
+    elsif($backing_track =~ /([a-zA-Z_\-\d\:\.]+)\.wav$/){
+        $id = $1.'_';
+    }
+    $pfx = &std_pfx().$id;
+}
 
 my $key;
-my $inp = "n";
+my $inp = "\n";
 while(1){
     chomp $inp;
     $inp eq 'q' and last;
@@ -51,10 +70,8 @@ while(1){
 
         ## Prepare to record a new track
         $backing_track = undef;
-        my @t = localtime();
         
-        $pfx = sprintf("%04d%02d%02d%02d%02d%02d_",
-                       $t[5]+1900, $t[4]+1, $t[3], $t[2], $t[1], $t[0]);
+        $pfx = &std_pfx();
         $fn_rec = "$data_dir_name/$pfx$fn";
 
         print "Press <enter> to  record  (q to quit)\n";
@@ -83,15 +100,15 @@ while(1){
      }elsif($state eq "dubbing"){
         $fn_dub = "$data_dir_name/$pfx$fn-$dub";
         $dub++; # Finished with this for now, get ready for next dub
-        ## This blocks and returns a JSON object
         print "Press <enter> to stop overdubbing\n";
         &One20Proof::run_daemon("$PLAY -ao jack $backing_track") or die;
+        ## This blocks and returns a JSON object
         my $result = `$JACKREC $fn_dub`;
         print "Processing\n";
         process_jackrec($result);
         
         print "Press <enter> to overdub again  (q to quit.  n for another track\n";
-        #print "STATE: DUBING\n";
+
      }
     $inp = <STDIN>;    
 }
@@ -123,6 +140,12 @@ sub process_jackrec {
     
 }
 # ffmpeg -i fooooo.wav -af astats=metadata=1:reset=1,ametadata=print:key=lavfi.astats.Overall.RMS_level:file=log.txt -f null -
+
+sub std_pfx {
+    my @t = localtime();
+    return sprintf("%04d%02d%02d%02d%02d%02d_",
+                   $t[5]+1900, $t[4]+1, $t[3], $t[2], $t[1], $t[0]);
+}
 
 
 ## Calculate the maximum, the average, and the minimum volume
