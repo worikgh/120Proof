@@ -23,32 +23,38 @@ while(1){
     $o->update();
     my $output = $o->output();
     if($output){
-	my $time = scalar(localtime());
 
-	## Do some processing	
-	my @output = split(/\n/, $output);
-	foreach my $l (@output){
-	    $lines_since_time++;
-	    chomp $l;
-	    if($l =~ /yoshimi\.out:(.+)/){
-		print $yoshimi_f->process_line($l);
-	    }elsif($l =~ /yoshimi\.err:(.+)/){
-		print $yoshimi_e->process_line($l);
-	    }else{
-		print "$l\n";
-	    }
-	}
+        my @time = localtime();
+        my $l = $#time;
+        my $pfx = sprintf("%02d:%02d:%02d:",
+                          $time[ 2], $time[1], $time[0]);  
+        my $time = scalar(localtime());
+
+        ## Do some processing	
+        my @output = split(/\n/, $output);
+        foreach my $l (@output){
+            print $pfx;
+            $lines_since_time++;
+            chomp $l;
+            if($l =~ /yoshimi\.out:(.+)/){
+                print $yoshimi_f->process_line($l);
+            }elsif($l =~ /yoshimi\.err:(.+)/){
+                print $yoshimi_e->process_line($l);
+            }else{
+                print "$l\n";
+            }
+        }
     }
     my $yoshimi_f_summary = $yoshimi_f->summary();
     my $yoshimi_e_summary = $yoshimi_e->summary();
     my $summary = $yoshimi_e_summary . $yoshimi_f_summary;
 
     if($summary){
-	if($lines_since_time > 20){
-	    print scalar(localtime())."\n";
-	    $lines_since_time = 0;
-	}
-	print $summary;
+        if($lines_since_time > 20){
+            print scalar(localtime())."\n";
+            $lines_since_time = 0;
+        }
+        print $summary;
     }
     sleep(.5);
 }
