@@ -52,7 +52,7 @@ sub wait_for_midi( $ ) {
 
             ##      Connecting To: 128:0, 131:0
             ##      Connected From: 128:0
-
+            
             if($ac =~ /^\s+Conn/){
                 next;
             }
@@ -79,7 +79,9 @@ sub process_line( $ ){
     chomp $line;
 
     $line =~ /^([^\t]+)\t([^\t]+)$/  or die "'$line'";
-    return ($1, $2);
+    my @result =  ($1, $2);
+
+    @result;
 }    
 
 sub set_up_midi( $ ) {
@@ -184,12 +186,13 @@ sub set_up_midi( $ ) {
     ## Read in the midi connections that are wanted from the
     ## configuration file
     open(my $cfg, $cfg_fn) or die $!;
-    my $flag = 0;
+    my $flag = 1;
     while(my $line = <$cfg>){
+        $line =~ /__END__/ and last;
         $line =~ /^MIDI_Connections/ and $flag = 1 and next;
         $line =~ /^\s*#/ and next; ## Comments
         if($line =~ /^\s*$/){
-            $flag = 0;  # End of a section
+            # $flag = 0;  # End of a section
             next;
         }
         if($flag){
@@ -219,7 +222,7 @@ sub set_up_midi( $ ) {
 
     ## Got all the connections that need to be deleted.
     my @to_delete =  keys(%connections_to_delete);
-    print "To Delete:\n".join("\n", @to_delete)."\n";
+    print "To Delete:\n".join(",", @to_delete)."\n";
     sub del_con( $ ) {
         my ($l) = @_;
         my $cmd = "aconnect -d $l";
@@ -238,7 +241,7 @@ sub set_up_midi( $ ) {
         $? == 0 or print STDERR "Failed $?: $cmd \n";
     }
     my @to_connect = keys %connections_to_make;
-    print "To Connect:\n".join("\n", @to_connect)."\n";
+    print "To Connect:\n".join(", ", @to_connect)."\n";
     foreach my $l (@to_connect){
         &make_con($l);
     }

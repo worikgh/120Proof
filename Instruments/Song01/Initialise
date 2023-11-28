@@ -11,12 +11,16 @@ my $PD=&One20Proof::get_pd;
 &One20Proof::pkill($PD);
 &One20Proof::run_daemon("$PD  -jack -path $HOME/Instruments/Song01/patches/ -send \"; pd dsp 1\"  -realtime -stdpath  -nogui  MidiLoops.pd");
 
+my $LPX_BLANK_SCREEN="$HOME/bin/lpx_blank_screen";
+-x $LPX_BLANK_SCREEN or die "$!: $LPX_BLANK_SCREEN";
 my $LPX_DRUMS="$HOME/bin/lpx_drums";
 -x $LPX_DRUMS or die "$!: $LPX_DRUMS";
+&One20Proof::pkill($LPX_BLANK_SCREEN);
 &One20Proof::pkill($LPX_DRUMS);
+&One20Proof::run_daemon("$LPX_BLANK_SCREEN ", 1);
 &One20Proof::run_daemon("$LPX_DRUMS $HOME/Instruments/Song01/drum_pattern_02.json");
 
-
+sleep 1;
 print `$HOME/bin/InitialiseMidi $HOME/Instruments/Song01/midi.cfg`;
 
 

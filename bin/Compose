@@ -155,6 +155,7 @@ sub process_jackrec {
 
     ## Process the raw audio
     ## Return a hash of the wav files generated and their stats
+    my $start  = time();
     my %result = ();
     my $result = shift or die "Pass jackrec_qzt output";
     $result =~ /output_files\": \[\s+(.+)\s+\]\s+}$/s;
@@ -180,22 +181,25 @@ sub process_jackrec {
             $float > 1.0 and die "$n: $float";
             $float < $min and $min = $float;
             $float > $max and $max = $float;
+
+            # Optimisation
+            $max + (-1 * $min) > 0.01 and last;
+            
             $n++;
         }
 
-        # Ignore sound files with no audio
+        # Only process files with audio with audio
         if($max + (-1 * $min) > 0.01){
             my $fn2 = $fn;
             $fn2 =~ s/raw$/wav/;
             $fn2 =~ s/$data_dir/$audio_dir/;
             -d $audio_dir or mkdir($audio_dir) or die "$!: $audio_dir";
             print `sox -t raw -b 32 -e float -c 1 -r 48k "$fn" -e signed-integer -b 16  "$fn2"`;
-            # if(!$?){
-            #     # unlink $fn or die "$!: unlink $fn";
-            # }
             $result{$fn2} = peaks($fn2);
+            unlink $fn or die "$!: unlink $fn";
         }
     }
+    print("Processing files took: ".(time() - $start)." seconds\n");
     return %result;
     
 }

@@ -1,3 +1,4 @@
+extern crate midir;
 use midi_connection::MIDICommunicator;
 
 use std::env;
