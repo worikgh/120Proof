@@ -473,16 +473,15 @@ sub all_jack_connections {
         ## 1. Name the LHS. Line starts with no white space
         ## 2. Name a RHS.  Line starts with three spaces
         ## 3. Kind of pipe.  Can be audio or MIDI
-        ## Herein only do audio Jack pipes.
 
         ## LHS: TODO: Is pipe name always non-white space only?
-        if($l =~ /^(\S+)$/){
+        if($l =~ /^(\S.*)$/){
             $lhs = $1;
             next;
         }
 
         ## A RHS
-        if($l =~ /^   (\S+)$/){
+        if($l =~ /^   (\S.*)$/){
             push(@rhs, $1);
             next;
         }
@@ -491,9 +490,10 @@ sub all_jack_connections {
         if($l =~ /^\t(.+)/){
             my $type_dfn = $1;
             if($type_dfn =~ /audio/){
-                @rhs and push(@result, map{"$lhs $_"} @rhs);
+                @rhs and push(@result, map{"\"$lhs\" \"$_\""} @rhs);
             }elsif($type_dfn =~ /midi/){
-                ## Do nothing
+                ## Disconnect the midi too
+                @rhs and push(@result, map{"\"$lhs\" \"$_\""} @rhs);
             }
             $lhs = undef;
             @rhs = ();

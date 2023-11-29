@@ -66,3 +66,5 @@ bin/120ProofPd
 bin/commands
 bin/jackrec_qzt
 bin/jackt_qzt
+.compositions/
+*.h2song
