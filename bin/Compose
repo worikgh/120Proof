@@ -8,21 +8,23 @@ use One20Proof;
 ## Facilitate composing live loops.  Recording via Jack and overdubbing
 
 ## Usage:
-## 120Proof/bin/Compose [-t <template>] [-p <prefix>]
+## 120Proof/bin/Compose -t <template> [-p <prefix>] [-b <backing track>]
+
+## State machine:
+## init => get ready to record a track.  Start state
+## recording => recording a track
+## dubbing => playing back main track and recording 
+my $state = "init";
 
 ## `template`: any files created during recording that match, are used
 ## as backing in the over dubbing 
 my $template = undef;
+
 my $prefix = undef;
 my $directory = undef;
+my $backing_track = undef;
 
 my $ARGC = @ARGV;
-my $backing_track = undef;
-## State machine:
-## init => get ready to record a track
-## recording => recording a track
-## dubbing => playing back main track and recording 
-my $state = "init";
 
 for(my $i = 0; $i < ($ARGC - 1); $i+=2){
     ## The template for choosing which recorded audio to make a backing track
@@ -43,9 +45,6 @@ defined $prefix or $prefix = &std_pfx();
 
 
 ## Process output files and discard silent ones
-use Audio::Wav;
-
-my $name = "Song01";
 
 ## Directory to write all files to
 my $data_dir = "$ENV{'Home120Proof'}/.compositions";
@@ -57,9 +56,12 @@ my $audio_dir = "$ENV{'Home120Proof'}/.compositions/audio";
 
 my $fn = 1;  ## Name files with this
 my $dub = 1; ## Name dubs with this
+
 # Set to the raw recording file name, and dub name, not extension, of a recording
 my $fn_rec = undef;
 my $fn_dub = undef;
+
+
 my $pfx = undef;
 
 my $JACKREC = &One20Proof::get_bin()."/jackrec_qzt";
