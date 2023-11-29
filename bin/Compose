@@ -3,6 +3,9 @@ use strict;
 use lib("$ENV{'Home120Proof'}/Perl");
 use One20Proof;
 
+## Debug with: o inhibit_exit=0
+
+
 ## Compose
 
 ## Facilitate composing live loops.  Recording via Jack and overdubbing
@@ -62,7 +65,7 @@ my $fn_rec = undef;
 my $fn_dub = undef;
 
 
-my $pfx = undef;
+my $pfx = $prefix;
 
 my $JACKREC = &One20Proof::get_bin()."/jackrec_qzt";
 -x $JACKREC or die "$!: $JACKREC";
@@ -111,7 +114,7 @@ while(1){
         ## Prepare to record a new track
         $backing_track = undef;
         
-        $pfx = &std_pfx();
+        $pfx = $pfx // &std_pfx();
         $fn_rec = "$data_dir/$pfx$fn";
 
         print "Press <enter> to  record  (q to quit)\n";
