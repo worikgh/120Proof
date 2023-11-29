@@ -44,7 +44,7 @@ for(my $i = 0; $i < ($ARGC - 1); $i+=2){
 
 defined $template  or die "Must have an output template";
 defined $prefix or $prefix = &std_pfx();
-
+defined $directory or $directory = &std_dir();
 
 ## Process output files and discard silent ones
 
@@ -62,7 +62,7 @@ my $dub = 1; ## Name dubs with this
 # Set to the raw recording file name, and dub name, not extension, of a recording
 my $fn_rec = undef;
 my $fn_dub = undef;
-
+my $fn_dir = undef;
 
 my $pfx = $prefix;
 
@@ -98,15 +98,17 @@ while(1){
     chomp $inp;
     $inp eq 'q' and last;
     if($inp =~ /n(.*)\s*$/){
-        # Finished with `$fn`  for now, get it ready for the next recording
+        #  Get ready for the next recording
         $fn++; 
         $state = 'init';
 
         ## If passed a word starting wth 'n' update $dirctory
-        $directory = $1;
+        $1 and $directory = $1;
     }
-    defined($directory ) and
+    if(defined($directory )){
         $audio_dir = "$ENV{'Home120Proof'}/.compositions/audio/$directory";
+        -d $audio_dir or mkdir($audio_dir) or die "$!: mkdir $audio_dir";
+    }
        
     if($state eq "init"){
 
@@ -114,7 +116,10 @@ while(1){
         $backing_track = undef;
         
         $pfx = $pfx // &std_pfx();
-        $fn_rec = "$data_dir/$pfx$fn";
+         $fn_dir = "$audio_dir/$fn";
+        -d $fn_dir or mkdir($fn_dir) or die "$!: mkdir $fn_dir";
+        
+        $fn_rec = "$fn_dir/$pfx";
 
         print "Press <enter> to  record  (q to quit)\n";
 
@@ -140,7 +145,7 @@ while(1){
         #print "STATE: RESTING\n";
         print "$backing_track\nPress <enter> to overdub\n";
      }elsif($state eq "dubbing"){
-        $fn_dub = "$data_dir/$pfx$fn-$dub";
+        $fn_dub = $fn_rec."-$dub";
         $dub++; # Finished with this for now, get ready for next dub
         print "Press <enter> to stop overdubbing\n";
         &One20Proof::run_daemon("$PLAY -ao jack $backing_track") or die;
@@ -196,12 +201,10 @@ sub process_jackrec {
         if($max + (-1 * $min) > 0.01){
             my $fn2 = $fn;
             $fn2 =~ s/raw$/wav/;
-            $fn2 =~ s/$data_dir/$audio_dir/;
-            -d $audio_dir or mkdir($audio_dir) or die "$!: $audio_dir";
             print `sox -t raw -b 32 -e float -c 1 -r 48k "$fn" -e signed-integer -b 16  "$fn2"`;
             $result{$fn2} = peaks($fn2);
-            unlink $fn or die "$!: unlink $fn";
         }
+        unlink $fn or die "$!: unlink $fn";
     }
     print("Processing files took: ".(time() - $start)." seconds\n");
     return %result;
@@ -210,8 +213,11 @@ sub process_jackrec {
 # ffmpeg -i fooooo.wav -af astats=metadata=1:reset=1,ametadata=print:key=lavfi.astats.Overall.RMS_level:file=log.txt -f null -
 
 sub std_pfx {
+    return "Compose";
+}
+sub std_dir {
     my @t = localtime();
-    return sprintf("%04d%02d%02d%02d%02d%02d_",
+    return sprintf("%04d-%02d-%02dT%02d:%02d:%02d",
                    $t[5]+1900, $t[4]+1, $t[3], $t[2], $t[1], $t[0]);
 }
 
