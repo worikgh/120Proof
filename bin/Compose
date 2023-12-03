@@ -96,6 +96,10 @@ my $pfx = $prefix;
 my $JACKREC = &One20Proof::get_bin()."/jackrec_qzt";
 -x $JACKREC or die "$!: $JACKREC";
 
+## Programme to measure max amplitude of raw audio to reject silent files
+my $AMPLITUDE = &One20Proof::get_bin()."/raw_audio_threshold_qzt";
+-x $AMPLITUDE or die "$!:  $AMPLITUDE";
+
 ## Used to replay the recording hile overdubbing
 my $PLAY = "/usr/bin/mplayer";
 -x $PLAY or die "$!: $PLAY";
@@ -185,7 +189,8 @@ while(1){
             }
         }
         defined($backing_track) or
-            die "No matching file has audio in it.  Cannot make a backing track for dubbing";
+            die "No matching file has audio in it. ".
+            "Cannot make a backing track for dubbing";
 
         $state = $dubbing;
         print "$backing_track\n";
@@ -196,6 +201,7 @@ while(1){
         &One20Proof::run_daemon("$PLAY -ao jack $backing_track") or die;
         ## This blocks and returns a JSON object
         my $result = `$JACKREC $fn_dub`;
+        print `killall mplayer`;
         print "Processing\n";
         process_jackrec($result);
         
@@ -219,30 +225,9 @@ sub process_jackrec {
     
     foreach my $fn (@fns) {
         #        open(my $fh, $fn) or die "$!: $fn";
-        open(my $fh, $fn) or die "$!: $fn";
-        my $buffer;
-        my ($min, $max) = (0, 0);
-        my $n = 0;
-        while(1) {
-            my $offset = $n * 4;
-            my $read = read($fh, $buffer, 4);
-            $read or last;
-            $read != 4 and die "$!: Read $read bytes";
-            # Unpack bytes as a little-endian single-precision float
-            my $float = unpack 'f<', $buffer;
-            $float < -1.0 and die "$n: $float";
-            $float > 1.0 and die "$n: $float";
-            $float < $min and $min = $float;
-            $float > $max and $max = $float;
-
-            # Optimisation
-            $max + (-1 * $min) > 0.01 and last;
-            
-            $n++;
-        }
-
+        my $amp = `$AMPLITUDE $fn`;
         # Only process files with audio with audio
-        if($max + (-1 * $min) > 0.01){
+        if($amp > 0.01){
             my $fn2 = $fn;
             $fn2 =~ s/raw$/wav/;
             # SOX command: sox -t raw -b 32 -e float -c 1 -r 48k "-1_yoshimi-Song1:left.raw" -e signed-integer -b 16  "-1_yoshimi-Song1:left.wav" 
