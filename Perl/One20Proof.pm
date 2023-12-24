@@ -537,7 +537,7 @@ sub initialise_yoshimi( $$ ) {
     -x $bin or die "Cannot find yoshimi. Not:  '$bin'";
 
     ## MIDI client will be named "yoshimi-$name". Port will be 0
-    my $cmd = "$bin  -i -J --alsa-midi=120Proof -c -K -L '$instrument' -N $name -R 48000";
+    my $cmd = "$bin  -I -J --alsa-midi=120Proof -c -K -L '$instrument' -N $name -R 48000";
 
     &run_daemon($cmd);
     &wait_for_jack($name) or die "Jack: $name not found";
