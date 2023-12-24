@@ -68,6 +68,7 @@ impl Section {
     fn valid_pad(pad: u8) -> bool {
         (11..=88).contains(&pad) && pad % 10 != 0 && pad % 10 != 9
     }
+
     // Check a set of `Section` to see if they are valid as a grouop
     pub fn check_sections(sections:&Vec<Section>) -> Result<(), LpxDrumError> {
         for i in 0..sections.len() {

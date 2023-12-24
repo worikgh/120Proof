@@ -6,9 +6,9 @@ use std::fmt;
 #[derive(Debug)]
 pub enum LpxDrumError {
     InvalidSection,
-    IntersectingSections(Section, Section),
-    DuplicateMainColour(Section, Section),
-    DuplicateMIDI(Section, Section),
+    IntersectingSections(Section, Section), // Sections intersect
+    DuplicateMainColour(Section, Section), // > 1 section same colour
+    DuplicateMIDI(Section, Section), // >1 section same MIDI
 }
 
 impl fmt::Display for LpxDrumError {

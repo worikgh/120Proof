@@ -2,7 +2,7 @@
 use strict;
 use lib("$ENV{'Home120Proof'}/Perl");
 use One20Proof;
-
+# o inhibit_exit=0
 ## Debug with: o inhibit_exit=0
 
 ## Compose
@@ -135,6 +135,14 @@ my $key;
 ## The input from the user.
 my $inp = "\n";
 
+## Can `$directory` be undefined?
+defined($directory) or warn "\$directory is undefined!!\n";    
+if(defined($directory )){
+    $audio_dir = "$ENV{'Home120Proof'}/.compositions/audio/$directory";
+    ### FIXME  `mkdir -p`
+    -d $audio_dir or mkdir($audio_dir) or die "$!: mkdir $audio_dir";
+}
+
 while(1){
     chomp $inp;
     $inp eq 'q' and last;
@@ -144,12 +152,6 @@ while(1){
         $state = $init;
     }
 
-    ## Can `$directory` be undefined?
-    defined($directory) or warn "\$directory is undefined!!\n";    
-    if(defined($directory )){
-        $audio_dir = "$ENV{'Home120Proof'}/.compositions/audio/$directory";
-        -d $audio_dir or mkdir($audio_dir) or die "$!: mkdir $audio_dir";
-    }
        
     if($state eq $init){
 
@@ -159,7 +161,7 @@ while(1){
         $pfx = $prefix;
         ## Todo: Test what is present in the file system and set `$fn`
         ## accordingly
-        warn "Do the work here to fix up file naming";
+        ## FIXME "Do the work here to fix up file naming";
 
         $fn_dir = "$audio_dir/$fn";
         -d $fn_dir or mkdir($fn_dir) or die "$!: mkdir $fn_dir";

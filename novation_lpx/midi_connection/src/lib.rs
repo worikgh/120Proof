@@ -136,7 +136,7 @@ impl<T: std::fmt::Debug + Send> MIDICommunicator<T> {
             // related to MIDI output
             let midi_out = midir::MidiOutput::new(this_name)?;
 
-            println!("other_name: {other_name}");
+            // println!("other_name: {other_name}");
             let source_port = other_name.to_string().into_bytes();
 
             for (index, port) in midi_out.ports().iter().enumerate() {
@@ -144,8 +144,8 @@ impl<T: std::fmt::Debug + Send> MIDICommunicator<T> {
                 match midi_out.port_name(port) {
                     Err(_) => continue,
                     Ok(port_name) => {
-                        eprintln!("port_name: {port_name}");
-                        eprintln!("source_port: {other_name}");
+                        // eprintln!("port_name: {port_name}");
+                        // eprintln!("source_port: {other_name}");
                         let port_name = port_name.into_bytes();
                         let mut accept: bool = true;
 
@@ -156,7 +156,7 @@ impl<T: std::fmt::Debug + Send> MIDICommunicator<T> {
                             }
                         }
                         if accept {
-                            eprintln!("Accepted: ");
+                            // eprintln!("Accepted: ");
                             // Can build an output connection
                             let port = midi_out
                                 .ports()
