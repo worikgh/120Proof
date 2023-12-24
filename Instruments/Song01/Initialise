@@ -10,9 +10,9 @@ my $HOME=$ENV{'Home120Proof'};
 ## Get all Jack Audio
 my @jack_connections = &One20Proof::all_jack_connections();
 #print join("\n", @jack_connections)."\n";
-my $PD=&One20Proof::get_pd;
-&One20Proof::pkill($PD);
-&One20Proof::run_daemon("$PD  -jack -path $HOME/Instruments/Song01/patches/ -send \"; pd dsp 1\"  -realtime -stdpath  -nogui  MidiLoops.pd");
+# my $PD=&One20Proof::get_pd;
+# &One20Proof::pkill($PD);
+# &One20Proof::run_daemon("$PD  -jack -path $HOME/Instruments/Song01/patches/ -send \"; pd dsp 1\"  -realtime -stdpath  -nogui ");
 
 my $LPX_BLANK_SCREEN="$HOME/bin/lpx_blank_screen";
 -x $LPX_BLANK_SCREEN or die "$!: $LPX_BLANK_SCREEN";
@@ -21,10 +21,10 @@ my $LPX_DRUMS="$HOME/bin/lpx_drums";
 &One20Proof::pkill($LPX_BLANK_SCREEN);
 &One20Proof::pkill($LPX_DRUMS);
 &One20Proof::run_daemon("$LPX_BLANK_SCREEN ", 1);
-&One20Proof::run_daemon("$LPX_DRUMS $HOME/Instruments/Song01/drum_pattern_02.json");
+&One20Proof::run_daemon("$LPX_DRUMS $HOME/Instruments/Song01/lpx_pads.json");
 
 ## The music file for yoshimi
-my $instrument = "$HOME/Instruments/xiz/Hammond Organ.xiz";
+my $instrument = "$HOME/Instruments/xiz/FM Bass 1.xiz";
 `killall yoshimi`; # Hack!
 &One20Proof::initialise_yoshimi("Song1", $instrument);
 sleep 1;
