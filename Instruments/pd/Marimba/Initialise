@@ -1,0 +1,12 @@
+#!/usr/bin/perl -w
+use strict;
+use lib("$ENV{'Home120Proof'}/Perl");
+use One20Proof;
+
+my $Home120Proof = $ENV{Home120Proof};
+my $exe = &One20Proof::get_pd;
+-x $exe or die "Cannot execute $exe";
+&One20Proof::pkill($exe);
+$0 =~ /^(.*\/)[^\/]+$/ or die "Cannot get directory";
+my $dir = $1;
+&One20Proof::run_daemon("$exe  -path $dir -nogui -rt -send \"; pd dsp 1\" -alsamidi -midiindev 1 Marimba.pd");
