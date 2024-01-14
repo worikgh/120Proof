@@ -1,0 +1,44 @@
+{
+  "samples_descr": [
+    {
+      "path": "samples/Kick-Hardest.wav",
+      "note": 33
+    },
+    {
+      "path": "samples/TomFloor-Hardest.wav",
+      "note": 34
+    },
+    {
+      "path": "samples/Tom1-Hardest.wav",
+      "note": 35
+    },
+    {
+      "path": "samples/Tom1-Softest.wav",
+      "note": 36
+    },
+    {
+      "path": "samples/SideStick-Hardest.wav",
+      "note": 37
+    },
+    {
+      "path": "samples/SideStick-Softest.wav",
+      "note": 38
+    },
+    {
+      "path": "samples/Ride-Hardest.wav",
+      "note": 39
+    },
+    {
+      "path": "samples/Ride-Softest.wav",
+      "note": 40
+    },
+    {
+      "path": "samples/HatOpen-Soft.wav",
+      "note": 41
+    },
+    {
+      "path": "samples/HandClap.wav",
+      "note": 42
+    }
+  ]
+}

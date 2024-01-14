@@ -1,0 +1,17 @@
+#!/usr/bin/perl -w
+use strict;
+use lib("$ENV{'Home120Proof'}/Perl");
+use One20Proof;
+
+my $Home120Proof = $ENV{Home120Proof};
+my $exe = "$Home120Proof/bin/lpx_ctl";
+-x $exe or die "Cannot execute $exe";
+
+my $hd = $0;
+$hd =~ s/\/[^\/]+$// or die $!;
+
+my $cfg = "$hd/sections.json";
+-r $cfg or die "$hd cannot read $cfg";
+warn "$exe $cfg";
+&One20Proof::pkill($exe);
+&One20Proof::run_daemon("$exe $cfg");
