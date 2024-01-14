@@ -67,3 +67,4 @@ bin/jackrec_qzt
 bin/jackt_qzt
 .compositions/
 *.h2song
+*.raw
