@@ -7,10 +7,18 @@ my $Home120Proof = $ENV{Home120Proof};
 my $exe = "$Home120Proof/bin/lpx_ctl";
 -x $exe or die "Cannot execute $exe";
 
+my $init_midi = "$Home120Proof/bin/InitialiseMidi";
+-x $init_midi or die "$!: Cannot exec $init_midi";
+
 my $hd = $0;
 $hd =~ s/\/[^\/]+$// or die $!;
 
 my $cfg = "$hd/sections.json";
 -r $cfg or die "$hd cannot read $cfg";
+my $midi_cfg = "$hd/midi.cfg";
+-r $midi_cfg or die "$hd cannot read $midi_cfg";
+
 &One20Proof::pkill($exe);
 &One20Proof::run_daemon("$exe $cfg");
+&One20Proof::run_daemon("$exe $cfg");
+&One20Proof::run_daemon("$init_midi $midi_cfg");
