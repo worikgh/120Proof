@@ -1,0 +1,80 @@
+## Run qzn3t/lpx_ctl/make_cfg with this as inoutr and direct stdout to
+## "sections.json"
+
+# Seven colours for 7 notes in scale
+22 127 0 c
+127 32 0 d
+127 127 0 e
+32 127 32 f
+127 0 0 g
+0 127 96 a
+32 0 127 b
+16 16 16 act
+0 0 0 black
+
+MIDI_ADJ 3
+
+
+
+# Row 1
+s_g-4 g act 36 [11]
+s_a-3 a act 37 [12]
+s_b-3 b act 38 [13]
+s_c-3 c act 39 [14]
+s_d-3 d act 40 [15]
+
+# Row 2
+s_e-3 e act 41 [21, 16]
+s_f-3 f act 42 [22, 17]
+s_g-3 g act 43 [23, 18]
+s_a-2 a act 44 [24]
+s_b-2 b act 45 [25]
+
+# Row 3
+s_c-2 c act 46 [31, 26]
+s_d-2 d act 47 [32, 27]
+s_e-2 e act 48 [33, 28]
+s_f-2 f act 49 [34]
+s_g-2 g act 50 [35]
+
+
+# Row 4
+s_a-1 a act 51 [41, 36]
+s_b-1 b act 52 [42, 37]
+s_c-1 c act 53 [43, 38]
+s_d-1 d act 54 [44]
+s_e-1 e act 55 [45]
+
+# Row 5
+s_f-1 f  act 56 [51, 46]
+s_g-1 g  act 57 [52, 47]
+s_a a    act 58 [53, 48]
+s_b b    act 59 [54]
+s_midc c act 60 [55]
+
+# Row 6
+s_d   d act 61 [61, 56]
+s_e   e act 62 [62, 57]
+s_f   f act 63 [63, 58]
+s_g   g act 64 [64]
+s_a_1 a act 65 [65]
+
+# Row 7
+s_b_1 b act 66 [71, 66]
+s_c_1 c act 67 [72, 67]
+s_d_1 d act 68 [73, 68]
+s_e_1 e act 69 [74]
+s_f_1 f act 70 [75]
+
+# Row 8
+s_g_1 g act 71 [81, 76]
+s_a_2 a act 72 [82, 77]
+s_b_2 b act 73 [83, 78]
+s_c_2 c act 74 [84]
+s_d_2 d act 75 [85]
+s_e_2 e act 76 [86]
+s_f_2 f act 77 [87]
+s_g_2 g act 78 [88]
+
+
+default black act 60 []
