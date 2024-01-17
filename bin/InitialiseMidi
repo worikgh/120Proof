@@ -272,22 +272,15 @@ sub set_up_midi( $ ) {
 ## sometimes it is: "128:0[real:0]".
 
 
-## Parse 1.  Build an array of port records for clients with a PID or card. .  (Just the connecting To lines will be enough).  In each record store device number, port number, PID or card, and connecting to line.  Subsequent parses are over this array
+## Parse 1.  Build an array of port records for clients with a PID or
+## card. .  (Just the connecting To lines will be enough).  In each
+## record store device number, port number, PID or card, and
+## connecting to line.  Subsequent parses are over this array
 
 ## Parse 2: Get the devceID of every client record with a PID or card number.
 ## Put these in @device_ids 
 
 ## Parse 3: For every port record with a deviceID $prID where $prID is in  @device_ids, evry deviceID in the ConectingTo line, $clID, if $clID is in @deviceIDs then "$prID $clID" is a connection that 120Proof cares about.
-
-
-sub delete_all(){
-    my @all_midi = &One20Proof::list_all_midi();
-    foreach my $midi_desc (@all_midi){
-        my $disconnect_string =
-            "aconnect -d $$midi_desc[0]:$$midi_desc[1] $$midi_desc[2]:$$midi_desc[3]"; 
-        print `$disconnect_string`;
-    }
-}
 
 sub list_all_midi {
 
@@ -367,6 +360,15 @@ sub list_all_midi {
     push(@ret, keys(%existing_connections_to));
     push(@ret, keys(%existing_connections_from));
     return @ret;
+}
+
+sub delete_all(){
+    my @all_midi = &One20Proof::list_all_midi();
+    foreach my $midi_desc (@all_midi){
+        my $disconnect_string =
+            "aconnect -d $$midi_desc[0]:$$midi_desc[1] $$midi_desc[2]:$$midi_desc[3]"; 
+        print `$disconnect_string`;
+    }
 }
 
 my $arg = shift or die "pass an argument";
