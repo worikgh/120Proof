@@ -12,6 +12,6 @@ $hd =~ s/\/[^\/]+$// or die $!;
 
 my $cfg = "$hd/config.json";
 -r $cfg or die "$hd cannot read $cfg";
-warn "$exe $cfg";
+
 &One20Proof::pkill($exe);
 &One20Proof::run_daemon("$exe $cfg");
