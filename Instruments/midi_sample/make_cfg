@@ -1,0 +1,54 @@
+#!/usr/bin/perl -w
+use strict;
+
+my $name = shift or die;
+my $samples_dir = shift or die;
+-d $samples_dir or die "$!: $samples_dir";
+
+$0 =~ /^(.*)\//;
+my $dir = "$1/$name";
+-d $dir or mkdir $dir or die "$!: $dir";
+
+sub get_files {
+    my ($root_dir) = @_;
+
+    # Array to store file paths
+    my @files;
+
+    # Open root directory
+    opendir(my $dir_handle, $root_dir) or
+	die "Failed to open directory $root_dir: $!";
+    my @dir_contents = readdir($dir_handle);
+    closedir($dir_handle);
+
+    foreach my $file (@dir_contents) {
+        # Skip current and parent directories
+        next if $file =~ /^\.+$/;
+
+        my $file_path = "$root_dir/$file";
+
+        if (-d $file_path) {
+            # Recursively call get_files if a subdirectory is found
+            push @files, get_files($file_path);
+        } elsif (-f $file_path) {
+            # Add file path to the array if a regular file is found
+            push @files, $file_path;
+        }
+    }
+
+    return @files;
+}
+
+
+
+my $note = 0;
+my $out = "{\n\"samples_descr\": [\n";
+my @descriptions = map {$note++;
+			"\t{\n\t\t\"path\": \"$_\",\n\t\t\"note\": $note\n\t}";
+}grep {/\.wav$/} get_files($samples_dir);
+$out .= join(",\n", @descriptions)."\n";
+$out .= "]\n}";
+
+open(my $fh, ">$dir/config.json") or die "$!: $dir";
+
+print $fh "$out\n";

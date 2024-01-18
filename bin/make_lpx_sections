@@ -1,0 +1,80 @@
+#!/usr/bin/perl -w
+use strict;
+# Make configuration files for lpx.
+#
+# Only argument is a configuration file.
+# The configuration file consists of two parts:
+# (1) Colour definitions: <r> <g> <b> <name>
+# <r>, <g>, <b> in 0..127
+# <name> is a label
+# E.g: 127 0 0 red
+#      46 47 48 teal
+#       0  0 127 blue
+#       0  127 0 green
+#
+# (2) Section definitions
+# <section name> <colour name main> <colour name active> <MIDI>
+# E.g: section1 red green 60 [78, 79, 88, 89]
+#      section2 teal green 53 [11, 12, 13, 21, 22, 23]
+#      default blue green 54 []
+#
+# Output is a JSON file to configure lpx_ctl
+# {
+#  "pads": [<zero or more pad indexes>],
+#  "main_colour":[0, 0, 127],
+#  "active_colour":[0, 127, 0],
+#  "midi_note": 60
+# }
+my $cfg_fn = shift or die;
+
+-r $cfg_fn or die "$! Cannot read $cfg_fn";
+#-w $out_fn or die "$! Cannot write $out_fn";
+
+my %colours = ();
+my %section_definitions = ();
+
+# For scaling MIDI
+my $midi_adj = 0;
+
+open(my $cfg_fh, $cfg_fn) or die $!;
+my $ln = 0;
+while(my $line = <$cfg_fh>){
+    $ln++;
+    chomp $line;
+    $line =~ /^\s*$/ and next;
+    $line =~ /^\s*\#/ and next;
+    if($line =~ /^(\d+)\s+(\d+)\s+(\d+)\s+(\w+)\s*$/){
+	$colours{$4} and die "$4 defined twice"; 
+	$colours{$4} = [$1, $2, $3];
+	next;
+    }
+    if($line =~ /^([\-\w]+)\s+(\w+)\s+(\w+)\s+(\d+)\s+\[([\d+,\s+]*)\]\s*$/){
+	defined $section_definitions{$1} and die "$1 is defined section twice";
+	my @pads = split(/,\s+?/, $5);
+	$section_definitions{$1} = [\@pads, $2, $3, $4 + $midi_adj];
+	next;
+    }
+    if($line =~ /^\s*MIDI_ADJ\s*(-?\d+)\s*$/){
+	$midi_adj = $1;
+	next;
+    }
+    die "$ln: $line";
+}
+
+print "[\n";
+my @sects = ();
+foreach my $sec (sort keys %section_definitions){
+    my @pads = @{$section_definitions{$sec}->[0]};
+    my $array_ref = $colours{$section_definitions{$sec}->[1]};
+    my $main_colour = "[".join(", ", @{$array_ref})."]";
+    my $active_colour = "[".join(", ", @{$colours{$section_definitions{$sec}->[2]}})."]";
+    my $midi_note = $section_definitions{$sec}->[3];
+    my $sect =  "{\n". "\t\"pads\": [" . join(",", @pads)."],\n". "\t\"main_colour\":$main_colour,\n". "\t\"active_colour\":$active_colour,\n". "\t\"midi_note\":$midi_note\n". "}\n";
+    push (@sects , $sect);
+}
+
+
+print join(",", @sects);
+print "]\n";
+
+

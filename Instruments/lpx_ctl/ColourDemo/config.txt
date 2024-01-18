@@ -1,0 +1,133 @@
+127 0 0 Red
+127 32 0 Brick_Red
+127 64 0 Burnt_Orange
+127 96 0 Dark_Orange
+127 127 0 Orange
+96 127 0 Orange_Yellow
+64 127 0 Gold
+32 127 0 Yellow
+0 127 0 Lime
+0 127 32 Bright_Green
+0 127 64 Mint_Green
+0 127 96 Turquoise
+0 127 127 Teal
+0 96 127 Deep_Teal
+0 64 127 Deep_Sea
+0 32 127 Ocean_Blue
+0 0 127 Royal_Blue
+32 0 127 Midnight_Blue
+64 0 127 Indigo
+96 0 127 Grape
+127 0 127 Purple
+127 0 96 Dark_Magenta
+127 0 64 Red_violet
+127 0 32 Violet_Red
+127 64 64 Salmon
+64 127 64 Spring_green
+64 64 127 Cornflower_Blue
+127 96 96 Pinkish_Tan
+96 127 96 Pale_Olive
+96 96 127 Periwinkle
+127 127 96 Pale_Yellow
+96 127 127 Aquamarine
+64 64 64 Grey
+96 0 32 Maroon
+64 32 0 Umber
+32 64 0 Olive
+0 96 32 Forest_Green
+0 64 64 Teal_grey
+32 0 96 Gothic
+64 0 32 Burgundy
+32 0 64 Amethyst
+64 32 32 Terracotta
+32 64 64 Greyish_Teal
+32 32 64 Cornflower
+64 96 32 Sage
+32 96 64 Frost
+32 64 96 Steel_Blue
+0 32 96 Ultramarine
+0 0 64 Navy_Blue
+96 32 0 Rust
+64 64 0 Olive_Drab
+32 32 0 Hunter_Green
+0 64 32 Emerald_Green
+0 0 32 Sapphire_Blue
+32 0 0 Dark_Brown
+32 64 32 Fern
+0 32 64 Lapis_Blue
+32 0 32 Plum
+64 96 96 Tea_Green
+96 64 64 Cinnamon_pink
+64 32 64 Smoky_Pink
+
+127 127 127 WHITE
+0 0 0 BLACK
+
+
+s1 Red WHITE 20 [11]
+s2 Brick_Red WHITE 21 [12]
+s3 Burnt_Orange WHITE 22 [13]
+s4 Dark_Orange WHITE 23 [14]
+s5 Orange WHITE 24 [15]
+s6 Orange_Yellow WHITE 25 [16]
+s7 Gold WHITE 26 [17]
+s8 Yellow WHITE 27 [18]
+s9 Lime WHITE 28 [21]
+s10 Bright_Green WHITE 30 [22]
+s11 Mint_Green WHITE 31 [23]
+s12 Turquoise WHITE 32 [24]
+s13 Teal WHITE 33 [25]
+s14 Deep_Teal WHITE 34 [26]
+s15 Deep_Sea WHITE 35 [27]
+s16 Ocean_Blue WHITE 36 [28]
+s17 Royal_Blue WHITE 37 [31]
+s18 Midnight_Blue WHITE 31 [32]
+s19 Indigo WHITE 40 [33]
+s20 Grape WHITE 41 [34]
+s21 Purple WHITE 42 [35]
+s22 Dark_Magenta WHITE 43 [36]
+s23 Red_violet WHITE 44 [37]
+s24 Violet_Red WHITE 45 [38]
+s25 Salmon WHITE 46 [41]
+s26 Spring_green WHITE 47 [42]
+s27 Cornflower_Blue WHITE 48 [43]
+s28 Pinkish_Tan WHITE 49 [44]
+s29 Pale_Olive WHITE 50 [45]
+s30 Periwinkle WHITE 51 [46]
+s31 Pale_Yellow WHITE 52 [47]
+s32 Aquamarine WHITE 53 [48]
+s33 Grey WHITE 54 [51]
+s34 Maroon WHITE 55 [52]
+s35 Umber WHITE 56 [53]
+s36 Olive WHITE 57 [54]
+s37 Forest_Green WHITE 58 [55]
+s38 Teal_grey WHITE 59 [56]
+s39 Gothic WHITE 60 [57]
+s40 Burgundy WHITE 61 [58]
+s41 Amethyst WHITE 62 [61]
+s42 Terracotta WHITE 63 [62]
+s43 Greyish_Teal WHITE 64 [63]
+s44 Cornflower WHITE 65 [64]
+s45 Sage WHITE 66 [65]
+s46 Frost WHITE 67 [66]
+s47 Steel_Blue WHITE 68 [67]
+s48 Ultramarine WHITE 69 [68]
+s49 Navy_Blue WHITE 70 [71]
+s50 Rust WHITE 71 [72]
+s51 Olive_Drab WHITE 72 [73]
+s52 Hunter_Green WHITE 73 [74]
+s53 Emerald_Green WHITE 75 [75]
+s54 Sapphire_Blue WHITE 76 [76]
+s55 Dark_Brown WHITE 77 [77]
+s56 Fern WHITE 78 [78]
+s57 Lapis_Blue WHITE 79 [81]
+s58 Plum WHITE 80 [82]
+s59 Tea_Green WHITE 81 [83]
+s60 Cinnamon_pink WHITE 82 [84]
+s61 Smoky_Pink WHITE 83 [85]
+# s62 Sage_Green WHITE 84 [86]
+# s63 Washed_Out_Green WHITE 85 [87]
+s64 Smoky_Pink WHITE 86 [88]
+
+default WHITE BLACK 87 []
+

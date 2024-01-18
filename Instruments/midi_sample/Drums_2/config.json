@@ -1,0 +1,348 @@
+{
+  "samples_descr": [
+    {
+      "path": "samples/Splash-Softest.wav",
+      "note": 1
+    },
+    {
+      "path": "samples/HandClap.wav",
+      "note": 2
+    },
+    {
+      "path": "samples/SnareRimshot-Hard.wav",
+      "note": 3
+    },
+    {
+      "path": "samples/HatClosed-Med.wav",
+      "note": 4
+    },
+    {
+      "path": "samples/Kick-Hardest.wav",
+      "note": 5
+    },
+    {
+      "path": "samples/TomFloor-Soft.wav",
+      "note": 6
+    },
+    {
+      "path": "samples/Splash-Soft.wav",
+      "note": 7
+    },
+    {
+      "path": "samples/24Ride-5.wav",
+      "note": 8
+    },
+    {
+      "path": "samples/Tom1-Hardest.wav",
+      "note": 9
+    },
+    {
+      "path": "samples/Cowbell-Hard.wav",
+      "note": 10
+    },
+    {
+      "path": "samples/Splash-Med.wav",
+      "note": 11
+    },
+    {
+      "path": "samples/Cowbell-Med.wav",
+      "note": 12
+    },
+    {
+      "path": "samples/Bell-Med.wav",
+      "note": 13
+    },
+    {
+      "path": "samples/SnareRimshot-Hardest.wav",
+      "note": 14
+    },
+    {
+      "path": "samples/SideStick-Soft.wav",
+      "note": 15
+    },
+    {
+      "path": "samples/HatClosed-Hard.wav",
+      "note": 16
+    },
+    {
+      "path": "samples/SnareRimshot-Med.wav",
+      "note": 17
+    },
+    {
+      "path": "samples/Snare-Hardest.wav",
+      "note": 18
+    },
+    {
+      "path": "samples/Ride-Softest.wav",
+      "note": 19
+    },
+    {
+      "path": "samples/Snare-Softest.wav",
+      "note": 20
+    },
+    {
+      "path": "samples/TomFloor-Softest.wav",
+      "note": 21
+    },
+    {
+      "path": "samples/Snare-Soft.wav",
+      "note": 22
+    },
+    {
+      "path": "samples/Crash-Softest.wav",
+      "note": 23
+    },
+    {
+      "path": "samples/Tom1-Hard.wav",
+      "note": 24
+    },
+    {
+      "path": "samples/Bell-Softest.wav",
+      "note": 25
+    },
+    {
+      "path": "samples/HatPedal-Med.wav",
+      "note": 26
+    },
+    {
+      "path": "samples/Kick-Softest.wav",
+      "note": 27
+    },
+    {
+      "path": "samples/SideStick-Softest.wav",
+      "note": 28
+    },
+    {
+      "path": "samples/Splash-Hard.wav",
+      "note": 29
+    },
+    {
+      "path": "samples/Cowbell-Hardest.wav",
+      "note": 30
+    },
+    {
+      "path": "samples/HatOpen-Soft.wav",
+      "note": 31
+    },
+    {
+      "path": "samples/Tom1-Softest.wav",
+      "note": 32
+    },
+    {
+      "path": "samples/TomFloor-Hardest.wav",
+      "note": 33
+    },
+    {
+      "path": "samples/Ride-Hard.wav",
+      "note": 34
+    },
+    {
+      "path": "samples/Tom1-Med.wav",
+      "note": 35
+    },
+    {
+      "path": "samples/HatClosed-Softest.wav",
+      "note": 36
+    },
+    {
+      "path": "samples/HatSemiOpen-Med.wav",
+      "note": 37
+    },
+    {
+      "path": "samples/Bell-Hardest.wav",
+      "note": 38
+    },
+    {
+      "path": "samples/24Ride-4.wav",
+      "note": 39
+    },
+    {
+      "path": "samples/Ride-Soft.wav",
+      "note": 40
+    },
+    {
+      "path": "samples/Ride-Med.wav",
+      "note": 41
+    },
+    {
+      "path": "samples/SideStick-Med.wav",
+      "note": 42
+    },
+    {
+      "path": "samples/Tom2-Softest.wav",
+      "note": 43
+    },
+    {
+      "path": "samples/SnareRimshot-Soft.wav",
+      "note": 44
+    },
+    {
+      "path": "samples/Tom2-Soft.wav",
+      "note": 45
+    },
+    {
+      "path": "samples/TomFloor-Med.wav",
+      "note": 46
+    },
+    {
+      "path": "samples/Bell-Hard.wav",
+      "note": 47
+    },
+    {
+      "path": "samples/Tom2-Hardest.wav",
+      "note": 48
+    },
+    {
+      "path": "samples/HatSemiOpen-Hardest.wav",
+      "note": 49
+    },
+    {
+      "path": "samples/Snare-Med.wav",
+      "note": 50
+    },
+    {
+      "path": "samples/Kick-Soft.wav",
+      "note": 51
+    },
+    {
+      "path": "samples/HatOpen-Hardest.wav",
+      "note": 52
+    },
+    {
+      "path": "samples/Splash-Hardest.wav",
+      "note": 53
+    },
+    {
+      "path": "samples/HatPedal-Softest.wav",
+      "note": 54
+    },
+    {
+      "path": "samples/HatOpen-Med.wav",
+      "note": 55
+    },
+    {
+      "path": "samples/SideStick-Hard.wav",
+      "note": 56
+    },
+    {
+      "path": "samples/HatSemiOpen-Hard.wav",
+      "note": 57
+    },
+    {
+      "path": "samples/HatClosed-Hardest.wav",
+      "note": 58
+    },
+    {
+      "path": "samples/Cowbell-Softest.wav",
+      "note": 59
+    },
+    {
+      "path": "samples/HatSemiOpen-Soft.wav",
+      "note": 60
+    },
+    {
+      "path": "samples/HatOpen-Hard.wav",
+      "note": 61
+    },
+    {
+      "path": "samples/HatSemiOpen-Softest.wav",
+      "note": 62
+    },
+    {
+      "path": "samples/HatOpen-Softest.wav",
+      "note": 63
+    },
+    {
+      "path": "samples/TomFloor-Hard.wav",
+      "note": 64
+    },
+    {
+      "path": "samples/HatClosed-Soft.wav",
+      "note": 65
+    },
+    {
+      "path": "samples/24Ride-2.wav",
+      "note": 66
+    },
+    {
+      "path": "samples/Crash-Hardest.wav",
+      "note": 67
+    },
+    {
+      "path": "samples/24Ride-3.wav",
+      "note": 68
+    },
+    {
+      "path": "samples/SnareRimshot-Softest.wav",
+      "note": 69
+    },
+    {
+      "path": "samples/Kick-Hard.wav",
+      "note": 70
+    },
+    {
+      "path": "samples/HatPedal-Soft.wav",
+      "note": 71
+    },
+    {
+      "path": "samples/Snare-Hard.wav",
+      "note": 72
+    },
+    {
+      "path": "samples/Crash-Med.wav",
+      "note": 73
+    },
+    {
+      "path": "samples/HatPedal-Hardest.wav",
+      "note": 74
+    },
+    {
+      "path": "samples/Kick-Med.wav",
+      "note": 75
+    },
+    {
+      "path": "samples/Tom2-Hard.wav",
+      "note": 76
+    },
+    {
+      "path": "samples/Crash-Soft.wav",
+      "note": 77
+    },
+    {
+      "path": "samples/SideStick-Hardest.wav",
+      "note": 78
+    },
+    {
+      "path": "samples/Tom2-Med.wav",
+      "note": 79
+    },
+    {
+      "path": "samples/HatPedal-Hard.wav",
+      "note": 80
+    },
+    {
+      "path": "samples/Tom1-Soft.wav",
+      "note": 81
+    },
+    {
+      "path": "samples/Bell-Soft.wav",
+      "note": 82
+    },
+    {
+      "path": "samples/Ride-Hardest.wav",
+      "note": 83
+    },
+    {
+      "path": "samples/Cowbell-Soft.wav",
+      "note": 84
+    },
+    {
+      "path": "samples/24Ride-1.wav",
+      "note": 85
+    },
+    {
+      "path": "samples/Crash-Hard.wav",
+      "note": 86
+    }
+  ]
+}

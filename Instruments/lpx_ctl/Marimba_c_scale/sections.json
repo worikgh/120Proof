@@ -1,0 +1,266 @@
+[
+{
+	"pads": [],
+	"main_colour":[0, 0, 0],
+	"active_colour":[16, 16, 16],
+	"midi_note":60
+}
+,{
+	"pads": [53,48],
+	"main_colour":[0, 127, 96],
+	"active_colour":[16, 16, 16],
+	"midi_note":58
+}
+,{
+	"pads": [41,36],
+	"main_colour":[0, 127, 96],
+	"active_colour":[16, 16, 16],
+	"midi_note":51
+}
+,{
+	"pads": [24],
+	"main_colour":[0, 127, 96],
+	"active_colour":[16, 16, 16],
+	"midi_note":44
+}
+,{
+	"pads": [12],
+	"main_colour":[0, 127, 96],
+	"active_colour":[16, 16, 16],
+	"midi_note":37
+}
+,{
+	"pads": [65],
+	"main_colour":[0, 127, 96],
+	"active_colour":[16, 16, 16],
+	"midi_note":65
+}
+,{
+	"pads": [82,77],
+	"main_colour":[0, 127, 96],
+	"active_colour":[16, 16, 16],
+	"midi_note":72
+}
+,{
+	"pads": [54],
+	"main_colour":[32, 0, 127],
+	"active_colour":[16, 16, 16],
+	"midi_note":59
+}
+,{
+	"pads": [42,37],
+	"main_colour":[32, 0, 127],
+	"active_colour":[16, 16, 16],
+	"midi_note":52
+}
+,{
+	"pads": [25],
+	"main_colour":[32, 0, 127],
+	"active_colour":[16, 16, 16],
+	"midi_note":45
+}
+,{
+	"pads": [13],
+	"main_colour":[32, 0, 127],
+	"active_colour":[16, 16, 16],
+	"midi_note":38
+}
+,{
+	"pads": [71,66],
+	"main_colour":[32, 0, 127],
+	"active_colour":[16, 16, 16],
+	"midi_note":66
+}
+,{
+	"pads": [83,78],
+	"main_colour":[32, 0, 127],
+	"active_colour":[16, 16, 16],
+	"midi_note":73
+}
+,{
+	"pads": [43,38],
+	"main_colour":[22, 127, 0],
+	"active_colour":[16, 16, 16],
+	"midi_note":53
+}
+,{
+	"pads": [31,26],
+	"main_colour":[22, 127, 0],
+	"active_colour":[16, 16, 16],
+	"midi_note":46
+}
+,{
+	"pads": [14],
+	"main_colour":[22, 127, 0],
+	"active_colour":[16, 16, 16],
+	"midi_note":39
+}
+,{
+	"pads": [72,67],
+	"main_colour":[22, 127, 0],
+	"active_colour":[16, 16, 16],
+	"midi_note":67
+}
+,{
+	"pads": [84],
+	"main_colour":[22, 127, 0],
+	"active_colour":[16, 16, 16],
+	"midi_note":74
+}
+,{
+	"pads": [61,56],
+	"main_colour":[127, 32, 0],
+	"active_colour":[16, 16, 16],
+	"midi_note":61
+}
+,{
+	"pads": [44],
+	"main_colour":[127, 32, 0],
+	"active_colour":[16, 16, 16],
+	"midi_note":54
+}
+,{
+	"pads": [32,27],
+	"main_colour":[127, 32, 0],
+	"active_colour":[16, 16, 16],
+	"midi_note":47
+}
+,{
+	"pads": [15],
+	"main_colour":[127, 32, 0],
+	"active_colour":[16, 16, 16],
+	"midi_note":40
+}
+,{
+	"pads": [73,68],
+	"main_colour":[127, 32, 0],
+	"active_colour":[16, 16, 16],
+	"midi_note":68
+}
+,{
+	"pads": [85],
+	"main_colour":[127, 32, 0],
+	"active_colour":[16, 16, 16],
+	"midi_note":75
+}
+,{
+	"pads": [62,57],
+	"main_colour":[127, 127, 0],
+	"active_colour":[16, 16, 16],
+	"midi_note":62
+}
+,{
+	"pads": [45],
+	"main_colour":[127, 127, 0],
+	"active_colour":[16, 16, 16],
+	"midi_note":55
+}
+,{
+	"pads": [33,28],
+	"main_colour":[127, 127, 0],
+	"active_colour":[16, 16, 16],
+	"midi_note":48
+}
+,{
+	"pads": [21,16],
+	"main_colour":[127, 127, 0],
+	"active_colour":[16, 16, 16],
+	"midi_note":41
+}
+,{
+	"pads": [74],
+	"main_colour":[127, 127, 0],
+	"active_colour":[16, 16, 16],
+	"midi_note":69
+}
+,{
+	"pads": [86],
+	"main_colour":[127, 127, 0],
+	"active_colour":[16, 16, 16],
+	"midi_note":76
+}
+,{
+	"pads": [63,58],
+	"main_colour":[32, 127, 32],
+	"active_colour":[16, 16, 16],
+	"midi_note":63
+}
+,{
+	"pads": [51,46],
+	"main_colour":[32, 127, 32],
+	"active_colour":[16, 16, 16],
+	"midi_note":56
+}
+,{
+	"pads": [34],
+	"main_colour":[32, 127, 32],
+	"active_colour":[16, 16, 16],
+	"midi_note":49
+}
+,{
+	"pads": [22,17],
+	"main_colour":[32, 127, 32],
+	"active_colour":[16, 16, 16],
+	"midi_note":42
+}
+,{
+	"pads": [75],
+	"main_colour":[32, 127, 32],
+	"active_colour":[16, 16, 16],
+	"midi_note":70
+}
+,{
+	"pads": [87],
+	"main_colour":[32, 127, 32],
+	"active_colour":[16, 16, 16],
+	"midi_note":77
+}
+,{
+	"pads": [64],
+	"main_colour":[127, 0, 0],
+	"active_colour":[16, 16, 16],
+	"midi_note":64
+}
+,{
+	"pads": [52,47],
+	"main_colour":[127, 0, 0],
+	"active_colour":[16, 16, 16],
+	"midi_note":57
+}
+,{
+	"pads": [35],
+	"main_colour":[127, 0, 0],
+	"active_colour":[16, 16, 16],
+	"midi_note":50
+}
+,{
+	"pads": [23,18],
+	"main_colour":[127, 0, 0],
+	"active_colour":[16, 16, 16],
+	"midi_note":43
+}
+,{
+	"pads": [11],
+	"main_colour":[127, 0, 0],
+	"active_colour":[16, 16, 16],
+	"midi_note":36
+}
+,{
+	"pads": [81,76],
+	"main_colour":[127, 0, 0],
+	"active_colour":[16, 16, 16],
+	"midi_note":71
+}
+,{
+	"pads": [88],
+	"main_colour":[127, 0, 0],
+	"active_colour":[16, 16, 16],
+	"midi_note":78
+}
+,{
+	"pads": [55],
+	"main_colour":[22, 127, 0],
+	"active_colour":[16, 16, 16],
+	"midi_note":60
+}
+]
