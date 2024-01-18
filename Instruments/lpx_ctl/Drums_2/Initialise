@@ -1,0 +1,35 @@
+#!/usr/bin/perl -w
+use strict;
+use lib("$ENV{'Home120Proof'}/Perl");
+use One20Proof;
+# o inhibit_exit=0
+my $Home120Proof = $ENV{Home120Proof};
+# $hd is the path to the directory that contains this Perl script
+my $hd = $0;
+$hd =~ s/\/[^\/]+$// or die $!;
+
+my $exe = "$Home120Proof/bin/lpx_ctl";
+-x $exe or die "Cannot execute $exe";
+
+my $make_cfg = "$Home120Proof/bin/make_lpx_sections";
+-x $make_cfg or die "Cannot execute $make_cfg";
+
+my $init_midi = "$Home120Proof/bin/InitialiseMidi";
+-x $init_midi or die "$!: Cannot exec $init_midi";
+
+my $cfg_txt = "$hd/drum_layout.txt";
+-r $cfg_txt or die "$!: $cfg_txt";
+
+my $cfg = "$hd/sections.json";
+open(my $cfg_fh, ">$cfg") or die "$!: $cfg";
+print $cfg_fh `$make_cfg $cfg_txt`;
+close($cfg_fh) or die "$!: $cfg";
+
+-r $cfg or die "$hd cannot read $cfg";
+
+my $midi_cfg = "$hd/midi.cfg";
+-r $midi_cfg or die "$hd cannot read $midi_cfg";
+
+&One20Proof::pkill($exe);
+&One20Proof::run_daemon("$exe $cfg");
+&One20Proof::run_daemon("$init_midi $midi_cfg");
