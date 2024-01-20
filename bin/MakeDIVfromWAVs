@@ -1,0 +1,54 @@
+#!/usr/bin/perl -w
+use strict;
+
+# Write a Perl function that takes as input and array of file paths, to WAV audio files and outputs a string like:
+# <div class="auto_music_div">
+# <audio src="foo.mp3" controls>
+#     Your browser does not support the audio tag.
+# </audio>
+# <audio src="bar.mp3" controls>
+#     Your browser does not support the audio tag.
+# </audio>
+# </div>
+
+# The function converts the wav file using `ffmpeg`
+
+sub create_audio_div {
+    my @file_paths = @_;
+    
+    my $html_output = '<div class="auto_music_div">'."\n";
+    
+    foreach my $file_path (@file_paths) {
+	-r $file_path or die "$!: $file_path";
+        # Check if the file is a valid WAV audio file
+        if ($file_path =~ /\.wav$/i) {
+            # Convert the wav file to mp3 using ffmpeg
+            my $mp3_file_path = $file_path;
+            $mp3_file_path =~ s/\.wav$/\.mp3/i;
+            my $ffmpeg_cmd = "ffmpeg -i \"$file_path\" -codec:a libmp3lame -qscale:a 2  \"$mp3_file_path\"";
+	    print "$ffmpeg_cmd\n";
+            # system($ffmpeg_cmd) == 0 or die "ffmpeg conversion failed: $?";
+            
+            # Generate the HTML code for the audio element
+            my $audio_code = '<audio src="'.$mp3_file_path.'" controls>'."\n";
+            $audio_code .= '    Your browser does not support the audio tag.'."\n";
+            $audio_code .= '</audio>'."\n";
+            
+            # Append the audio element to the HTML output
+            $html_output .= $audio_code;
+        }
+    }
+    
+    $html_output .= '</div>'."\n";
+    
+    return $html_output;
+}
+
+my $dir = shift or die "Pass a directory with WAV files";
+-d $dir or die "$!: $dir";
+
+opendir(my $d, $dir)  or die "$!: $dir";
+my @wavs = map {"$dir/$_"} grep {/\.wav/i} readdir($d);
+
+my $div = create_audio_div(@wavs);
+print $div;
