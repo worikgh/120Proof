@@ -67,11 +67,11 @@ defined $prefix or $prefix = &std_pfx();
 defined $directory or $directory = &std_dir();
 
 ## Directory to write all files to
-my $data_dir = "$ENV{'Home120Proof'}/.compositions";
+my $data_dir = "$ENV{'Home120Proof'}/compositions";
 -d $data_dir or mkdir($data_dir) or die "$!: Cannot mkdir $data_dir ";
 
 ## Directory to save files with audio in
-my $audio_dir = "$ENV{'Home120Proof'}/.compositions/audio";
+my $audio_dir = "$ENV{'Home120Proof'}/compositions/audio";
 -d $audio_dir or mkdir($audio_dir) or die "$!: Cannot mkdir $audio_dir ";
 
 ## Recorded files go in a directory named `$fn`
@@ -97,7 +97,7 @@ my $JACKREC = &One20Proof::get_bin()."/jackrec_qzt";
 -x $JACKREC or die "$!: $JACKREC";
 
 ## Programme to measure max amplitude of raw audio to reject silent files
-my $AMPLITUDE = &One20Proof::get_bin()."/raw_audio_threshold_qzt";
+my $AMPLITUDE = &One20Proof::get_bin()."/peak_volume";
 -x $AMPLITUDE or die "$!:  $AMPLITUDE";
 
 ## Used to replay the recording hile overdubbing
@@ -138,7 +138,7 @@ my $inp = "\n";
 ## Can `$directory` be undefined?
 defined($directory) or warn "\$directory is undefined!!\n";    
 if(defined($directory )){
-    $audio_dir = "$ENV{'Home120Proof'}/.compositions/audio/$directory";
+    $audio_dir = "$ENV{'Home120Proof'}/compositions/audio/$directory";
     ### FIXME  `mkdir -p`
     -d $audio_dir or mkdir($audio_dir) or die "$!: mkdir $audio_dir";
 }

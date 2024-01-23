@@ -12,12 +12,16 @@ use strict;
 # </div>
 
 # The function converts the wav file using `ffmpeg`
-
+sub get_all_files {
+    my ($dir) = @_;
+    my @files = `find $dir -type f -iname "*.wav"`;
+    chomp @files;
+    return @files;
+}
 sub create_audio_div {
     my @file_paths = @_;
     
-    my $html_output = '<div class="auto_music_div">'."\n";
-    
+    my @audio_divs = ();
     foreach my $file_path (@file_paths) {
 	-r $file_path or die "$!: $file_path";
         # Check if the file is a valid WAV audio file
@@ -25,30 +29,31 @@ sub create_audio_div {
             # Convert the wav file to mp3 using ffmpeg
             my $mp3_file_path = $file_path;
             $mp3_file_path =~ s/\.wav$/\.mp3/i;
-            my $ffmpeg_cmd = "ffmpeg -i \"$file_path\" -codec:a libmp3lame -qscale:a 2  \"$mp3_file_path\"";
-	    print "$ffmpeg_cmd\n";
+	    if(!-e $mp3_file_path){
+		my $ffmpeg_cmd = "ffmpeg -i \"$file_path\" -codec:a libmp3lame -qscale:a 2  \"$mp3_file_path\"";
+		print `$ffmpeg_cmd`;
+	    }
             # system($ffmpeg_cmd) == 0 or die "ffmpeg conversion failed: $?";
-            
+            my ($name) = $file_path =~ /^.+\/([^\/]+\/[^\/]+)$/;
+	    
             # Generate the HTML code for the audio element
-            my $audio_code = '<audio src="'.$mp3_file_path.'" controls>'."\n";
+            my $audio_code = "<h2> $name </h2>\n".'<audio src="'.$mp3_file_path.'" controls>'."\n";
             $audio_code .= '    Your browser does not support the audio tag.'."\n";
             $audio_code .= '</audio>'."\n";
-            
-            # Append the audio element to the HTML output
-            $html_output .= $audio_code;
+            push @audio_divs, $audio_code;
         }
+            # Append the audio element to the HTML output
     }
     
-    $html_output .= '</div>'."\n";
+    my $html_output .= join("", map{'<div class="auto_music_div">'."\n$_\n</div>\n"} @audio_divs);
     
     return $html_output;
 }
 
 my $dir = shift or die "Pass a directory with WAV files";
--d $dir or die "$!: $dir";
 
-opendir(my $d, $dir)  or die "$!: $dir";
-my @wavs = map {"$dir/$_"} grep {/\.wav/i} readdir($d);
+-d $dir or die "$!: $dir";
+my @wavs = get_all_files($dir);
 
 my $div = create_audio_div(@wavs);
 print $div;

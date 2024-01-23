@@ -12,12 +12,12 @@ It uses MIDI, USB, and audio inputs.
 
 ## Raspberry Pi
 
+* Raspberry Pi V
 
-* Soundcard:  [Pisound](https://blokas.io/pisound/)
 
-* Operating System:  [Patchbox OS](https://blokas.io/patchbox-os/) 
+## Instruments
 
-* [Raspberry Pi IV](https://www.raspberrypi.com/products/raspberry-pi-4-model-b/)
+
 
 ## MIDI Pedal
 
