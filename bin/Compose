@@ -2,77 +2,58 @@
 use strict;
 use lib("$ENV{'Home120Proof'}/Perl");
 use One20Proof;
-# o inhibit_exit=0
 ## Debug with: o inhibit_exit=0
 
 ## Compose
 
 ## Facilitate composing live loops.  Recording via Jack and overdubbing
 
+## Records everything connected to Jack with `qzn3t/jack_rec`
+## Converts the recordings to WAV files
+
 ## Usage:
-## 120Proof/bin/Compose -t <template> [-p <prefix>] [-b <backing track>]
+sub usage {
+    print STDERR "120Proof/bin/Compose [-p <prefix>] [-b <backing track>] [-d <directory>]\n";
+}
 
-## State machine:
-## init => get ready to record a track.  Start state
-my $init = 'init';
-## recording => recording a track
-my $recording = 'recording';
-## dubbing => playing back main track and recording
-my $dubbing = 'dubbing';
+# o inhibit_exit=0
+## `$file_pfx` is prefixed to all track file names.  Over ride with `-p`
+my $file_pfx = &std_pfx();
 
-my $state = $init;
+# `$directory` to write to
+my $directory = &std_dir();
 
-## Mesages to display to the user for each state
-my %state_msg = (
-    $init => 'Press <enter> to start recording',
-    $recording => 'Press <enter> to start recording',
-    $dubbing => 'Press <enter> to start overdubbing'
-    );
-
-## For all states append this message to the display
-my $msg_sfx = ' <q> to quit.  <n> for next recording';
-
-## `$template`: any files created during recording that match, are used
-## as backing in the over dubbing.
-my $template = undef;
-
-## `$prefix` is prefixed to all track file names
-my $prefix = undef;
-
-# `$directory` and `prefix` are confused ATM
-my $directory = undef;
-
-# Whe overdubbing this is the track played
+# When overdubbing this is the track played
 my $backing_track = undef;
 
 ## Process command line
 my $ARGC = @ARGV;
 for(my $i = 0; $i < ($ARGC - 1); $i+=2){
-    ## The template for choosing which recorded audio to make a backing track
-    $ARGV[$i] eq "-t" and $template = $ARGV[$i+1];
 
     ## The prefix to use (defaults to YYYYMMDDhhmmss)
-    $ARGV[$i] eq "-p" and $prefix = $ARGV[$i+1];
+    if($ARGV[$i] eq "-p"){
+	$file_pfx = $ARGV[$i+1];
+	continue;
+    }
 
     ## If a backing track passed go straight to dubbing
-    $ARGV[$i] eq "-b" and $backing_track = $ARGV[$i+1] and $state = $dubbing;
+    if($ARGV[$i] eq "-b" ){
+	$backing_track = $ARGV[$i+1];
+	continue;
+    }
 
     ## A directory can be passed.  This is used in audio/
-    $ARGV[$i] eq "-d" and $directory = $ARGV[$i+1];
+    if($ARGV[$i] eq "-d"){
+	$directory = $ARGV[$i+1];
+	continue;
+    }
+    &usage;
+    exit;
 }
-
-defined $template  or die "Must have an output template";
-## Identifier for this session.
-defined $prefix or $prefix = &std_pfx();
-defined $directory or $directory = &std_dir();
 
 ## Directory to write all files to
 my $data_dir = "$ENV{'Home120Proof'}/compositions";
 -d $data_dir or mkdir($data_dir) or die "$!: Cannot mkdir $data_dir ";
-
-## Directory to save files with audio in
-my $audio_dir = "$ENV{'Home120Proof'}/compositions/audio";
--d $audio_dir or mkdir($audio_dir) or die "$!: Cannot mkdir $audio_dir ";
 
 ## Recorded files go in a directory named `$fn`
 my $fn = 1;  
@@ -89,11 +70,11 @@ my $fn_dub = undef;
 ## ?????
 my $fn_dir = undef;
 
-# The copy of `$prefix` used in recording
-my $pfx = $prefix;
+# The copy of `$file_pfx` used in recording
+my $pfx = $file_pfx;
 
 ## `$JACKREC`  is a programme that reords all JAcl outputs as raw audio
-my $JACKREC = &One20Proof::get_bin()."/jackrec_qzt";
+my $JACKREC = &One20Proof::get_bin()."/jackrec";
 -x $JACKREC or die "$!: $JACKREC";
 
 ## Programme to measure max amplitude of raw audio to reject silent files
@@ -103,6 +84,25 @@ my $AMPLITUDE = &One20Proof::get_bin()."/peak_volume";
 ## Used to replay the recording hile overdubbing
 my $PLAY = "/usr/bin/mplayer";
 -x $PLAY or die "$!: $PLAY";
+
+# The state machine state.  Can be initialised via a command line
+# option so declared here
+## State machine:
+## init => get ready to record a track.  Start state
+my $init = 'init';
+## recording => recording a track
+my $recording = 'recording';
+## dubbing => playing back and recording
+my $dubbing = 'dubbing';
+my $state  = $init;
+
+## Mesages to display to the user for each state
+my %state_msg = (
+    $init => 'Press <enter> to start recording',
+    $recording => 'Press <enter> to start recording',
+    $dubbing => 'Press <enter> to start overdubbing'
+    );
+
 
 ## If the programme is initialised with a backing track go straight to
 ## dubbing mode
@@ -122,26 +122,29 @@ if(defined $backing_track){
         elsif($backing_track =~ /([a-zA-Z_\-\d\:\.]+)\.wav$/){
             $id = '_'.$1.'_';
         }
-        $pfx = $prefix.$id;
+        $pfx = $file_pfx.$id;
 
         ## `$fn_rec` must be set here as normally it is set in recording
         $backing_track =~ /([^\/]+)\.wav$/ or die "Backing track is not WAV \n$backing_track\n";
         $fn_rec = $1;
     }
 }
-# ???
-my $key;
 
-## The input from the user.
+# The directory to write data to.
+my $audio_dir = "$ENV{'Home120Proof'}/compositions/audio/$directory";
+
+### FIXME  `mkdir -p`
+## `man perlfunc`...
+# To recursively create a directory structure, look at the
+# "make_path" function of the File::Path module.
+
+-d $audio_dir or mkdir($audio_dir) or die "$!: mkdir $audio_dir";
+
+## The input from the user.  It always ends with a new line
 my $inp = "\n";
 
-## Can `$directory` be undefined?
-defined($directory) or warn "\$directory is undefined!!\n";    
-if(defined($directory )){
-    $audio_dir = "$ENV{'Home120Proof'}/compositions/audio/$directory";
-    ### FIXME  `mkdir -p`
-    -d $audio_dir or mkdir($audio_dir) or die "$!: mkdir $audio_dir";
-}
+## For all states append this message to the display
+my $msg_sfx = ' <q> to quit.  <n> for next recording';
 
 while(1){
     chomp $inp;
@@ -158,7 +161,7 @@ while(1){
         ## Prepare to record a new track
         $backing_track = undef;
         
-        $pfx = $prefix;
+        $pfx = $file_pfx;
         ## Todo: Test what is present in the file system and set `$fn`
         ## accordingly
         ## FIXME "Do the work here to fix up file naming";
@@ -178,7 +181,7 @@ while(1){
         my $result = `$JACKREC $fn_rec`;
         print "Processing...\n";
         my %out_file_stats = &process_jackrec($result);
-        my @possible_backing = grep{/$template/} keys %out_file_stats;
+        my @possible_backing =  keys %out_file_stats;
         my $avg = -9999999;
         foreach my $p (@possible_backing){
             my $_a = $out_file_stats{$p};
@@ -227,18 +230,26 @@ sub process_jackrec {
     
     foreach my $fn (@fns) {
         #        open(my $fh, $fn) or die "$!: $fn";
-        my $amp = `$AMPLITUDE $fn`;
+        my $amp = `$AMPLITUDE "$fn"`;
         # Only process files with audio with audio
         if($amp > 0.01){
             my $fn2 = $fn;
             $fn2 =~ s/raw$/wav/;
             # SOX command: sox -t raw -b 32 -e float -c 1 -r 48k "-1_yoshimi-Song1:left.raw" -e signed-integer -b 16  "-1_yoshimi-Song1:left.wav" 
-            my $sox_cmd = "sox -t raw -b 32 -e float -c 1 -r 48k \"$fn\" -e signed-integer -b 16  \"$fn2\"";
-            print "SOX command: $sox_cmd\n";
-            print `$sox_cmd`;
-            $result{$fn2} = peaks($fn2);
+            my $sox_cmd = "/usr/bin/sox -q -t raw -b 32 -e float -c 1 -r 48k \"$fn\" -e signed-integer -b 16  \"$fn2\"";
+	    print "Start sox\n";
+	    `$sox_cmd 2>&1`;
+	    print "Stop sox\n";
+
+	    my $peaks = peaks($fn2);
+	    $result{$fn2} = $peaks;
+	    my ($_fn) = $fn2 =~ /\/([^\/]+)$/;
+	    print sprintf("Peaks %0.4f Output $_fn\n", $peaks);
         }
-        unlink $fn or die "$!: unlink $fn";
+    }
+    
+    foreach my $fn (@fns){
+	unlink $fn or die "$!: unlink $fn";
     }
     print("Processing files took: ".(time() - $start)." seconds\n");
     return %result;
@@ -251,7 +262,8 @@ sub std_pfx {
 }
 sub std_dir {
     my @t = localtime();
-    return sprintf("%04d-%02d-%02dT%02d:%02d:%02d",
+    my $wday = ('Sun', 'Mon', 'Tue', "Wed", 'Thu', 'Fri', 'Sat')[$t[6]]; 
+    return sprintf("%04d-%02d-%02dT%02d:%02d:%02d_$wday",
                    $t[5]+1900, $t[4]+1, $t[3], $t[2], $t[1], $t[0]);
 }
 
@@ -259,7 +271,7 @@ sub std_dir {
 ## Calculate the maximum, the average, and the minimum volume
 sub peaks {
     my $fn = shift or die;
-    -r $fn or die "$!: Cannot read: $fn ";
+    -r $fn or die "$!: Cannot read: '$fn' ";
     my $result = `ffmpeg -loglevel quiet -i $fn -af astats=metadata=1:reset=1,ametadata=print:key=lavfi.astats.Overall.RMS_level:file=- -f null - `;
     my @result = grep {/lavfi.astats.Overall.RMS_level=/} map{chomp; $_}split(/\n/, $result);
     my @data = map{/lavfi.astats.Overall.RMS_level=(\S+)/; $1} grep {$_ ne "lavfi.astats.Overall.RMS_level=-inf"} @result;
