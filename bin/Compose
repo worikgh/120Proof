@@ -74,19 +74,17 @@ my $fn_dir = undef;
 my $pfx = $file_pfx;
 
 ## `$JACKREC`  is a programme that reords all JAcl outputs as raw audio
-my $JACKREC = &One20Proof::get_bin()."/jackrec";
+my $JACKREC = &One20Proof::get_bin()."/jack_rec";
 -x $JACKREC or die "$!: $JACKREC";
 
 ## Programme to measure max amplitude of raw audio to reject silent files
 my $AMPLITUDE = &One20Proof::get_bin()."/peak_volume";
 -x $AMPLITUDE or die "$!:  $AMPLITUDE";
 
-## Used to replay the recording hile overdubbing
+## Used to replay the recording while overdubbing
 my $PLAY = "/usr/bin/mplayer";
 -x $PLAY or die "$!: $PLAY";
 
-# The state machine state.  Can be initialised via a command line
-# option so declared here
 ## State machine:
 ## init => get ready to record a track.  Start state
 my $init = 'init';
@@ -94,7 +92,10 @@ my $init = 'init';
 my $recording = 'recording';
 ## dubbing => playing back and recording
 my $dubbing = 'dubbing';
-my $state  = $init;
+
+# Initial state. If `-b <backing track>` on command line a backing
+# track is ready for dubbing
+my $state  = defined $backing_track  ? $dubbing : $init;
 
 ## Mesages to display to the user for each state
 my %state_msg = (
@@ -205,6 +206,7 @@ while(1){
         print "Press <enter> to stop overdubbing\n";
         &One20Proof::run_daemon("$PLAY -ao jack $backing_track") or die;
         ## This blocks and returns a JSON object
+        print "Press <enter> to stop overdubbing\n";
         my $result = `$JACKREC $fn_dub`;
         print `killall mplayer`;
         print "Processing\n";
@@ -238,7 +240,7 @@ sub process_jackrec {
             # SOX command: sox -t raw -b 32 -e float -c 1 -r 48k "-1_yoshimi-Song1:left.raw" -e signed-integer -b 16  "-1_yoshimi-Song1:left.wav" 
             my $sox_cmd = "/usr/bin/sox -q -t raw -b 32 -e float -c 1 -r 48k \"$fn\" -e signed-integer -b 16  \"$fn2\"";
 	    print "Start sox\n";
-	    `$sox_cmd 2>&1`;
+	    `$sox_cmd `;
 	    print "Stop sox\n";
 
 	    my $peaks = peaks($fn2);
