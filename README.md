@@ -9,7 +9,7 @@ It uses MIDI, USB, and audio inputs.
 * [ALSA MIDI](https://github.com/opensrc/alsa/blob/master/lib/md/AlsaMidi.md) for MIDI routing.
 * [JACK Audio Connection Kit](https://github.com/jackaudio) for audio routing
 * [Yoshimi](https://yoshimi.sourceforge.io/) and [Pure Data](https://puredata.info/) for synthesis.  Any MIDI controllable software that can output to Jack will work.
-  * E.g. [Pure data](puredata.info)
+ 
 
 ## Raspberry Pi
 
