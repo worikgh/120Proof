@@ -21,4 +21,4 @@ my $midi_cfg = "$hd/midi.cfg";
 
 &One20Proof::pkill($exe);
 &One20Proof::run_daemon("$exe $cfg");
-&One20Proof::run_daemon("$init_midi $midi_cfg");
+
