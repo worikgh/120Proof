@@ -20,12 +20,15 @@ my $init_midi = "$Home120Proof/bin/InitialiseMidi";
 
 my ( $instrument) = $hd =~ s/\/([^\/]+)$// or die $!;
 
-# Idisyncratic part of script
+# Idisyncratic part of script. Works for all drums
 my $lpx_ctl = "$Home120Proof/Instruments/lpx_ctl/$instrument/Initialise";
--e $lpx_ctl or die "$!: $lpx_ctl ";
-my $midi_sample = "$hd/midi_sample/$instrument/Initialise";
--e $midi_sample or die "$!: $midi_sample ";
+-x $lpx_ctl or die "$!: $lpx_ctl ";
 
+my $midi_sample = "$hd/midi_sample/$instrument/Initialise";
+-x $midi_sample or die "$!: $midi_sample ";
+
+&One20Proof::run_daemon ($lpx_ctl );
+&One20Proof::run_daemon($midi_sample);
 print `$midi_sample`;
 print `$lpx_ctl`;
 
