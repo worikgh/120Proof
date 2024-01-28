@@ -3,9 +3,7 @@ use strict;
 use lib("$ENV{'Home120Proof'}/Perl");
 use One20Proof;
 
-
-## Initialise the midi connections
-
+## Initialise  MIDI connections
 
 ## Find what MIDI connections are needed and wait for them. 
 sub wait_for_midi( $ ) {
@@ -111,7 +109,6 @@ sub set_up_midi( $ ) {
         $line =~ /^MIDI_Connections/ and $flag = 1 and next;
         $line =~ /^\s*#/ and next; ## Comments
         if($line =~ /^\s*$/){
-            # $flag = 0;  # End of a section
             next;
         }
         if($flag){

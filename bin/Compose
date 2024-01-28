@@ -199,7 +199,10 @@ while(1){
             "Cannot make a backing track for dubbing";
 
         $state = $dubbing;
-        print "$backing_track\n";
+
+	my $_bt = $backing_track;
+	$_bt =~ s/^$audio_dir/$directory/ or die "$_bt";
+	print "$_bt\n";
      }elsif($state eq "dubbing"){
         $fn_dub = $fn_rec."-$dub";
         $dub++; # Finished with this for now, get ready for next dub
@@ -233,16 +236,14 @@ sub process_jackrec {
     foreach my $fn (@fns) {
         #        open(my $fh, $fn) or die "$!: $fn";
         my $amp = `$AMPLITUDE "$fn"`;
-        # Only process files with audio with audio
+        # Only process files with audio
         if($amp > 0.01){
             my $fn2 = $fn;
             $fn2 =~ s/raw$/wav/;
             # SOX command: sox -t raw -b 32 -e float -c 1 -r 48k "-1_yoshimi-Song1:left.raw" -e signed-integer -b 16  "-1_yoshimi-Song1:left.wav" 
             my $sox_cmd = "/usr/bin/sox -q -t raw -b 32 -e float -c 1 -r 48k \"$fn\" -e signed-integer -b 16  \"$fn2\"";
-	    print "Start sox\n";
-	    `$sox_cmd `;
-	    print "Stop sox\n";
 
+	    `$sox_cmd `;
 	    my $peaks = peaks($fn2);
 	    $result{$fn2} = $peaks;
 	    my ($_fn) = $fn2 =~ /\/([^\/]+)$/;
@@ -295,8 +296,11 @@ sub peaks {
         $min = 0;
         $avg = 0;
     }
-    print sprintf("| %0.3f %0.3f %0.3f $fn \n", $avg, $min, $max);
-    return $avg;
+    if(wantarray()){
+	return ($avg, $min, $max);
+    }else{
+	return $avg;
+    }
 }
         
     
