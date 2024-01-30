@@ -2,13 +2,14 @@
 
 Idiosyncratic music making system.
 
-Runs on [Raspberry Pi](https://raspberrypi.org/) and a [Pisound](https://blokas.io/pisound/).  It could probably run on any other similar hardware.
+Runs on [Raspberry Pi](https://raspberrypi.org/) 
 
 It uses MIDI, USB, and audio inputs. 
 
 * [ALSA MIDI](https://github.com/opensrc/alsa/blob/master/lib/md/AlsaMidi.md) for MIDI routing.
 * [JACK Audio Connection Kit](https://github.com/jackaudio) for audio routing
 * [Yoshimi](https://yoshimi.sourceforge.io/) and [Pure Data](https://puredata.info/) for synthesis.  Any MIDI controllable software that can output to Jack will work.
+ 
 
 ## Raspberry Pi
 
@@ -17,7 +18,16 @@ It uses MIDI, USB, and audio inputs.
 
 ## Instruments
 
+* Initialise
+* midi_cfg
 
+### Collections
+
+Each subdirectory has an executable (Initialise) that sets up an instrument
+
+### lpx_ctl
+### midi_sample
+MIDI controlled sampl player
 
 ## MIDI Pedal
 
@@ -47,7 +57,8 @@ The pedal this was developed with is: `ID 4353:4b4d Jieli Technology SINCO`
 
 * Clone this repo 
 
-* Set environment variable `Home120Proof` to point at the root of the repository  and run `bin/Mistress`.  Works first time....
+* Set environment variable `Home120Proof` to point at the root of the repository
+* 
 * Make links from $Home120Proof/bin
 120Proofpd -> /home/patch/120Proof/pedal/120Proofpd
 lpx_blank_screen -> /home/patch/120Proof/novation_lpx/target/release/lpx_blank_screen
@@ -122,9 +133,7 @@ For each instrument there is a `midi.cfg` file that
 	~/X-Air-LiveToolbox-132-source/X-AIR-Edit_RASPI_1.5/X-AIR-Edit
 
 
-# Tools
 
-Executable files in the `bin` directory
 
 
 ## InitialiseMidi
@@ -141,11 +150,7 @@ Use `aconnect` to ensure that these connections are made and all other cnnection
 
 `bin/InitialiseMidi <Config file>`
 
-## lpx_drum
 
-* Runs with Hydrogen to make the drum sounds
-* A JSON configuration file to configure the LPX pads into regions (sections) as drums.
-* Instrument/Drums/midi.cfg has midi configuration (for bin/InitialiseMidi)
 
 ## lpx_mode
 
@@ -331,10 +336,3 @@ https://github.com/sadko4u/lsp-plugins
 https://github.com/sadko4u/lsp-plugins
 
 
-# Instruments
-
-##  zynaddsubfx
-
-Start headless with Jack audio and Alsa MIDI input.  Auto connect.  Load instrument (-L)
-
-zynaddsubfx  --no-gui  -O jack -I alsa    -a -L /usr/share/zynaddsubfx/banks/the_mysterious_bank/0021-rock_organ+distorsion.xiz

@@ -6,10 +6,8 @@ use One20Proof;
 my $Home120Proof = $ENV{Home120Proof};
 
 # `$hd` becomes path to this script
-my $hd = $0;
-
-# `$hd` becomes path to directory containing this script
-$hd =~ s/\/[^\/]+$// or die $!;
+my ($hd) = $0 =~ s/\/[^\/]+$// or die $!;
+-d $HD or die "$! $hd"; 
 
 ## Set up midi file
 my $midi_cfg = "$hd/midi.cfg";
@@ -18,19 +16,19 @@ my $midi_cfg = "$hd/midi.cfg";
 my $init_midi = "$Home120Proof/bin/InitialiseMidi";
 -x $init_midi or die "$!: $init_midi";
 
-# $hd becomes parent directory and get he name of the directory
-# containing this script, which is the Instrument name
+# The name of the directory this is in is the name of the instrument. 
 
-$hd =~ s/\/([^\/]+)$// or die $!;
-my $instrument = $1; 
-$hd =~ s/\/([^\/]+)$// or die $!;
+my ( $instrument) = $hd =~ s/\/([^\/]+)$// or die $!;
 
-# Idisyncratic part of script
-my $lpx_ctl = "$hd/lpx_ctl/$instrument/Initialise";
--e $lpx_ctl or die "$!: $lpx_ctl ";
+# Idisyncratic part of script. Works for all drums
+my $lpx_ctl = "$Home120Proof/Instruments/lpx_ctl/$instrument/Initialise";
+-x $lpx_ctl or die "$!: $lpx_ctl ";
+
 my $midi_sample = "$hd/midi_sample/$instrument/Initialise";
--e $midi_sample or die "$!: $midi_sample ";
+-x $midi_sample or die "$!: $midi_sample ";
 
+&One20Proof::run_daemon ($lpx_ctl );
+&One20Proof::run_daemon($midi_sample);
 print `$midi_sample`;
 print `$lpx_ctl`;
 
