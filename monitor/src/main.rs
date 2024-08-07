@@ -1,11 +1,8 @@
 use chrono::Local;
+use chrono::Utc;
 /// Monitor the output of all the programmes started using
 /// One20Proof::run_daemon.
 extern crate sensors;
-use sensors::Chip;
-use sensors::Feature;
-use sensors::Sensors;
-use sensors::Subfeature;
 use std::collections::HashMap;
 use std::env;
 use std::fs;
@@ -126,28 +123,30 @@ fn main() -> io::Result<()> {
     let mut y_err_filters: HashMap<usize, YoshimiErrFilter> = HashMap::new();
     let mut y_out_filters: HashMap<usize, YoshimiOutFilter> = HashMap::new();
     let mut pd_err_filters: HashMap<usize, PdErrFilter> = HashMap::new();
+    let fps = 4_i64;
     loop {
-        let sensors = Sensors::new();
-        // cpu_thermal-virtual-0 (on Virtual device): F => temp1  SF => temp1_input = 67.679
-        // rpi_volt-isa-0000 (on ISA adapter): F => in0  SF => in0_lcrit_alarm = 0
+	let  tol = Utc::now();
+	let tol = tol.timestamp_micros();
+        // let sensors = Sensors::new();
+        // // cpu_thermal-virtual-0 (on Virtual device): F => temp1  SF => temp1_input = 67.679
+        // // rpi_volt-isa-0000 (on ISA adapter): F => in0  SF => in0_lcrit_alarm = 0
 
-        let chip: Chip = sensors
-            .into_iter()
-            .find(|x| x.get_name().unwrap() == "cpu_thermal-virtual-0")
-            .unwrap();
-        let feature: Feature = chip
-            .into_iter()
-            .find(|x| x.get_label().unwrap() == "temp1")
-            .unwrap();
-        let sub_feature: Subfeature = feature
-            .into_iter()
-            .find(|x| x.name() == "temp1_input")
-            .unwrap();
-        let temperature: f64 = sub_feature.get_value().unwrap();
+        // let chip: Chip = sensors
+        //     .into_iter()
+        //     .find(|x| x.get_name().unwrap() == "cpu_thermal-virtual-0")
+        //     .unwrap();
+        // let feature: Feature = chip
+        //     .into_iter()
+        //     .find(|x| x.get_label().unwrap() == "temp1")
+        //     .unwrap();
+        // let sub_feature: Subfeature = feature
+        //     .into_iter()
+        //     .find(|x| x.name() == "temp1_input")
+        //     .unwrap();
 
         // Get the time, and modep status every loop and report when they change
         let mut cached_timestamp: String = "".to_string();
-        let mut modep_status: String = "".to_string();
+        let  _modep_status: String = "".to_string();
 
         let files = get_file_names(output_dir_path);
 
@@ -184,7 +183,7 @@ fn main() -> io::Result<()> {
         }
 
         // Summarise the data.  Depending on the filename
-        for (f, mut new_data) in &mut file_store {
+        for (f,  new_data) in &mut file_store {
             let summary = match decode_file_name(f.as_str()) {
                 Some((name, pid)) => new_data.summarise(
                     Some(pid),
@@ -219,7 +218,7 @@ fn main() -> io::Result<()> {
                 let now: String = Local::now().format("%Y-%m-%dT%H:%M:%S").to_string();
                 if now != cached_timestamp {
                     cached_timestamp = now;
-                    println!("TS: {} {}", cached_timestamp, temperature);
+                    println!("TS: {}", cached_timestamp,);
                 }
                 for s in summary.iter() {
                     println!("f: {}: {}", f, s);
@@ -227,7 +226,15 @@ fn main() -> io::Result<()> {
             }
             new_data.cache = String::new();
         }
-        thread::sleep(time::Duration::from_millis(100));
+	let bol = Utc::now().timestamp_micros();
+	let diff = bol - tol;
+	let target = 1_000_000 / fps;
+	let sleep_time = target - diff;
+	if sleep_time > 0 {
+            thread::sleep(time::Duration::from_micros(sleep_time as u64));
+	}else{
+	    eprintln!("Overrun: {sleep_time}");
+	}
     }
     // Ok(())
 }

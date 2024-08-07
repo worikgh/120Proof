@@ -1,0 +1,98 @@
+[
+{
+	"pads": [11,12,21,22],
+	"main_colour":[127, 0, 0],
+	"active_colour":[0, 0, 127],
+	"midi_note":33
+}
+,{
+	"pads": [13,14,23,24],
+	"main_colour":[0, 0, 127],
+	"active_colour":[0, 127, 0],
+	"midi_note":34
+}
+,{
+	"pads": [15,16,25,26],
+	"main_colour":[0, 127, 0],
+	"active_colour":[127, 0, 0],
+	"midi_note":35
+}
+,{
+	"pads": [17,18,27,28],
+	"main_colour":[127, 0, 0],
+	"active_colour":[0, 0, 127],
+	"midi_note":36
+}
+,{
+	"pads": [31,32,41,42],
+	"main_colour":[0, 0, 127],
+	"active_colour":[0, 127, 0],
+	"midi_note":37
+}
+,{
+	"pads": [33,34,43,44],
+	"main_colour":[0, 127, 0],
+	"active_colour":[127, 0, 0],
+	"midi_note":38
+}
+,{
+	"pads": [35,36,45,46],
+	"main_colour":[127, 0, 0],
+	"active_colour":[0, 0, 127],
+	"midi_note":39
+}
+,{
+	"pads": [37,38,47,48],
+	"main_colour":[0, 0, 127],
+	"active_colour":[0, 127, 0],
+	"midi_note":40
+}
+,{
+	"pads": [51,52,61,62],
+	"main_colour":[0, 127, 0],
+	"active_colour":[127, 0, 0],
+	"midi_note":41
+}
+,{
+	"pads": [53,54,63,64],
+	"main_colour":[127, 0, 0],
+	"active_colour":[0, 0, 127],
+	"midi_note":42
+}
+,{
+	"pads": [55,56,65,66],
+	"main_colour":[0, 0, 127],
+	"active_colour":[0, 127, 0],
+	"midi_note":43
+}
+,{
+	"pads": [57,58,67,68],
+	"main_colour":[0, 127, 0],
+	"active_colour":[127, 0, 0],
+	"midi_note":44
+}
+,{
+	"pads": [71,72,81,82],
+	"main_colour":[127, 0, 0],
+	"active_colour":[0, 0, 127],
+	"midi_note":45
+}
+,{
+	"pads": [73,74,83,84],
+	"main_colour":[0, 0, 127],
+	"active_colour":[0, 127, 0],
+	"midi_note":46
+}
+,{
+	"pads": [75,76,85,86],
+	"main_colour":[0, 127, 0],
+	"active_colour":[127, 0, 0],
+	"midi_note":47
+}
+,{
+	"pads": [77,78,87,88],
+	"main_colour":[127, 0, 0],
+	"active_colour":[0, 0, 127],
+	"midi_note":48
+}
+]

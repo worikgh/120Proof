@@ -1,0 +1,44 @@
+{
+  "samples_descr": [
+    {
+      "path": "/usr/share/hydrogen/data/drumkits/The Black Pearl 1.0/PearlKick-Hardest.wav",
+      "note": 36
+    },
+    {
+      "path": "/usr/share/hydrogen/data/drumkits/The Black Pearl 1.0/PearlTomFloor-Hardest.wav",
+      "note": 37
+    },
+    {
+      "path": "/usr/share/hydrogen/data/drumkits/The Black Pearl 1.0/PearlSnare-Hardest.wav",
+      "note": 38
+    },
+    {
+      "path": "/usr/share/hydrogen/data/drumkits/The Black Pearl 1.0/PearlSnareRimshot-Hardest.wav",
+      "note": 39
+    },
+    {
+      "path": "/usr/share/hydrogen/data/drumkits/The Black Pearl 1.0/PearlTom1-Hardest.wav",
+      "note": 40
+    },
+    {
+      "path": "/usr/share/hydrogen/data/drumkits/The Black Pearl 1.0/PearlTom2-Hardest.wav",
+      "note": 41
+    },
+    {
+      "path": "/usr/share/hydrogen/data/drumkits/The Black Pearl 1.0/PaisteBell-Hardest.wav",
+      "note": 42
+    },
+    {
+      "path": "/usr/share/hydrogen/data/drumkits/The Black Pearl 1.0/PaisteRide-Hardest.wav",
+      "note": 43
+    },
+    {
+      "path": "/usr/share/hydrogen/data/drumkits/The Black Pearl 1.0/PaisteRideFlink-Hardest.wav",
+      "note": 44
+    },
+    {
+      "path": "/usr/share/hydrogen/data/drumkits/The Black Pearl 1.0/Cowbell-Hardest.wav",
+      "note": 45
+    }
+  ]
+}

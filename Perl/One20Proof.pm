@@ -505,22 +505,32 @@ sub all_jack_connections {
     return @result;
 }
 
-## Handle a connecet or disconnect jack command
+## Handle a connecet or disconnect jack command: When there are no
+## spaces in MIDI device names
 sub handle_jack( $ ){
+	 my $str = shift or die;
+	 my ($cmd, $lhs, $rhs) = split(/\s/, $str);;
+	 return &handle_jack_3($cmd, $lhs, $rhs);
+}
+
+## Handle a connecet or disconnect jack command: When there spaces in
+## MIDI device names
+sub handle_jack_3( $$$ ){
     ## Passed a Jack command execute it.  There are two: "connect"
     ## and "disconnect"
-    my $cmd = shift or die;
+	 my ($cmd, $lhs, $rhs) = @_;
+
     # warn "$cmd ";
-    if($cmd =~ /^connect (\S+)\s+(\S+)\s*$/){
+    if($cmd eq 'connect'){ ## (\S+)\s+(\S+)\s*$/){
         ## Commanded to make a connection.  Check first if it exists
         ## and there is nothing to do
-        if( ! &One20Proof::test_jack_connection($1, $2)){
+        if( ! &One20Proof::test_jack_connection($lhs, $rhs)){
             # print STDERR "connect $1\t$2\n";
-            print `jack_connect $1 $2`;
+            print `jack_connect '$lhs' '$rhs'`;
         }
     }elsif($cmd =~ /^disconnect (\S+)\s+(\S+)\s*$/){
         if(  &One20Proof::test_jack_connection($1, $2)){
-            print `jack_disconnect $1 $2`;
+            print `jack_disconnect '$lhs' '$rhs'`;
         }
     }
 }
@@ -602,9 +612,9 @@ sub read_turtle( $ ){
 
     ## Create prefixs
     my %prefix_lines = map{
-        /^\@prefix (\S*):\s+<(\S*)> \.$/;
-        defined($1) or die "Prefix undefined";
-        defined($2) or die "Prefix subject undefined";
+        /^\@prefix (\S*):\s+<(\S*)>\s*\.$/;
+        defined($1) or die "Prefix undefined: $_";
+        defined($2) or die "Prefix subject undefined: $_";
         $1 => $2
     } grep{/^\@prefix /} @lines;
     @lines = grep {$_ !~ /^\@prefix /} @lines;
@@ -617,23 +627,26 @@ sub read_turtle( $ ){
     ## Process the ";" 
     my @semi_colon_processed = ();
     foreach my $statement  (@input) {
-        if($statement =~ / ; /){
+        if($statement =~ /\s;\s/){
             ## There is a ' ; ' on this line
             ## The ; symbol may be used to repeat the subject of of triples that vary only in predicate and object RDF terms.semi_colon_processed
+	    
             $statement =~ s/^\s*(\S+)\s+(\S+)\s+([^;]*[^;\s])\s+;// or die $statement;
             my ($subject, $predicate, $object) = ($1, $2, $3);
-            if($object =~ /\s/){
-                ## Must be a quoted string
-                $object =~ /"(.+)"$/ or die $statement;
-            }
-            push(@semi_colon_processed, "$subject $predicate $object");
+            # if($object =~ /\s/){
+            #     ## Must be a quoted string
+            #     $object =~ /"(.+)"$/ or die $object;
+            # }
+            # push(@semi_colon_processed, "$subject $predicate $object");
             ## This next line will break if and predicate or object
             ## has an embedded ';'
             while(1){
+		my @objects = split(/\s,\s/, $object);
+		for my $o (@objects){
+		    push(@semi_colon_processed, "$subject $predicate $o");
+		}
                 $statement =~ s/^\s*(\S+)\s+([^;]*[^;\s])\s*;?// or last;
-                defined($1) and defined($2) or last;
                 ($predicate, $object) = ($1, $2);
-                push(@semi_colon_processed, "$subject $predicate $object");
             }
             
         }else{

@@ -16,12 +16,12 @@ impl FileFilter for LPXControlErrFilter {
         let mut result: Vec<String> = vec![];
         for line in lines.iter() {
             let mut line_result: String = "".to_string();
-            if let Some(_) = self.filter_rules.evaluate(MARK_RULE_NAME, *line) {
+            if self.filter_rules.evaluate(MARK_RULE_NAME, line).is_some() {
                 // Abandon this line
                 continue;
                 //line_result = line.to_string();
             };
-            if let Some(_) = self.filter_rules.evaluate(INFO_RULE_NAME, *line) {
+            if self.filter_rules.evaluate(INFO_RULE_NAME, line).is_some() {
                 // Abandon this line
                 continue;
             };

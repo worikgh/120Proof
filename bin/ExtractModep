@@ -186,7 +186,7 @@ my $prefix = 'a';
 
 ## All directories with a ".pedalboard" suffix have a pedal board
 ## definition
-opendir(my $dir, $PEDAL_DEF_DIR) or die $!;
+opendir(my $dir, $PEDAL_DEF_DIR) or die "$!: $PEDAL_DEF_DIR";
 my @names = grep { /\.pedalboard$/ } readdir($dir);
 
 ## For each pedalboard directory, collect the mod-host command strings

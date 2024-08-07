@@ -2,34 +2,37 @@
 
 Idiosyncratic music making system.
 
-Runs on [Raspberry Pi](https://raspberrypi.org/) 
-
 It uses MIDI, USB, and audio inputs. 
 
 * [ALSA MIDI](https://github.com/opensrc/alsa/blob/master/lib/md/AlsaMidi.md) for MIDI routing.
 * [JACK Audio Connection Kit](https://github.com/jackaudio) for audio routing
 * [Yoshimi](https://yoshimi.sourceforge.io/) and [Pure Data](https://puredata.info/) for synthesis.  Any MIDI controllable software that can output to Jack will work.
  
+## archive 
 
-## Raspberry Pi
+Old stuff 
 
-* Raspberry Pi V
+## bin
 
+Various programmes.
 
 ## Instruments
 
-* Initialise
-* midi_cfg
+[Finished MIDI controlled synthesisers](Instruments/README.md)
 
-### Collections
 
-Each subdirectory has an executable (Initialise) that sets up an instrument
 
-### lpx_ctl
-### midi_sample
-MIDI controlled sampl player
+##  Pedal
 
-## MIDI Pedal
+Software for running pedals.
+
+`driver.c` is a not simple enough driver for a foot opeerated USB keyboard with three keys.
+
+`Pedal/midi_driver` is a similar driver for a MIDI pedal
+
+They both oerate by changing jack pipes
+
+`Pedal/midi_driver` is a simpler driver for a SINCO specific pedal, and it translates the four switches to four MIDI signals.  By default the pedal can switch between banks.  It gets quite confusng when a bank is accidebtally selected.  This fixes that
 
 ### Driver
 
@@ -39,9 +42,6 @@ The pedal this was developed with is: `ID 4353:4b4d Jieli Technology SINCO`
 * Converts the four buttons into 'A',...,'D'
 * Looks for a configuration file in: $Home120Proof/pedal/PEDALS/
 * Named 'A', 'B', 'C', or 'D'
-
-
-
 
 ## Third Party Software
 
@@ -103,13 +103,6 @@ Two classes of hardware device
 
 ## Configuration Files 
 
-In `./Instruments` are the instruments definitions.
-
-Each instrument has a configuration file for the LPX MIDI names:
-
-* **`midi_source_lpx`** The MIDI connetion the LPX uses to send note and control MIDI 
-* **`midi_sink_lpx`** The MIDI connection the LPX receives control MIDI on. (This is used to change the colours of the pads)
-* **`midi_sink_synth`** The MIDI connection the MIDI Notes and controls are sent to the synthesiser on.
 
 
 For each instrument there is a `midi.cfg` file that 

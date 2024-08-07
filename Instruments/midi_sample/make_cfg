@@ -39,8 +39,6 @@ sub get_files {
     return @files;
 }
 
-
-
 my $note = 0;
 my $out = "{\n\"samples_descr\": [\n";
 my @descriptions = map {$note++;

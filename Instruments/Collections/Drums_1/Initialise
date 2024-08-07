@@ -6,8 +6,8 @@ use One20Proof;
 my $Home120Proof = $ENV{Home120Proof};
 
 # `$hd` becomes path to this script
-my ($hd) = $0 =~ s/\/[^\/]+$// or die $!;
--d $HD or die "$! $hd"; 
+my ($hd) = $0 =~ /^(.+)\/[^\/]+$/ or die $!;
+-d $hd or die "$! $hd"; 
 
 ## Set up midi file
 my $midi_cfg = "$hd/midi.cfg";
@@ -18,13 +18,13 @@ my $init_midi = "$Home120Proof/bin/InitialiseMidi";
 
 # The name of the directory this is in is the name of the instrument. 
 
-my ( $instrument) = $hd =~ s/\/([^\/]+)$// or die $!;
+my ( $instrument) = $hd =~ /\/([^\/]+)$/ or die $!;
 
 # Idisyncratic part of script. Works for all drums
 my $lpx_ctl = "$Home120Proof/Instruments/lpx_ctl/$instrument/Initialise";
 -x $lpx_ctl or die "$!: $lpx_ctl ";
 
-my $midi_sample = "$hd/midi_sample/$instrument/Initialise";
+my $midi_sample = "$Home120Proof/Instruments/midi_sample/$instrument/Initialise";
 -x $midi_sample or die "$!: $midi_sample ";
 
 &One20Proof::run_daemon ($lpx_ctl );
@@ -34,3 +34,4 @@ print `$lpx_ctl`;
 
 # Always do MIDI last.  Wait for it to finish
 &One20Proof::run_daemon("$init_midi $midi_cfg", 1);
+&One20Proof::handle_jack("connect MidiSampleQzn3t:output system:playback_1");

@@ -18,9 +18,9 @@ impl FileFilter for PdErrFilter {
         let mut result: Vec<String> = vec![];
         for line in lines.iter() {
             let mut line_result: String = "".to_string();
-            if let Some(caps) = self.filter_rules.evaluate(RUNNING_RULE_NAME, *line) {
+            if let Some(caps) = self.filter_rules.evaluate(RUNNING_RULE_NAME, line) {
                 line_result = format!("Priority: {}", caps.get(1).unwrap().as_str());
-            } else if let Some(caps) = self.filter_rules.evaluate(JACK_RULE_NAME, *line) {
+            } else if let Some(caps) = self.filter_rules.evaluate(JACK_RULE_NAME, line) {
                 line_result = format!("Pure Data up. Jack-Pipe: {}", caps.get(1).unwrap().as_str());
             }
             if !line_result.is_empty() {

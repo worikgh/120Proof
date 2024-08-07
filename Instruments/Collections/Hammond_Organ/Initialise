@@ -1,0 +1,24 @@
+#!/usr/bin/perl -w
+use strict;
+use lib("$ENV{'Home120Proof'}/Perl");
+use One20Proof;
+
+my $Home120Proof = $ENV{Home120Proof};
+my $yoshimi_exe = "/usr/bin/yoshimi";
+-x $yoshimi_exe or die "Cannot execute $yoshimi_exe";
+
+my $init_midi = "$Home120Proof/bin/InitialiseMidi";
+-x $init_midi or die "$!: Cannot exec $init_midi";
+
+# $hd is the name of the directory this script is in
+my ($hd) =  $0 =~ /(.+)\/[^\/]+$/ or die $!;
+
+my $midi_cfg = "$hd/midi.cfg";
+-r $midi_cfg or die "$hd cannot read $midi_cfg";
+
+my $instrument = "$hd/../../yoshimi/xiz/Hammond Organ.xiz";
+-r $instrument or die "$! $instrument";
+&One20Proof::pkill($yoshimi_exe);
+&One20Proof::run_daemon("$yoshimi_exe  -i -J  -c -K -L '$instrument' -R 48000 ");
+&One20Proof::run_daemon("$init_midi $midi_cfg");
+&One20Proof::handle_jack("connect MidiSampleQzn3t:output system:playback_1");

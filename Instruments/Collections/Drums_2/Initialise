@@ -1,0 +1,43 @@
+#!/usr/bin/perl -w
+use strict;
+use lib("$ENV{'Home120Proof'}/Perl");
+use One20Proof;
+
+my $Home120Proof = $ENV{Home120Proof};
+
+# `$hd` becomes path to this script
+my $hd = $0;
+
+# `$hd` becomes path to directory containing this script
+$hd =~ s/\/[^\/]+$// or die $!;
+
+## Set up midi file
+my $midi_cfg = "$hd/midi.cfg";
+-r $midi_cfg or die "$hd cannot read $midi_cfg";
+
+my $init_midi = "$Home120Proof/bin/InitialiseMidi";
+-x $init_midi or die "$!: $init_midi";
+
+# $hd becomes parent directory and get he name of the directory
+# containing this script, which is the Instrument name
+
+$hd =~ s/\/([^\/]+)$// or die $!;
+my $instrument = $1; 
+$hd =~ s/\/([^\/]+)$// or die $!;
+
+# Idisyncratic part of script
+my $lpx_ctl = "$hd/lpx_ctl/$instrument/Initialise";
+-e $lpx_ctl or die "$!: $lpx_ctl ";
+my $midi_sample = "$hd/midi_sample/$instrument/Initialise";
+-e $midi_sample or die "$!: $midi_sample ";
+
+&One20Proof::pkill($midi_sample);
+&One20Proof::pkill($lpx_ctl);
+&One20Proof::run_daemon($midi_sample);
+&One20Proof::run_daemon($lpx_ctl);
+
+# Always do MIDI last.  Wait for it to finish
+&One20Proof::run_daemon("$init_midi $midi_cfg", 1);
+&One20Proof::handle_jack("connect MidiSampleQzn3t:output system:playback_1");
+&One20Proof::handle_jack("connect MidiSampleQzn3t:output system:playback_1");
+    

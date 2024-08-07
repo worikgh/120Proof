@@ -126,7 +126,6 @@ if(`lsof -i:$PORT`){
     die "$?:  mod-host already on $PORT";
 }
 
-
 &One20Proof::run_daemon( "$mod_host -p $PORT ");
 
 sleep .1;

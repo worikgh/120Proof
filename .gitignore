@@ -68,3 +68,9 @@ bin/jackt_qzt
 .compositions/
 *.h2song
 *.raw
+*.pdf
+*.webp
+*.jpg
+*.mp3
+*.wav
+archive/*

@@ -33,19 +33,19 @@ for(my $i = 0; $i < ($ARGC - 1); $i+=2){
     ## The prefix to use (defaults to YYYYMMDDhhmmss)
     if($ARGV[$i] eq "-p"){
 	$file_pfx = $ARGV[$i+1];
-	continue;
+	next;
     }
 
     ## If a backing track passed go straight to dubbing
     if($ARGV[$i] eq "-b" ){
 	$backing_track = $ARGV[$i+1];
-	continue;
+	next;
     }
 
     ## A directory can be passed.  This is used in audio/
     if($ARGV[$i] eq "-d"){
 	$directory = $ARGV[$i+1];
-	continue;
+	next;
     }
     &usage;
     exit;
@@ -145,7 +145,7 @@ my $audio_dir = "$ENV{'Home120Proof'}/compositions/audio/$directory";
 my $inp = "\n";
 
 ## For all states append this message to the display
-my $msg_sfx = ' <q> to quit.  <n> for next recording';
+my $msg_sfx = ' <d> to go again deleting <q> to quit.  <n> for next recording ';
 
 while(1){
     chomp $inp;

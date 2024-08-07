@@ -63,7 +63,7 @@ sub wait_for_midi( $ ) {
         ## Loop exit condition
         my @disconnected = grep{$connections{$_} == 0} keys(%connections);
         @disconnected or last;
-        warn "Not connected:\n\t".join("\n\t", @disconnected);
+        print STDERR  "Not connected:\n\t".join("\n\t", @disconnected)."\n";
 
         ## Failure condition.  
         my $now = time();
@@ -85,6 +85,7 @@ sub process_midi_line( $ ){
 
     @result;
 }    
+
 
 sub set_up_midi( $ ) {
     my $cfg_fn = shift or die;
@@ -156,13 +157,21 @@ sub set_up_midi( $ ) {
             ## @con_str is an array of port:dev that this device is
             ## connectred to
             
+	    my $translate_connection_num_str = sub  {
+		my $conn = shift or die;
+		my ($lhs, $rhs) = $conn =~ /^(\S+)\s(\S+)$/ or die $conn;
+		my $slhs = $midi_devices_by_num{$lhs} // ["<undef>", "<undef>"];
+		my $srhs = $midi_devices_by_num{$rhs} // "<undef>:<undef>";
+		return $slhs->[0].':'.$slhs->[1];
+	    };
+
             foreach my $pair (map{/^\s*(\d+):(\d+)/; [$1,$2]} @con_str){
                 defined($port_num) or die "No \$port_num.  \$ac $ac ";
                 defined($dev_num) or die "No \$dev_num.  \$ac $ac ";
                 my $midi_connection = "$port_num:$dev_num $$pair[0]:$$pair[1]";
 
                 # One side of the equation
-                # warn "connecting to: $midi_connection";
+                print STDERR  "connecting to: ".&$translate_connection_num_str($midi_connection)."\n";
                 $existing_connections_to{$midi_connection} = 1;
             }
             next;
@@ -180,83 +189,150 @@ sub set_up_midi( $ ) {
                 defined($dev_num) or die "No \$dev_num.  \$ac $ac ";
                 my $midi_connection = "$$pair[0]:$$pair[1] $port_num:$dev_num";
 
-                # # The otehr side of the equation
+                # # The other side of the equation
+                print STDERR  "connecting from: $midi_connection\n";
                 $existing_connections_from{$midi_connection} = 1;
             }
             next;
-        }	    
+        }
+    }
+    
+    
+    my %existing_connections = ();
+    foreach my $key (keys %existing_connections_to){
+	$key =~ /^(\S+)\s(\S+)$/ or die $key;
+	my $lhsa = $midi_devices_by_num{$1};
+	my $rhsa = $midi_devices_by_num{$2};
+	(defined($lhsa) and defined($rhsa)) or next;
+	my $lhs = join(":", @$lhsa);
+	my $rhs = join(":", @$rhsa);
+	$existing_connections{$lhs} = $rhs;
     }
 
+    my  $get_connections_for = sub {
+	my $device = shift or die;
+	my @keys = grep {defined} map{
+	    my $connection = "$_\t$existing_connections{$_}";
+	    if($_ =~ /$device/){
+		$connection;
+	    }elsif($existing_connections{$_} =~ /$device/){
+		$connection;
+	    }else{
+		undef;
+	    }
+	}keys %existing_connections;
+	return @keys;
+    };
+
+    # ALl devices in $cvg
+    my %cfg_devices = ();
+    foreach my $c (@connections){
+	my ($d0) = $c->[0] =~ /^(.+):/;
+	my ($d1) = $c->[1] =~ /^(.+):/;
+	$cfg_devices{$d0} = 1;
+	$cfg_devices{$d1} = 1;
+    }
+    my @cfg_devices = keys %cfg_devices;
     ## The connections that have to be deleted will be in both HASHs.
     ## Initialise the list of connections to delete to all connections
     my %connections_to_delete = ();
-    foreach my $to (sort keys(%existing_connections_from)){
-        if (defined($existing_connections_to{"$to"})){
-            $connections_to_delete{$to} = 1;
-        }
+    my @cn = ();
+    foreach my $d ( @cfg_devices){
+	my @tmp =  &$get_connections_for($d);
+	push @cn, @tmp;
     }
+    foreach my $cn (@cn){
+	my ($d1, $d2) = $cn =~ /^(.+)\t(.+)/ or die $cn;
+	$connections_to_delete{"$midi_devices_by_str{$d1}->[0]:$midi_devices_by_str{$d1}->[1] $midi_devices_by_str{$d2}->[0]:$midi_devices_by_str{$d2}->[1]"} = 1;
+    }
+    print "connections_to_delete before:\n".join("\n", keys %connections_to_delete)."\n";
+    my %connections_to_make = ();
+    foreach my $c (@connections){
+	my $d0 = $midi_devices_by_str{$c->[0]};
+	my $d1 = $midi_devices_by_str{$c->[1]};
+	my $cn = "$d0->[0]:$d0->[1] $d1->[0]:$d1->[1]";
+	delete($connections_to_delete{$cn});
+	$connections_to_make{$cn} = 1;
+    }
+    print "connections_to_delete after:\n".join("\n", keys %connections_to_delete)."\n";
+    print "connections to make\n".join("\n", keys %connections_to_make)."\n";
+    # foreach my $to (sort keys(%existing_connections_from)){
+    #     if (defined($existing_connections_to{"$to"})){
+    # 	    $to =~ /^(\S+)\s(\S+)$/ or die $to;
+    # 	    print STDERR  "connections to delete: ".join(":", @{$midi_devices_by_num{$1}})." -> ".join(":", @{$midi_devices_by_num{$2}})."\n";
+    #         $connections_to_delete{$to} = 1;
+    #     }
+    # }
     ## %connections_to_delete the keys are strings to pass to
     ## %`aconnect -d` and are all MIDI connections
+    ## %connections_to_make  the keys are strings to pass to
+    ## %`aconnect ` and are all MIDI connections
 
-    ## Connections that are not made are not in connections_to_delete,
-    ## but if they are in the configuration file put them here.
-    my %connections_to_make = ();
-
-    ## Filter %connections_to_delete to remove the ones from the
-    ## configuration file that are to keep
-    my %delt_with = (); ## The same pair can be in @connections more than once
-    foreach my $pair (@connections){
-	my $from_dev = $midi_devices_by_str{"$$pair[0]"};
-        defined $from_dev or die "No MIDI device for: $$pair[0]";
-        my $to_dev = $midi_devices_by_str{"$$pair[1]"};
-        defined $to_dev or die "No MIDI device for: $$pair[1]";
-        my $key = join(":", @$from_dev)." ".  join(":", @$to_dev);
-
-	defined($delt_with{$key}) and next;
-        $delt_with{$key} = 1;
-	my @keys_to_not_delete = grep {
-	    # Do not delete connections to devices we do not use
-	    $_ !~ /$from_dev/ and $_ !~  /$to_dev/
-	} keys %connections_to_delete;
-	foreach my $k (@keys_to_not_delete){
-	    delete($connections_to_delete{"$k"});
-	}
-
-        if(defined($connections_to_delete{"$key"})){
-            delete($connections_to_delete{"$key"});
-        }else{
-            ## Connection in config but not made
-            $connections_to_make{"$key"} = 1;
-        }
-
-
+    foreach my $cn (keys %connections_to_delete){
+	print `aconnect -d $cn`;
     }
+    foreach my $cn (keys %connections_to_make){
 
-    ## Got all the connections that need to be deleted.
-    my @to_delete =  keys(%connections_to_delete);
-    print "To Delete:\n".join(",", @to_delete)."\n";
-    sub del_con( $ ) {
-        my ($l) = @_;
-        my $cmd = "aconnect -d $l";
-        `$cmd`;
-        $? == 0 or print STDERR "Failed $?: $cmd \n";
+	print `aconnect  $cn`;
     }
-    map {&del_con($_)} @to_delete;
-    # print("Finished\n");
+    print "Done\n";
+    # ## Filter %connections_to_delete to remove the ones from the
+    # ## configuration file that are to keep
+    # my %delt_with = (); ## The same pair can be in @connections more than once
+    # foreach my $pair (@connections){
+    # 	my $from_dev = $midi_devices_by_str{"$$pair[0]"};
+    #     defined $from_dev or die "No MIDI device for: $$pair[0]";
+    #     my $to_dev = $midi_devices_by_str{"$$pair[1]"};
+    #     defined $to_dev or die "No MIDI device for: $$pair[1]";
+    #     my $key = join(":", @$from_dev)." ".  join(":", @$to_dev);
 
-    ## Now make the connections
-    ## Make new connections
-    sub make_con( $ ) {
-        my ($l) = @_;
-        my $cmd = "aconnect $l";
-        `$cmd`;
-        $? == 0 or print STDERR "Failed $?: $cmd \n";
-    }
-    my @to_connect = keys %connections_to_make;
-    print "To Connect:\n".join(", ", @to_connect)."\n";
-    foreach my $l (@to_connect){
-        &make_con($l);
-    }
+    # 	defined($delt_with{$key}) and next;
+    #     $delt_with{$key} = 1;
+    # 	my @keys_to_not_delete = grep {
+    # 	    # Do not delete connections to devices we do not use
+    # 	    my $fd = join(":", @$from_dev);
+    # 	    my $td = join(":", @$to_dev);
+    # 	    $_ !~ /$td/ and $_ !~  /$fd/
+    # 	} keys %connections_to_delete;
+    # 	foreach my $k (@keys_to_not_delete){
+    # 	    delete($connections_to_delete{"$k"});
+    # 	}
+
+    #     if(defined($connections_to_delete{"$key"})){
+    #         delete($connections_to_delete{"$key"});
+    #     }else{
+    #         ## Connection in config but not made
+    #         $connections_to_make{"$key"} = 1;
+    #     }
+
+
+    # }
+
+    # ## Got all the connections that need to be deleted.
+    # my @to_delete =  keys(%connections_to_delete);
+    # print "To Delete:\n".join(",", @to_delete)."\n";
+    # sub del_con( $ ) {
+    #     my ($l) = @_;
+    #     my $cmd = "aconnect -d $l";
+    #     `$cmd`;
+    #     $? == 0 or print STDERR "Failed $?: $cmd \n";
+    # }
+    # map {&del_con($_)} @to_delete;
+    # # print("Finished\n");
+
+    # ## Now make the connections
+    # ## Make new connections
+    # sub make_con( $ ) {
+    #     my ($l) = @_;
+    #     my $cmd = "aconnect $l";
+    #     `$cmd`;
+    #     $? == 0 or print STDERR "Failed $?: $cmd \n";
+    # }
+    # my @to_connect = keys %connections_to_make;
+    # print "To Connect:\n".join(", ", @to_connect)."\n";
+    # foreach my $l (@to_connect){
+    #     &make_con($l);
+    # }
 }
 
 ## Parse output of aconnect -l to make a list of all MIDI connections  that
