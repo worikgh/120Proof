@@ -10,23 +10,23 @@ log() {
     echo -e "\n[INFO] $1\n"
 }
 
-log "Checking required packages..."
-PKG_STATUS=apt-get -s install -y virtualenv python3-pip python3-dev git build-essential libasound2-dev libjack-jackd2-dev liblilv-dev libjpeg-dev zlib1g-dev
-if echo "$PKG_STATUS" | grep -q "^0 upgraded, 0 newly installed, 0 to remove"; then
-    echo $PKG_STATUS
+log "Checking and installing required packages..."
+# Update package list and install required packages
+if ! sudo apt-get install -y virtualenv python3-pip python3-dev git build-essential libasound2-dev libjack-jackd2-dev liblilv-dev libjpeg-dev zlib1g-dev; then
+    log "Failed to install required packages. Please check your package manager."
     exit 1
 fi
 
-log "Check mod-host is running"
-MOD_HOST_PID = `pgrep mod-host`
-if [[ ! $MOD_HOST_PID ]] ; then
-    echo start mod-host
+log "Checking if mod-host is running..."
+MOD_HOST_PID=$(pgrep mod-host)
+if [[ -z "$MOD_HOST_PID" ]]; then
+    log "mod-host is not running. Please start mod-host before continuing."
     exit 1
 fi
 
-log "mod-ui repository..."
-# Clone the mod-ui repository
-if [[ ! -d mod-ui ]] ; then
+log "Cloning the mod-ui repository..."
+# Clone the mod-ui repository if it doesn't exist
+if [[ ! -d mod-ui ]]; then
     git clone git://github.com/moddevices/mod-ui
 fi
 cd mod-ui
@@ -43,3 +43,9 @@ pip3 install -r requirements.txt
 log "Compiling libmod_utils..."
 # Compile libmod_utils
 make -C utils
+
+log "Setup complete. You can now run the server."
+log "To run the server, do the following:"
+log "1. Activate the virtual environment: source modui-env/bin/activate"
+log "2. Start the webserver with: python3 ./server.py"
+log "3. Open your browser and go to http://localhost:8888/"
