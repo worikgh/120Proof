@@ -1,0 +1,45 @@
+#!/bin/bash
+
+# Script to install and set up mod-ui
+
+# Exit script on error
+set -e
+
+# Function to log messages
+log() {
+    echo -e "\n[INFO] $1\n"
+}
+
+log "Checking required packages..."
+PKG_STATUS=apt-get -s install -y virtualenv python3-pip python3-dev git build-essential libasound2-dev libjack-jackd2-dev liblilv-dev libjpeg-dev zlib1g-dev
+if echo "$PKG_STATUS" | grep -q "^0 upgraded, 0 newly installed, 0 to remove"; then
+    echo $PKG_STATUS
+    exit 1
+fi
+
+log "Check mod-host is running"
+MOD_HOST_PID = `pgrep mod-host`
+if [[ ! $MOD_HOST_PID ]] ; then
+    echo start mod-host
+    exit 1
+fi
+
+log "mod-ui repository..."
+# Clone the mod-ui repository
+if [[ ! -d mod-ui ]] ; then
+    git clone git://github.com/moddevices/mod-ui
+fi
+cd mod-ui
+
+log "Creating Python virtual environment..."
+# Create and activate a Python virtual environment
+virtualenv modui-env
+source modui-env/bin/activate
+
+log "Installing Python requirements..."
+# Install Python requirements
+pip3 install -r requirements.txt
+
+log "Compiling libmod_utils..."
+# Compile libmod_utils
+make -C utils
