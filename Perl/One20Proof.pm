@@ -12,13 +12,13 @@ BEGIN {
 
 ## Constants
 ## Where modep puts its pedal definitions
-our $MODEP_PEDALS = "/var/modep/pedalboards";
+our $MODEP_PEDALS = "/home/worik/.pedalboards";
 
 ## Where the files for the foot pedal are
-our $PEDAL_DIR = "$ENV{'Home120Proof'}/pedal/PEDALS";
+our $PEDAL_DIR = "$ENV{'Home120Proof'}/Pedal/PEDALS";
 
 ## The port 120Proof's mod-host smulator runs on
-our $MODHOST_PORT = 9116;
+our $MODHOST_PORT = 5555;
 
 ## Turn off all the LEDs on the LPX
 sub blank_lpx {
@@ -604,7 +604,7 @@ sub initialise_pedals( @ ) {
 }
 
 ## Read a ttl, Turtle, document
-## Return an array of tripples (RDF)
+## Return an array of triples (RDF)
 sub read_turtle( $ ){
     my $fn = shift or die "Pass a Turtle file to process";
     open(my $fh, $fn) or die "$!: $fn";
@@ -672,20 +672,18 @@ sub read_turtle( $ ){
     return @comma_processed;
 }
 
-## Process LV2 turtle file Passed a file name and a start index,
-## returns a HASH ref that describes all the actions required to
-## instantiate a pedal board.  The `index` is used to identify each
-## effect.  This function is called for all the pedal boards at the
-## same time, and each one must be independent.  So by initialising
-## the index in the arguments, each effect, in a pedal board, across
-## all pedal boards, can have a unique index
+## Passed a file name and a start index, returns a HASH ref that
+## describes all the actions required to instantiate a pedal board.
+## The `index` is used to identify each effect.  This function is
+## called for all the pedal boards at the same time, and each one must
+## be independent.  So by initialising the index in the arguments,
+## each effect, in a pedal board, across all pedal boards, can have a
+## unique index
 sub process_lv2_turtle( $$ ) {
     my $fn = shift or die;
     my $index = shift or die; ## Zero is invalid index
-    $fn =~ /\/([^\/]+)$/ or die $fn;
+    $fn =~ /([^\/]+).ttl$/ or die $fn;
     my $pedal_board_name = $1;
-
-    $fn =~ s/-\d\d\d\d\d\.ttl$/\.ttl/; ## TODO: WTF??
 
     ## Break up an effect name and port.  This we do a lot
     my $name_port = sub {
@@ -707,15 +705,12 @@ sub process_lv2_turtle( $$ ) {
         $v
     };
 
-    my $fh = undef;
-    unless( -r $fn and open($fh, $fn)){
+    unless( -r $fn ){
         return ();
     }
 
     ## Decode the Turtle file
     my @lines = read_turtle($fn) or die "Cannot process $fn";
-
-    
 
     ## We need to get the instructions needed to initialise this
     ## effect and turn it on.
@@ -728,7 +723,7 @@ sub process_lv2_turtle( $$ ) {
     ## param_set <instance_number> <param_symbol> <param_value>
     ## Set up the effect in the way it was saved from mod-ui
 
-    ## Tripples and their meanings
+    ## Triples and their meanings
     ## predicate == "lv2:prototype" => subject is an effect, objecty is the URL.
     ## ......... <DS1> lv2:prototype <http://moddevices.com/plugins/mod-devel/DS1> 
     ## _________ Use for the "add" command
@@ -770,17 +765,17 @@ sub process_lv2_turtle( $$ ) {
     ## LV2 effects?)
     my @activation_jack_pipes = ();
     
-    ## each entry om @line is a tripple as text.  Convert into an
+    ## each entry om @line is a triple as text.  Convert into an
     ## array of arrays, each with three elements: subject, predicate,
     ## object
-    my @tripples = map {
+    my @triples = map {
         chomp;
         /^(\S+)\s+(\S+)\s+(.+)/ or die $_;
         [$1, $2, $3]
     } @lines;
 
     ## Get the commands to add
-    my @prototypes = grep {$_->[1] eq "lv2:prototype" } @tripples;
+    my @prototypes = grep {$_->[1] eq "lv2:prototype" } @triples;
 
     # To map numbers names
     my %name_number = ();
@@ -801,6 +796,9 @@ sub process_lv2_turtle( $$ ) {
         $effects{$name}->{add} = "add $uri $index";
         $name_number{$name} = $index;
         $number_name{$index} = $name;
+
+	my @param_set = map{/^<$name\/([^>]+)> ingen:value (.+)\s*$/; "param_set $index $1 $2" } map{join(' ', @$_)} grep{$_->[0] =~ /^<$name\//} grep { $_->[1] =~ /^ingen:value$/ } @triples;
+	push(@{$effects{$name}->{param}}, @param_set);
         $index += 1;
     }
 
@@ -808,7 +806,7 @@ sub process_lv2_turtle( $$ ) {
     ## identify `ingen:value` commands directed at the control ports
     ## of effects in the pedal board
     my $filter_port = sub {
-        ## Filter for the p[orts wanted and get the name/port from
+        ## Filter for the ports wanted and get the name/port from
         ## inside the angle brackets
         my $raw = shift or die;
         $raw =~ /^([a-z0-9_]+\/[a-z0-9_\:]+)$/i or 
@@ -825,7 +823,7 @@ sub process_lv2_turtle( $$ ) {
         &$filter_port(&$strip_ang($_->[0]))
     }grep {
         $_->[1] eq 'a' && $_->[2] eq 'lv2:ControlPort'
-    } @tripples;
+    } @triples;
 
     ## Get all the values for control ports
     my %control_port_values = map {
@@ -838,9 +836,9 @@ sub process_lv2_turtle( $$ ) {
         ## These are some sort of global setting
         ## TODO: Document
         $_->[0] !~ /^:/
-    }@tripples;
+    }@triples;
 
-    ## Set up the `param set` commands in effects
+    # ## Set up the `param set` commands in effects
     foreach my $port (keys %control_port_values){
         my $value = $control_port_values{$port};
         $port =~ /([a-z_0-9]+)\/([\:a-z0-9_]+)/i or 
@@ -854,18 +852,17 @@ sub process_lv2_turtle( $$ ) {
     }
 
     ## Build jack connections
-    my @jack_pipes = map {
-        # Store the name of the pipe
-        $_->[0]
-    }grep{
-        $_->[1] eq "ingen:tail"
-    }@tripples;
+    my @jack_pipes = grep{
+        $_->[1] =~ /^ingen:tail$/ or
+        $_->[1] =~ /^ingen:head$/ 
+    }@triples;
 
     # There are two sorts of pipe: Internal pipes between effects, and
     # to output, are created at startup.  Activation pipes, pipes from
     # input (capture_N) to first effect in chain 
     my @jack_internal_pipes = ();
     my @jack_activation_pipes = ();
+    
     foreach my $pipe (@jack_pipes){
         # `$pipe` is the name of the pipe.  The subject of the triple
 
@@ -874,23 +871,26 @@ sub process_lv2_turtle( $$ ) {
             [$_->[0], $_->[1], &$strip_ang($_->[2])]
         } grep {
             # Filter by name
-            $_->[0] eq $pipe
+            $_->[0] eq $pipe->[0]
                 # ## Do not implement MIDI yet.  MIDI pipes eq
                 # ## 'midi_merger_out' for now, the only one I have
                 # ## seen.  TODO: Make some more pedal boards with MIDI
                 # ## controls and watch this die here
                 # and $->[2] ne 'midi_merger_out'
-        }@tripples;
+        }@triples;
+
+	## Filter out some mysterious MIDI records
         join("", map{$_->[2]} @records) =~ /midi_merger_out/ and next;
         join("", map{$_->[2]} @records) =~ /midi_capture_2/ and next;
+
         # One "ingen:tail" and one "ingen:head"
-        scalar(@records) == 2 or die "Pipeo $pipe is bad";
+        scalar(@records) == 2 or die "Pipe is bad";
 
         my @tail = grep {$_->[1] eq "ingen:tail"} @records;
-        scalar @tail == 1 or  die "Pipeo $pipe is bad";
+        scalar @tail == 1 or  die "Pipe is bad";
 
         my @head = grep {$_->[1] eq "ingen:head"} @records;
-        scalar @head == 1 or  die "Pipeo $pipe is bad";
+        scalar @head == 1 or  die "Pipe is bad";
 
         # Activation connections are connected to system:capture_N
         if($tail[0]->[2] =~ /^capture_\d+$/ and 
@@ -960,25 +960,14 @@ sub list_mod_host_simulators {
     return sort {$a<=>$b} keys %result;
 }
 
-
 ## The mod-host and jack commands for all the pedal boards
 sub get_modep_simulation_commands( $ ){
 
     my $ignore_ref = shift or die;
     my @pedal_boards = @$ignore_ref;
     
-    ## Get the pedal board definitions
-    my @fn = ();
-    find(sub {$_ ne "manifest.ttl" and 
-                  /(.+)\.ttl/ and
-                  grep{/$1/} @pedal_boards and
-                  push(@fn, $File::Find::name)}, 
-         ( $MODEP_PEDALS ));
-    # my @fn = map{
-    # 	"$MODEP_PEDALS/$_\.pedalboard/$_.ttl"
-    # } One20Proof::list_pedals;
 
-    ## Find the start index.  SOmetimes, dispite our best efforts,
+    ## Find the start index.  Sometimes, dispite our best efforts,
     ## there are effects in place already
     my $index = 1;
     my @effects = sort {$a <=> $b} map{/effect_(\d+)/; $1} grep{/^effect_\d+/} `jack_lsp`;
@@ -987,13 +976,15 @@ sub get_modep_simulation_commands( $ ){
         $index++;
     }
 
+    ## Get the pedal board definitions
+    my @fn = map{chomp;$_}grep {$_ !~ /manifest.ttl$/} grep{/\.ttl$/} `find $MODEP_PEDALS -type f`;
     my @commands = ();
-
     foreach my $fn (@fn){
         my %ex = &One20Proof::process_lv2_turtle($fn, $index);
         $index = $ex{index};
         push(@commands, \%ex);
     }
+
     # The add commands for the mod-host initialisation
     my @add_mod_host = ();
 

@@ -1,6 +1,6 @@
 #!/usr/bin/perl -w
 use strict;
-
+use File::Path qw(make_path);
 use lib("$ENV{'Home120Proof'}/Perl");
 use One20Proof qw | $MODEP_PEDALS $PEDAL_DIR |;
 
@@ -11,7 +11,8 @@ use One20Proof qw | $MODEP_PEDALS $PEDAL_DIR |;
 ## The rest of the arguments are boards to ignore, Not all boards built by GUI are desirable.
 ##
 ## E.g: $ENV{"Home120Proof"}/bin/ExtractModep $modep_command_fn Looper Harp_Sweetner ORGANS ORGANS_Sweet
-my $modep_command_fn = shift or die;
+my $modep_command_fn = shift;
+defined $modep_command_fn or $modep_command_fn =   $ENV{"Home120Proof"} . '/setup.cmds';
 my @ignore_boards = ();
 foreach my $ignored_board (@ARGV){
     push(@ignore_boards, $ignored_board);
@@ -37,6 +38,8 @@ sub process_file( $$ ) {
     my $prefix = shift or die;
     my $fn = shift or die;
 
+    my @result = ();
+    
     $fn =~ s/-\d\d\d\d\d\.ttl$/\.ttl/; ## TODO: WTF??
 
     $VERBOSE and print STDERR "Process $prefix  $fn\n";
@@ -48,10 +51,6 @@ sub process_file( $$ ) {
 
     ## Decode the Turtle file
     my @lines = One20Proof::read_turtle($fn) or die "Cannot process $fn";
-
-
-
-
 
     my @ret = ();
   
@@ -84,8 +83,6 @@ sub process_file( $$ ) {
     ## array 
     my $name = undef;
 
-
-
     ## We need to get the instructions needed to initialise this
     ## effect and turn it on.
 
@@ -97,10 +94,11 @@ sub process_file( $$ ) {
     ## param_set <instance_number> <param_symbol> <param_value>
     ## Set up the effect in the way it was saved from mod-ui
 
-    ## Tripples and their meanings
+    ## Triples and their meanings
     ## predicate == "lv2:prototype" => subject is an effect, object is the URL.
     ## ......... <DS1> lv2:prototype <http://moddevices.com/plugins/mod-devel/DS1> 
     ## _________ Use for the "add" command
+    
     ## predicate == ingen:arc => object names a Jack connection.
     ## .........   "<> ingen:arc _:b1"
     ## _________  Use in "jack_connect" commands
@@ -118,7 +116,8 @@ sub process_file( $$ ) {
     ## _________  Use in "jack_connect" commands
     ## .........  <bitta/drywet> a lv2:ControlPort
     ## _________  Use in "param" commands
-    ## predicate == "ingen:value" and subject == a control port of a device => object is a value to set a port
+    ## predicate == "ingen:value" and subject == a control port of a
+    ##   device => object is a value to set a port
     ## .........  <bitta/drywet> ingen:value 1.000000
     ## _________  Use for the "param" command
 
@@ -128,23 +127,25 @@ sub process_file( $$ ) {
     ## Each effect is setup in this hash.
     ## Indexed by the name
     # my %effects = {};
+
     
     ## each entry om @line is a tripple as text.  Convert into an
     ## array of arrays, each with three elements: subject, predicate,
     ## object
-    my @tripples = map {
+    my @triples = map {
 	chomp;
 	/^(\S+)\s+(\S+)\s+(.+)/ or die $_;
 	[$1, $2, $3]
     } @lines;
 
     ## Get the commands to add
-    my @prototypes = grep {$_->[1] eq "lv2:prototype" } @tripples;
+    my @prototypes = grep {$_->[1] eq "lv2:prototype" } @triples;
 
     ## For creating LV2 effects, each effect has a number. `$index` holds it
     my $index = 1;
 
     # To map numbers names
+    ## Why?
     my %name_number = ();
     my %number_name = ();
     
@@ -157,6 +158,9 @@ sub process_file( $$ ) {
 
 	$predicate eq "lv2:prototype" or die "Error in prototypes: $predicate";
 
+	$uri =~ /^<(\S+)>$/ or die "Badly formed subject: $uri ";
+	$uri = $1;
+	
 	## Initialise the effect hash 
 	$effects{$name} = {};
 	$effects{$name}->{lv2_commands} = {};
@@ -164,9 +168,15 @@ sub process_file( $$ ) {
 	$effects{$name}->{lv2_commands}->{add} = "add $uri $index";
 	$name_number{$name} = $index;
 	$number_name{$index} = $name;
+	my @relevant = grep {$_->[0] =~ /^<$name>$/} @triples;
+	my @values = map{/^<$name\/([^>]+)> ingen:value (.+)\s*$/; "param_set $index $1 $2" } map{join(' ', @$_)} grep{$_->[0] =~ /^<$name\//} grep { $_->[1] =~ /^ingen:value$/ } @triples;
+	push(@result, @values);
 	$index += 1;
     }
-
+    foreach my $name (sort keys %effects) {
+	push @result, $effects{$name}->{lv2_commands}->{add};
+    }
+    @result;
 }
 
 ## Get the ttl file that holds all the pedal board definitions
@@ -203,13 +213,6 @@ foreach my $name (sort @names){
 	# print STDERR "Process: $fn\n";
 	my @board_commands = &process_file($prefix, $fn);
 	if(@board_commands){
-	    ## First element is the name of the pedal board.
-	    my $name_line = shift(@board_commands);
-	    if($name_line =~ /name:\s(.+)/){
-		$name = $1;
-	    }else{
-		warn "Bad name_line, no board name: $name_line \n";
-	    }
 	    push(@commands, [$board, \@board_commands]);
 	    $prefix++;
 	}
@@ -299,7 +302,7 @@ foreach my $name ( sort keys %pedal_settings){
 
 my $pedal_dir = $One20Proof::PEDAL_DIR;
 
--d $pedal_dir or mkdir $pedal_dir or die "$!: Cannot mkdir $pedal_dir";
+-d $pedal_dir or make_path $pedal_dir or die "$!: Cannot mkdir $pedal_dir";
 
 ## Delete old pedals
 opendir(my $pedals, $pedal_dir) or die "$!: $pedal_dir ";

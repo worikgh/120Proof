@@ -18,8 +18,8 @@ if(`lsof -i :$PORT`){
 }
 
 ## Copy the definitions of mod-host simulator's made by modep front
-## end
-print `$ENV{"Home120Proof"}/bin/ExtractModep`;
+## end mod-ui
+print `$ENV{"Home120Proof"}/bin/ExtractModep $ENV{"Home120Proof"}/.commands`;
 
 
 ## Start our own version of modhost
@@ -29,15 +29,12 @@ $ENV{LV2_PATH} = '/usr/modep/lv2';
 
 print `/usr/bin/mod-host -p $PORT`;
 
-
 ## Wait for it to get started
 sleep 1;
 
 print `lsof -i:$PORT`;
 
-
 `jack_wait -w`;
-
 
 ## Create the simulators
 print `$ENV{"Home120Proof"}/bin/ModhostSimulators`;

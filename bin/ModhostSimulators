@@ -10,10 +10,6 @@ use One20Proof qw | $PEDAL_DIR $MODHOST_PORT |;
 ## Probably want to ignore some boards.  Pass the names of boards to
 ## ignore on the commandline
 
-## Pedals are based on the names of the instruments.  Four for each
-## instrument
-my @pedal_boards = &One20Proof::get_pedal_names();
-
 
 ## Get the directory to run in
 my $home_dir = $ENV{"Home120Proof"} or die '$ENV{"Home120Proof"} is not set';
@@ -27,6 +23,7 @@ my $pedal_dir = "$One20Proof::PEDAL_DIR";
 
 my $mod_host_port_p = $One20Proof::MODHOST_PORT;
 
+my @pedal_boards = &One20Proof::get_pedal_names();
 my %modep_simulation_commands = &One20Proof::get_modep_simulation_commands(\@pedal_boards);
 my @add = @{$modep_simulation_commands{add}};
 my @param = @{$modep_simulation_commands{param}};

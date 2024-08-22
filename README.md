@@ -2,200 +2,42 @@
 
 Idiosyncratic music making system.
 
-It uses MIDI, USB, and audio inputs. 
+Two Approaches.
 
-* [ALSA MIDI](https://github.com/opensrc/alsa/blob/master/lib/md/AlsaMidi.md) for MIDI routing.
-* [JACK Audio Connection Kit](https://github.com/jackaudio) for audio routing
-* [Yoshimi](https://yoshimi.sourceforge.io/) and [Pure Data](https://puredata.info/) for synthesis.  Any MIDI controllable software that can output to Jack will work.
- 
-## archive 
+1. Process Audio
+---
 
-Old stuff 
+Use [JACK Audio Connection Kit](https://github.com/jackaudio) to route audio from a sound card through an effects chain.
 
-## bin
+The effects chain includes LV2 simulators,  [`mod-ui`]() is used to configure them.
 
-Various programmes.
+2. Route MIDI
+---
 
-## Instruments
+Process MIDI signals using [ALSA MIDI](https://github.com/opensrc/alsa/blob/master/lib/md/AlsaMidi.md) from input devices and use them to controll [Yoshimi](https://yoshimi.sourceforge.io/) or [Pure Data](https://puredata.info/).
 
-[Finished MIDI controlled synthesisers](Instruments/README.md)
+A sample player 
 
+Code to control the display of an LPX
 
 
-##  Pedal
+## Audio Processing Workflow
 
-Software for running pedals.
-
-`driver.c` is a not simple enough driver for a foot opeerated USB keyboard with three keys.
-
-`Pedal/midi_driver` is a similar driver for a MIDI pedal
-
-They both oerate by changing jack pipes
-
-`Pedal/midi_driver` is a simpler driver for a SINCO specific pedal, and it translates the four switches to four MIDI signals.  By default the pedal can switch between banks.  It gets quite confusng when a bank is accidebtally selected.  This fixes that
-
-### Driver
-
-The pedal this was developed with is: `ID 4353:4b4d Jieli Technology SINCO`
-
-* The driver in in `pedal/midi_pedal`
-* Converts the four buttons into 'A',...,'D'
-* Looks for a configuration file in: $Home120Proof/pedal/PEDALS/
-* Named 'A', 'B', 'C', or 'D'
-
-## Third Party Software
-
-* [Pure Data - `pd`](https://puredata.info/) 
-
-* [`yoshimi`](https://github.com/Yoshimi/yoshimi)
-
-* Delete amidiauto
-
-	It makes MIDI connections without asking.  Very annoying.
-
-## Setup
-
-* Clone this repo 
-
-* Set environment variable `Home120Proof` to point at the root of the repository
-* 
-* Make links from $Home120Proof/bin
-120Proofpd -> /home/patch/120Proof/pedal/120Proofpd
-lpx_blank_screen -> /home/patch/120Proof/novation_lpx/target/release/lpx_blank_screen
-lpx_colour -> /home/patch/120Proof/novation_lpx/target/release/lpx_colour
-lpx_controll -> /home/patch/120Proof/novation_lpx/target/release/lpx_controll
-lpx_manager -> /home/patch/120Proof/novation_lpx/target/release/lpx_manager
-lpx_mode -> /home/patch/120Proof/novation_lpx/target/release/lpx_mode
-lpx_scale -> /home/patch/120Proof/novation_lpx/target/release/lpx_scale
-lpx_drum -> /home/patch/120Proof/novation_lpx/target/release/lpx_drum
-
-## Configuration
-
-### MIDI
-
-Two classes of hardware device
-
-1. Musician Interface 
-
-	The device the musician uses.  It requires three connections:
-	
-	1. MIDI note out
-	2. MIDI control out
-	3. MIDI control in
-	
-	The two outputs can be the same MIDI device.
-	
-	Examples
-	
-	* a keyboard 
-	* Novation LPX
-
-2. Audience Interface.
-
-	The device that the audience listens to.  It requires two connections:
-	
-	1. MIDI note in
-	2. MIDI control in
-	
-	The two inputs can be the same MIDI device.
-
-
-
-## Configuration Files 
-
-
-
-For each instrument there is a `midi.cfg` file that 
-
-## Instruments
-
-* Launchpad LPX
-
-	Made by Novation.  A nice grid of LED buttons.  120Proof has custom programmes to control this instrument.
-
-* Pedal
-
-	Essentially a three key USB-keyboard configured as a pedal
-
-  * Look into using a [Behringer FCB1010](https://www.behringer.com/product.html?modelCode=P0089) A MIDI foot pedal
-  
-* Berringer XR18
-
-	Can only be controlled by software
-
-	~/X-Air-LiveToolbox-132-source/X-AIR-Edit_RASPI_1.5/X-AIR-Edit
-
-
-
-
-
-## InitialiseMidi
-
-Reads a configuration file, the `midi_Connections` section.  The string `/^MIDI_Connections$/` defines the start of the section.
-
-Each non-cmment line is a tab seperated list of two MIDI devices.  
-
-Connection from first to second.  
-
-Use `aconnect` to ensure that these connections are made and all other cnnections broken
-
-### Invocation
-
-`bin/InitialiseMidi <Config file>`
-
-
-
-## lpx_mode
-
-Sets the mode of the `lpx`.  Most useful mode is `127` "Programmer Mode".
-
-## lpx_control
-
-Runs programmes based on the control pad pressed on the LPX 
-
-Programmes (executable files) are placed in the sub directrory `subs/`.  Each control signal can trigger execution of two programmes in `subs/`.  When a control signal is received (say `29`) programme `subs/ON-CTL.29` is run.  When any other control is received, say `39`, `subs/OFF-CTL.29` is run then `subs/ON-39`.
-
-## lpx_colour
-
-Sets the colour of a pad on the `LPX`.
-
-`bin/lpx_colour <Pad> <red> <green> <blue>` where `Pad` in `11..98` and `red`, `green`, and `blue` are in `1..127`. 
-
-## lpx_manager
-
-    Sets up LPX buttons for melodic use. Colouring them with three colours: One for root notes, one for notes on scale, and one for all other notes.
-	
-	Assign the pads to MIDI notes so that they are aligned in five columns.  This leads to duplication where pads in three leftmost and rightmost columns, in adjacent rows, play the same notes.
-	
-	When a pad is pressed change its colour (to a fourth colour).  Also change the colour of the other pad that can play this note.
-
-### Invocation
-
-`bin/lpx_manager <Path to MIDI configuration> <Root note MIDI> <root colour> <scale colour> other colour> <[1-12]>`
-
-	Where `<Root note MIDI>` is the MIDI value for the note the center pad (r4, c5) is assigned to.
-
-	`<root colour>`, `<scale colour>`, and `<other colour>` are the colours (from the LPX palette) that are assigned to root notes, scale notes, and other notes respectively.
-
-	`<[1-12]>` is the scale defined as one to twelve integers in the range 1 - 12 inclusive, and ordered, that define the notes of the scale.  Always starts with `1`
-
-* Example
-
-	`bin/lpx_manager 60 1 4 6 8 11` 
-
-
-# Workflow
+* Use `m0d-ui` to create pedal boards
+* Run `getPedalBoardCommands.pl` to create pedal definitions
+TBC
 
 ## General Setup for All Instrumets/Configurations
+
+
+
 
 The LV2 pedal boards are initialised using `modep-mod-host` and `modep-mod-ui`.  The simulators are initialised and the Jack pipes between them set up.
 
 The Jack conections that connect audio input and output into particular pedal boards are placed in files in "pedal/PEDALS/".  Here they are read by the pedal driver (driver.c) or other software as yet unwritten to swap pedal boards in real time.
 
 
-1. Use [`modep`](https://blokas.io/modep) to build some simulated pedal boards using LV2 effects.
-
-Set them up for the audio interface (simulating an effects unit) or for MIDI instruments.
+1. Use `mod-panel` to run `mod-ui` and set up pedal boards.
 
 2. Run `bin/InitialiseModHost` that sets up `mod-host` simulators, Jack
    pipes and the files (in pedal/PEDALS) to be read by the pedal
@@ -267,6 +109,165 @@ The inputs appear in the MIDI configuration file as: `Pure Data:Pure Data Midi-I
    In this case the MIDI input connection appears in the configuration
    file as: `yoshimi-Midi01:input`.  The Jack output will be (in this
    case) `yoshimi-Midi01`.
+
+
+## Contents
+
+### archive 
+
+Old stuff 
+
+### bin
+
+Various programmes.
+
+### Instruments
+
+[Finished MIDI controlled synthesisers](Instruments/README.md)
+
+###  Pedal
+
+Software for running pedals.
+
+`driver.c` is a not simple enough driver for a foot opeerated USB keyboard with three keys.
+
+`Pedal/midi_driver` is a similar driver for a MIDI pedal
+
+They both operate by changing jack pipes
+
+`Pedal/midi_driver` is a simpler driver for a SINCO specific pedal, and it translates the four switches to four MIDI signals.  By default the pedal can switch between banks.  It gets quite confusng when a bank is accidebtally selected.  This fixes that
+
+Driver
+---
+
+The pedal this was developed with is: `ID 4353:4b4d Jieli Technology SINCO`
+
+* The driver in in `pedal/midi_pedal`
+* Converts the four buttons into 'A',...,'D'
+* Looks for a configuration file in: $Home120Proof/pedal/PEDALS/
+* Named 'A', 'B', 'C', or 'D'
+
+
+## Setup
+
+* Set environment variable `Home120Proof` to point at the root of the repository
+* 
+* Make links from $Home120Proof/bin
+120Proofpd -> /home/patch/120Proof/pedal/120Proofpd
+lpx_blank_screen -> /home/patch/120Proof/novation_lpx/target/release/lpx_blank_screen
+lpx_colour -> /home/patch/120Proof/novation_lpx/target/release/lpx_colour
+lpx_controll -> /home/patch/120Proof/novation_lpx/target/release/lpx_controll
+lpx_manager -> /home/patch/120Proof/novation_lpx/target/release/lpx_manager
+lpx_mode -> /home/patch/120Proof/novation_lpx/target/release/lpx_mode
+lpx_scale -> /home/patch/120Proof/novation_lpx/target/release/lpx_scale
+lpx_drum -> /home/patch/120Proof/novation_lpx/target/release/lpx_drum
+
+## Configuration
+
+### MIDI
+
+Two classes of hardware device
+
+1. Musician Interface 
+
+	The device the musician uses.  It requires three connections:
+	
+	1. MIDI note out
+	2. MIDI control out
+	3. MIDI control in
+	
+	The two outputs can be the same MIDI device.
+	
+	Examples
+	
+	* a keyboard 
+	* Novation LPX
+
+2. Audience Interface.
+
+	The device that the audience listens to.  It requires two connections:
+	
+	1. MIDI note in
+	2. MIDI control in
+	
+	The two inputs can be the same MIDI device.
+
+
+
+## Configuration Files 
+
+For each instrument there is a `midi.cfg` file that 
+
+## Instruments
+
+* Launchpad LPX
+
+	Made by Novation.  A nice grid of LED buttons.  120Proof has custom programmes to control this instrument.
+
+* Pedal
+
+	Essentially a three key USB-keyboard configured as a pedal
+
+  * Look into using a [Behringer FCB1010](https://www.behringer.com/product.html?modelCode=P0089) A MIDI foot pedal
+  
+* Berringer XR18
+
+	Can only be controlled by software
+
+	~/X-Air-LiveToolbox-132-source/X-AIR-Edit_RASPI_1.5/X-AIR-Edit
+
+## InitialiseMidi
+
+Reads a configuration file, the `midi_Connections` section.  The string `/^MIDI_Connections$/` defines the start of the section.
+
+Each non-cmment line is a tab seperated list of two MIDI devices.
+Connection from first to second.
+
+Use `aconnect` to ensure that these connections are made and all other cnnections broken
+
+### Invocation
+
+`bin/InitialiseMidi <Config file>`
+
+## lpx_mode
+
+Sets the mode of the `lpx`.  Most useful mode is `127` "Programmer Mode".
+
+## lpx_control
+
+Runs programmes based on the control pad pressed on the LPX 
+
+Programmes (executable files) are placed in the sub directrory `subs/`.  Each control signal can trigger execution of two programmes in `subs/`.  When a control signal is received (say `29`) programme `subs/ON-CTL.29` is run.  When any other control is received, say `39`, `subs/OFF-CTL.29` is run then `subs/ON-39`.
+
+## lpx_colour
+
+Sets the colour of a pad on the `LPX`.
+
+`bin/lpx_colour <Pad> <red> <green> <blue>` where `Pad` in `11..98` and `red`, `green`, and `blue` are in `1..127`. 
+
+## lpx_manager
+
+    Sets up LPX buttons for melodic use. Colouring them with three colours: One for root notes, one for notes on scale, and one for all other notes.
+	
+	Assign the pads to MIDI notes so that they are aligned in five columns.  This leads to duplication where pads in three leftmost and rightmost columns, in adjacent rows, play the same notes.
+	
+	When a pad is pressed change its colour (to a fourth colour).  Also change the colour of the other pad that can play this note.
+
+### Invocation
+
+`bin/lpx_manager <Path to MIDI configuration> <Root note MIDI> <root colour> <scale colour> other colour> <[1-12]>`
+
+	Where `<Root note MIDI>` is the MIDI value for the note the center pad (r4, c5) is assigned to.
+
+	`<root colour>`, `<scale colour>`, and `<other colour>` are the colours (from the LPX palette) that are assigned to root notes, scale notes, and other notes respectively.
+
+	`<[1-12]>` is the scale defined as one to twelve integers in the range 1 - 12 inclusive, and ordered, that define the notes of the scale.  Always starts with `1`
+
+* Example
+
+	`bin/lpx_manager 60 1 4 6 8 11` 
+
+
    
 
    

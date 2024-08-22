@@ -7,20 +7,48 @@ set -e
 
 # Function to log messages
 log() {
-    echo -e "\n[INFO] $1\n"
+    echo -e "[INFO] $1"
 }
 
-log "Checking and installing required packages..."
-# Update package list and install required packages
-if ! sudo apt-get install -y virtualenv python3-pip python3-dev git build-essential libasound2-dev libjack-jackd2-dev liblilv-dev libjpeg-dev zlib1g-dev; then
-    log "Failed to install required packages. Please check your package manager."
+# List of required packages
+REQUIRED_PACKAGES=(
+    virtualenv
+    python3-pip
+    python3-dev
+    git
+    build-essential
+    libasound2-dev
+    libjack-jackd2-dev
+    liblilv-dev
+    libjpeg-dev
+    zlib1g-dev
+)
+
+MISSING_PACKAGES=()
+
+# Check if the required packages are installed
+for pkg in "${REQUIRED_PACKAGES[@]}"; do
+    echo PKG $pkg
+    if ! dpkg -l | grep -q "^ii  $pkg"; then
+        MISSING_PACKAGES+=("$pkg")
+    fi
+done
+
+if [ ${#MISSING_PACKAGES[@]} -ne 0 ]; then
+    log "The following required packages are missing:"
+    printf '%s\n' "${MISSING_PACKAGES[@]}"
+    log "Please install them before running this script."
     exit 1
 fi
 
-log "Checking if mod-host is running..."
 MOD_HOST_PID=$(pgrep mod-host)
-if [[ -z "$MOD_HOST_PID" ]]; then
-    log "mod-host is not running. Please start mod-host before continuing."
+
+# Check if MOD_HOST_PID has a value
+if [[ -n "$MOD_HOST_PID" ]]; then 
+    echo Checking if mod-host is running... ${MOD_HOST_PID}
+else
+    echo mod-host is not running. Please start mod-host before continuing.
+    echo You can start mod-host with the command: mod-host -n -p 5555 -f 5556
     exit 1
 fi
 
@@ -44,8 +72,10 @@ log "Compiling libmod_utils..."
 # Compile libmod_utils
 make -C utils
 
-log "Setup complete. You can now run the server."
-log "To run the server, do the following:"
-log "1. Activate the virtual environment: source modui-env/bin/activate"
-log "2. Start the webserver with: python3 ./server.py"
-log "3. Open your browser and go to http://localhost:8888/"
+log "Setup complete. Starting the web server now..."
+
+# Start the web server
+export MOD_DEV_ENVIRONMENT=0
+python3 ./server.py
+
+log "The web server is running. Open your browser and go to http://localhost:8888/"
