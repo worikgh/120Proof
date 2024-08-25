@@ -4,6 +4,22 @@ use lib("$ENV{'Home120Proof'}/Perl");
 use One20Proof;
 my @commands = ();
 
+## Read the "pedalboard" definitions created by `mod-ui`
+## Create a set of files in the pedal directory (One20Proof::get_pedal_dir):
+## `Initialise`: A file with commands for `mod-host` and `jackd` to
+## set up the simulators needed for all the pedalboards
+## One file for each pedalboard that contains the instructions for
+## jackd to make that pedalboard active
+
+## Delete any existing pedal definitions
+my $pedal_dir = &One20Proof::get_pedal_dir();
+opendir(my $dir, $pedal_dir) or die "$!: $pedal_dir";
+foreach my $fn (readdir($dir)){
+    $fn =~ /^\./ and next;
+    my $path_to_delete = $pedal_dir .'/'. $fn;
+    unlink($path_to_delete) or die "$!: $path_to_delete";
+}
+
 ## Get the pedal board definitions
 my @fn = map{chomp;$_}
 grep {$_ !~ /manifest.ttl$/}
@@ -24,7 +40,7 @@ foreach my $fn (@fn){
     $index = $ex{index};
 
     my $board_name = $ex{pedal_board_name};
-    print "> $board_name\n";
+    # print "> $board_name\n";
 
     my $effects = $ex{effects};
     my @lv2_names = sort keys %$effects;
@@ -34,29 +50,26 @@ foreach my $fn (@fn){
     my  @j_activation_pipes = @{$ex{jack_activation_pipes}};
 
     foreach my $name (@lv2_names){
-	print "\t$name\n";
+	# print "\t$name\n";
 	my $h = $effects->{$name};
 	my @k = sort keys %$h;
 	my $add = $h->{add} or die "No `add` for $name";
-	print "\t\t$add\n";
-	print "\t\t".join("", map{"\t\t$_\n"} @param)."\n";
+	# print "\t\t$add\n";
+	# print "\t\t".join("", map{"\t\t$_\n"} @param)."\n";
 	push(@add, $add);
 	push(@param, @{$h->{param}});
     }
     $jack_activation{$board_name} = $ex{jack_activation_pipes};
     push(@jack_init, @{$ex{jack_internal_pipes}});
     
-    foreach my $k (sort keys %number_name){
-	my $v = $number_name{$k};
-	print "$k => $v\n";
-    }
+    # foreach my $k (sort keys %number_name){
+    # 	my $v = $number_name{$k};
+    # 	print "$k => $v\n";
+    # }
 }
 
 ## Output to pedal files.
 ## Output an initialisation file `Initialse` and a filke for each pedal board
-
-my $pedal_dir = &One20Proof::get_pedal_dir();
--d $pedal_dir or die "$! $pedal_dir";
 
 open(my $initfh, ">$pedal_dir/Initialise") or die "$!";
 
