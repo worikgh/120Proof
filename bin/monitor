@@ -214,6 +214,7 @@ sub update() {
 		$new_data .= $ln;
 	    }
 	}
+	warn "Cache for $fn\n";
 	$self->{cache}->{$fn}->[1] = $new_data;
     }
 }
@@ -224,9 +225,12 @@ sub output {
     foreach my $fn (keys(%{$self->{cache}})){
 	$fn =~ /([^\/]+)$/ or die "\$fn makes no sense: '$fn'";
 	my $name = $1;
-	my @output = split("\n", $self->{cache}->{$fn}->[1]);
-	for my $l (@output){	    
-	    $result .=  "$name: $l\n";
+	if($self->{cache}->{$fn}->[0] > 0){
+	    $self->{cache}->{$fn}->[1] or die "output: \$fn $fn \$name $name $self->{cache}->{$fn}->[0]";
+	    my @output = split("\n", $self->{cache}->{$fn}->[1]);
+	    for my $l (@output){	    
+		$result .=  "$name: $l\n";
+	    }
 	}
     }
     return $result;

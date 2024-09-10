@@ -6,61 +6,14 @@ use strict;
 ## Mistress is the boss.  It is in charge.
 ## It calls the scripts, in the proper order, to set up 120Proof.
 
-## What it must do:
-## Set Home120Proof environment variable
-## Set JACK_PROMISCUOUS_SERVER environment variable
-## Set the mode of the LPX to 127
-## Initialise mod-host: IM (66)
-## IM: Kill any previous mod-host on our port
-## IM: Copy the definitions of simulators writen by modep-mod-ui: EM (26)
-## EM: ExtractModep.  A black box for now
-## IM: Start mod-host
-## IM: Start simulators MS (47)
-## MS: Use definion of simulators to set them up
-## MS: Make mod-host simuators
-## MS: Make Jack connetions between simulators
-## Start lpx_control
-## Start pedal driver
-## Delete all Jack MIDI connetions
-## 
-
-
-## Required to run 120Proof
-# if(!$ENV{"Home120Proof"}){
-#     $0 =~ /^(.+)\/bin\/[^\/]+$/ or die $0;
-#     $ENV{"Home120Proof"} = $1;
-# }
-
 use lib("$ENV{'Home120Proof'}/Perl");
 use One20Proof qw | $MODHOST_PORT |;
 
-## Clean up process space.  If any copies of the pedal driver,
-## lpx_control, lpx_scale, or the mod-host are running kill them
-
-## TODO Make a configuration system for all the executables that might
-## be involved in 120Proof.
-
-## Debug with: o inhibit_exit=0
-my $lpx_control = &One20Proof::get_lpx_controll;
-my $lpx_manager = &One20Proof::get_lpx_manager;
-my $lpx_scale = &One20Proof::get_lpx_scale;
 my $mod_host = &One20Proof::get_mod_host;
-my $pd = &One20Proof::get_pd;
 my $pedal_driver = &One20Proof::get_pedal_driver;
-my $yoshimi = &One20Proof::get_yoshimi;
-
-
--x $lpx_control or die "$!:$lpx_control is not executable";
--x $lpx_manager or die "$!:$lpx_manager is not executable";
--x $lpx_scale or die "$!:$lpx_scale is not executable";
 -x $mod_host or die "$!:$mod_host is not executable";
--x $pd or die "$!:$pd is not executable";
 -x $pedal_driver or die "$!:$pedal_driver is not executable";
--x $yoshimi or die "$!:$yoshimi is not executable";
 
-&One20Proof::pkill($lpx_control);
-&One20Proof::pkill($lpx_manager);
-&One20Proof::pkill($lpx_scale);
 my $user = `whoami`;
 chomp $user;
 if(`pgrep -u $user-f $mod_host`){
@@ -74,17 +27,7 @@ if(`pgrep -u $user-f $mod_host`){
 }else{
     warn "No $mod_host running to kill\n";
 }
-# &One20Proof::pkill($pd);
-# &One20Proof::pkill($pedal_driver);
-# &One20Proof::pkill($yoshimi);
 
-## Set up the LPX into programmer mode
-# &One20Proof::run_daemon("$ENV{'Home120Proof'}/bin/lpx_mode 1", 1);
-# &One20Proof::run_daemon("$ENV{Home120Proof}/bin/lpx_mode 127", 1);
-
-## Clean up the modep commands file that will be written again by ExtractModep
-my $modep_command_fn = "$ENV{Home120Proof}/modep_commands.txt";
--e $modep_command_fn and unlink($modep_command_fn);
 
 ## Cleanup the output directory where sub programmes write output
 my $output_dir = "$ENV{Home120Proof}/output";
@@ -94,61 +37,45 @@ while(my $fn = readdir($dir)){
     $fn =~ /^README/ and next;
     my $fn_to_delete = "$output_dir/$fn";
     unlink($fn_to_delete) or die "$!: Cannot unlink $fn_to_delete";
-}
-
-
-## If the argument KILL was passed (`Mistress KILL`) then stop now.
-my $arg = shift;
-if(defined($arg)){
-    if($arg eq "KILL"){
-	exit(0);
-    }
+    print "Deleted $fn_to_delete\n";
 }
 
 ## Required to run Jack
-$ENV{"JACK_PROMISCUOUS_SERVER"} = 'jack';
+# $ENV{"JACK_PROMISCUOUS_SERVER"} = 'jack';
 ## TODO There is an environment variable that stops Jack from needing
 ## Dbus so this whole thing can be run headless
 
 warn "120Proof's Mistress running rooted at: $ENV{'Home120Proof'} ".(scalar(localtime()))."\n";
 
-
-## Initialise mod-host: IM (66)
+## Start mod-host
 my $PORT = $One20Proof::MODHOST_PORT;
-#-e "$ENV{Home120Proof}/pedal/PEDALS/A" or die "$!: $ENV{Home120Proof}/pedal/PEDALS/A";
-
-
-## IM: Start mod-host
-$ENV{LV2_PATH} = '/usr/modep/lv2';
-
+$ENV{LV2_PATH} = $ENV{HOME}.'/.lv2';
 &One20Proof::kill_port($PORT);
 if(`lsof -i:$PORT`){
     die "$?:  mod-host already on $PORT";
 }
-
-&One20Proof::run_daemon( "$mod_host -p $PORT ");
-
+my $pid = &One20Proof::run_daemon( "$mod_host -p $PORT ");
+warn "mod-host PID: $pid\n";
+warn join("\n", map{"$_\t=>  $ENV{$_}"} sort keys %ENV);
 sleep .1;
 while(!`lsof -i:$PORT`){
     sleep 1;
     warn "$?: Failed to start $mod_host on $PORT";
 }
 
-## IM: Start simulators MS (47)
-&One20Proof::run_daemon("$ENV{Home120Proof}/bin/ModhostSimulators ", 1);
+## Setup and start simulators
+&One20Proof::run_daemon("$ENV{Home120Proof}/bin/getPedalBoardCommands.pl ", 1);
+&One20Proof::run_daemon("$ENV{Home120Proof}/bin/setPedalBoardCommon.pl ", 1);
 
-## Set up the controls for the LPX
-&One20Proof::run_daemon($lpx_control);
-
-# ## Run the pedal
+## Run the pedal
 &One20Proof::run_daemon("$pedal_driver SINCO");
 warn "Started $pedal_driver";
 
-# Remove any nasty Jack MIDI connections
-&One20Proof::run_daemon("$ENV{Home120Proof}/bin/delete_jack_midi_connections delete");
+# # Remove any nasty Jack MIDI connections
+# &One20Proof::run_daemon("$ENV{Home120Proof}/bin/delete_jack_midi_connections delete");
 
-## Check that they have been deleted
-my @jack_con = `$ENV{"Home120Proof"}/bin/delete_jack_midi_connections list`;
-@jack_con and warn "Failed to delete JACK Midi connections:\n\t".join("\n\t", @jack_con)."\n";
+# ## Check that they have been deleted
+# my @jack_con = `$ENV{"Home120Proof"}/bin/delete_jack_midi_connections list`;
+# @jack_con and warn "Failed to delete JACK Midi connections:\n\t".join("\n\t", @jack_con)."\n";
 
 warn "Mistress is finished with you\n";

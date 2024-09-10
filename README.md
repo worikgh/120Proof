@@ -23,8 +23,11 @@ Code to control the display of an LPX
 
 ## Audio Processing Workflow
 
-* Use `m0d-ui` to create pedal boards
+TODO:  Must have guitar tuner always set up and ready
+
+* Use `mod-ui` to create pedal boards
 * Run `getPedalBoardCommands.pl` to create pedal definitions
+* Run `setPedalBoardCommon.pl` to set up the simulators
 TBC
 
 ## General Setup for All Instrumets/Configurations

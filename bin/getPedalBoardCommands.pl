@@ -16,6 +16,7 @@ my $pedal_dir = &One20Proof::get_pedal_dir();
 opendir(my $dir, $pedal_dir) or die "$!: $pedal_dir";
 foreach my $fn (readdir($dir)){
     $fn =~ /^\./ and next;
+    $fn =~ /^[A-Z]$/ and next; # Links for pedal driver
     my $path_to_delete = $pedal_dir .'/'. $fn;
     unlink($path_to_delete) or die "$!: $path_to_delete";
 }
@@ -71,7 +72,8 @@ foreach my $fn (@fn){
 ## Output to pedal files.
 ## Output an initialisation file `Initialse` and a filke for each pedal board
 
-open(my $initfh, ">$pedal_dir/Initialise") or die "$!";
+my $pedal_init_fn = "$pedal_dir/Initialise";
+open(my $initfh, ">$pedal_init_fn") or die "$!";
 
 ## mod-host commands prefixed with "mh"
 print $initfh map{"mh $_\n"} @add;
@@ -79,9 +81,16 @@ print $initfh map{"mh $_\n"} @param;
 
 ## Jack pipes prefixed with "jack"
 print $initfh map{"jack $_\n"} @jack_init;
-
+close $initfh or die "$!";
+warn "Written $pedal_init_fn\n";
 ## The activation data.  Pedals use this
 foreach my $name (sort keys %jack_activation){
     open(my $actfh, ">$pedal_dir/$name") or die "$!";
-    print $actfh map {"$_\n"} @{$jack_activation{$name}};
+    print $actfh map {"$_\n"}
+    map{
+	## Repair a special case
+	/^(capture_\d+):(playback_\d+)/ and $_ = "system:$1 system:$2";
+	$_
+    }
+    @{$jack_activation{$name}};
 }

@@ -9,7 +9,7 @@ use One20Proof qw | $PEDAL_DIR $MODHOST_PORT |;
 
 my $pedal_dir = &One20Proof::get_pedal_dir();
 my $initialise_fn = "$pedal_dir/Initialise";
--r $initialise_fn or die "$!: $initialise_fn";
+#-r $initialise_fn or die "$!: '$initialise_fn'";
 open(my $fh, $initialise_fn) or die "$!: $initialise_fn";
 my @config = map{chomp ; $_} <$fh>;
 my @add = grep{s/^mh //} map{chomp ; $_} grep {/^mh add/} @config; 
@@ -35,7 +35,7 @@ foreach my $jcmd ( @jack_initial ) {
 ## `mod_host` is passed an array of commands to send to `mod-host`
 sub handle_mh_cmd( $$ ) {
     my ($sock, $cmd) = @_;
-    # warn "handle_mh_cmd(SOCK, $cmd)\n";
+    warn "handle_mh_cmd(SOCK, $cmd)\n";
     print $sock "$cmd\n";
 
     my $result = '';
