@@ -2,7 +2,7 @@
 use jack::Error;
 
 pub struct JackConnections {
-   client: jack::Client,
+    client: jack::Client,
 }
 
 impl JackConnections {
@@ -17,7 +17,7 @@ impl JackConnections {
 
         self.client
             .connect_ports_by_name(src.as_str(), dst.as_str())?;
-        println!("End: make_connection({}, {})", &src, &dst);
+        eprintln!("End: make_connection({}, {})", &src, &dst);
 
         Ok(())
     }
