@@ -925,9 +925,17 @@ sub process_lv2_turtle( $$ ) {
         push(@jack_internal_pipes, $p);
     }
 
-    # my  = ();
-    # my @jack_activation_pipes = ();
-
+    ## Remove duplicates from the jack pipes and parameter definitions
+    my %d = ();
+    %d = map{$_ => 1} @jack_internal_pipes;
+    @jack_internal_pipes = keys %d;
+    %d = map{$_ => 1} @jack_activation_pipes;
+    @jack_activation_pipes = keys %d;
+    foreach my $name (keys %effects){
+	%d = map{$_ => 1} @{$effects{$name}->{param}};
+	@{$effects{$name}->{param}} = keys %d;
+    }
+    
     my %result = (
         "effects" => \%effects,
         "index" => $index,
@@ -1070,8 +1078,9 @@ sub get_lpx_scale {
 }
 
 sub get_mod_host {
-    my $result = `which mod-host`;
-    chomp $result;    
+    # my $result = `which mod-host`;
+    # chomp $result;    
+    my $result = $ENV{Home120Proof}."/../mod-panel/source/mod-host/mod-host";
     return $result;
     # return "/usr/bin/mod-host";
 }
@@ -1083,7 +1092,7 @@ sub get_pd {
 }
 
 sub get_pedal_driver {
-    return &get_bin()."/120Proofpd";
+    return $ENV{Home120Proof}."/Pedal/midi_driver/target/release/midi_driver";
 }
 
 ## Each instrument defined in "Instruments/" has up to four pedals.
