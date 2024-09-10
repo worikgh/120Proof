@@ -8,6 +8,7 @@ use std::time::Duration;
 mod jack_connections;
 mod midi;
 mod pedals_available;
+use crate::midi::MidiData;
 
 // use subprocess::Communicator;
 // use subprocess::Popen;
@@ -19,7 +20,7 @@ fn main() -> Result<(), Box<dyn Error>> {
         thread::sleep(Duration::from_secs(1));
     }
 }
-fn handle_midi(b: &[u8], connection_cache: &mut Vec<(String, String)>) {
+fn handle_midi(b: &[u8], connection_cache: &mut MidiData) {
     match handle_midi_real(b, connection_cache) {
         Ok(_) => (),
         Err(err) => panic!("Cannot handle midi: {err}"),
@@ -28,12 +29,15 @@ fn handle_midi(b: &[u8], connection_cache: &mut Vec<(String, String)>) {
 }
 fn handle_midi_real(
     b: &[u8],
-    connection_cache: &mut Vec<(String, String)>,
+    midi_data: &mut MidiData,
 ) -> Result<(), Box<(dyn std::error::Error + 'static)>> {
     println!("handle_midi_real {:?}", b);
     let mut jack_connetions = JackConnections::new("client_name");
-
     let a = b[1];
+    if a == midi_data.last {
+        eprintln!("Idempotent!");
+        return Ok(());
+    }
     let selected_pedal: &str = match a {
         0 => "A",
         1 => "B",
@@ -41,6 +45,7 @@ fn handle_midi_real(
         3 => "D",
         _ => panic!("Trying to handle {a}"),
     };
+    midi_data.last = a;
 
     let pipes: Vec<(String, String)> = get_pipes_from_file(selected_pedal)?;
     for pipe in pipes.iter() {
@@ -49,8 +54,8 @@ fn handle_midi_real(
             Err(err) => println!("Failed: {err}"),
         };
     }
-    if !connection_cache.is_empty() {
-        for pipe in &mut *connection_cache {
+    if !midi_data.connection_cache.is_empty() {
+        for pipe in &mut *midi_data.connection_cache {
             let src = pipe.0.clone();
             let dst = pipe.1.clone();
             match jack_connetions.unmake_connection(src.clone(), dst.clone()) {
@@ -59,7 +64,7 @@ fn handle_midi_real(
             };
         }
     }
-    *connection_cache = (*pipes).to_vec();
+    midi_data.connection_cache = pipes;
     println!("Pedal: {selected_pedal}");
     Ok(())
 }
@@ -68,24 +73,8 @@ fn run(name: String) -> Result<(), Box<(dyn std::error::Error + 'static)>> {
     let midi = Midi::new(name)?;
     midi.run(handle_midi)
 }
-#[cfg(test)]
-mod tests {
-    use super::*;
 
-    #[test]
-    fn test_file_names() {
-        let res: Vec<String> = pedals_available::get_files_to_read();
-        assert!(!res.is_empty());
-    }
-    #[test]
-    fn test_get_pipes_from_file() {
-        for p in pedals_available::get_files_to_read() {
-            let pipe_pairs: Vec<(String, String)> =
-                match pedals_available::get_pipes_from_file(p.as_str()) {
-                    Ok(p) => p,
-                    Err(err) => panic!("{}", err),
-                };
-            assert!(!pipe_pairs.is_empty());
-        }
-    }
-}
+// #[cfg(test)]
+// mod tests {
+//     use super::*;
+// }

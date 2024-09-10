@@ -1,60 +1,48 @@
 //!  Handle the MIDI connections
 use std::error;
-use std::fmt;
+// use std::fmt;
 use std::thread;
 use std::time::Duration;
 
-// type Result<T> = std::result::Result<T, MidiError>;
-
-// Define our error types. These may be customized for our error handling cases.
-// Now we will be able to write our own errors, defer to an underlying error
-// implementation, or do something in between.
-#[derive(Debug, Clone)]
-struct MidiError {
-    what: String,
+#[derive(Default)]
+pub struct MidiData {
+    pub connection_cache: Vec<(String, String)>,
+    pub last: u8,
 }
+// #[derive(Debug, Clone)]
+// struct MidiError {
+//     what: String,
+// }
 
-// Generation of an error is completely separate from how it is
-// displayed.  There's no need to be concerned about cluttering
-// complex logic with the display style.
-//
-// Note that we don't store any extra info about the errors.
-impl fmt::Display for MidiError {
-    fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
-        write!(f, "120Proof MIDI Error: {}", self.what)
-    }
-}
-impl error::Error for MidiError {}
+// impl fmt::Display for MidiError {
+//     fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
+//         write!(f, "120Proof MIDI Error: {}", self.what)
+//     }
+// }
+// impl error::Error for MidiError {}
 pub struct Midi {
     pub name: String,
-    // Cache connections that are made so they can be deleted after
-    // other connections made
-    pub connection_cache: Option<Vec<(String, String)>>,
 }
 
 impl Midi {
     pub fn new(name: String) -> Result<Self, Box<dyn error::Error>> {
-        Ok(Midi {
-            name,
-            connection_cache: None,
-        })
+        Ok(Midi { name })
     }
 
     pub fn run(
         &self,
-        mut f: impl FnMut(&[u8], &mut Vec<(String, String)>) + Send + 'static,
+        mut f: impl FnMut(&[u8], &mut MidiData) + Send + 'static,
     ) -> Result<(), Box<dyn error::Error>> {
         // TODO: Should allow name to be controlled fom command line.
         // May be more than one pedal in use.
         let this_name = "120Proof_pedal".to_string();
         let midi_in = midir::MidiInput::new(this_name.as_str())?;
-        let connection_cache: Vec<(String, String)> = vec![];
         for (index, port) in midi_in.ports().iter().enumerate() {
             // Each available input port.
             match midi_in.port_name(port) {
                 Err(_) => continue,
                 Ok(port_name) => {
-                    println!("DEBUGGING: port_name: {port_name}");
+                    eprintln!("DEBUGGING: port_name: {port_name}");
                     if port_name.as_str().contains(self.name.as_str()) {
                         // Found the port (first port that `card_name`
                         // is a subset of)
@@ -66,15 +54,34 @@ impl Midi {
                             .unwrap()
                             .clone();
                         eprintln!("this_port");
-                        _ = match midi_in.connect(
+                        let connect = midi_in.connect(
                             &this_port,
                             format!("{}-in", this_name).as_str(),
                             move |_a, b, connection_cache| {
-                                println!("MIDI in {:?}", &b);
-                                f(b, connection_cache);
+                                let c = if b[1] > 3 && b[1] <= 7 {
+                                    b[1] - 4
+                                } else if b[1] > 7 && b[1] <= 11 {
+                                    b[1] - 8
+                                } else if b[1] > 11 && b[1] <= 15 {
+                                    b[1] - 12
+                                } else if b[1] > 15 && b[1] <= 19 {
+                                    b[1] - 16
+                                } else if b[1] > 19 && b[1] <= 23 {
+                                    b[1] - 20
+                                } else if b[1] > 23 && b[1] <= 27 {
+                                    b[1] - 24
+                                } else if b[1] > 27 && b[1] <= 31 {
+                                    b[1] - 28
+                                } else {
+                                    b[1]
+                                };
+                                println!("MIDI in {:?}/{c}", &b);
+
+                                f(&[192, c], connection_cache);
                             },
-                            connection_cache,
-                        ) {
+                            MidiData::default(),
+                        );
+                        match connect {
                             Ok(_) => {
                                 println!("Created MIDI in");
                                 loop {

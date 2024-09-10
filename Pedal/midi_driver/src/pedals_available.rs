@@ -28,7 +28,7 @@ pub fn get_pipes_from_file(file_name: &str) -> Result<Vec<(String, String)>, Box
             let buf: Lines<BufReader<File>> = BufReader::new(file).lines();
             Ok(buf
                 .filter(|line| line.as_ref().map(|s| !s.is_empty()).unwrap_or(false))
-                .map(|x| {
+               .map(|x| {
                     let x = x.unwrap();
                     let s_x: Vec<&str> = x.split(' ').collect();
                     println!("x {x} s_x {s_x:?}");
