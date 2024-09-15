@@ -1,3 +1,6 @@
 [submodule "mod-panel"]
 	path = mod-panel
 	url = https://github.com/worikgh/mod-panel
+[submodule "qzn3t"]
+	path = qzn3t
+	url = https://github.com/worikgh/qzn3t
