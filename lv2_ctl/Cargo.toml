@@ -1,0 +1,12 @@
+[package]
+name = "lv2_ctl"
+version = "0.1.0"
+edition = "2021"
+
+[dependencies]
+color-eyre = "0.6.2"
+crossterm = "0.27.0"
+ncurses = "5.101.0"
+ratatui = {path = "/home/puppy/ratatui"}
+regex = "1.10.3"
+tui-input = "0.8.0"
