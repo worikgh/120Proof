@@ -49,6 +49,7 @@ Key Bindings
 | 'G'   | Go to bottom of list | Go to bottom of list |
 | 'n'   |                      | Next port            |
 | 'p'   |                      | Previous port        |
+| 's'   |                      | Save file name       |
 | Enter | (De)Select simulator | (De)Select port      |
 |       |                      |                      |
 

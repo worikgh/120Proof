@@ -14,13 +14,13 @@ mod mod_host_controller;
 mod port;
 mod port_table;
 mod run_executable;
-mod test_data;
+//mod test_data;
 use std::env;
-use std::io::Cursor;
-use test_data::test_data;
+//use std::io::Cursor;
+//use test_data::test_data;
 fn main() -> std::io::Result<()> {
-   let args: Vec<String> = env::args().collect();
-   let reader: Box<dyn std::io::BufRead> = if args.len() == 1 || &args[1] != "d"
+    let args: Vec<String> = env::args().collect();
+    let reader: Box<dyn std::io::BufRead> = //if args.len() == 1 || &args[1] != "d"
    {
       let fnm = if args.len() == 1 {
          "../../lv2.dat"
@@ -35,21 +35,22 @@ fn main() -> std::io::Result<()> {
          panic!("Cannot find data")
       };
       Box::new(std::io::BufReader::new(file))
-   } else {
-      let test_data = test_data();
-      Box::new(std::io::BufReader::new(Cursor::new(test_data)))
-   };
-   let mut mod_host_controller: ModHostController =
-      ModHostController::get_lv2_controller(
-         reader.lines(), //.map(|r| r)
-      )?;
-   // Start user interface.  Loop until user quits
-   App::run(&mut mod_host_controller).expect("Running app");
+   } // else {
+   //    let test_data = test_data();
+   //    Box::new(std::io::BufReader::new(Cursor::new(test_data)))
+   // }
+    ;
+    let mut mod_host_controller: ModHostController =
+        ModHostController::get_lv2_controller(
+            reader.lines(), //.map(|r| r)
+        )?;
+    // Start user interface.  Loop until user quits
+    App::run(&mut mod_host_controller).expect("Running app");
 
-   mod_host_controller
-      .mod_host_th
-      .join()
-      .expect("Joining mod-host thread");
+    mod_host_controller
+        .mod_host_th
+        .join()
+        .expect("Joining mod-host thread");
 
-   Ok(())
+    Ok(())
 }
