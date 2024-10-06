@@ -208,84 +208,98 @@ impl ModHostController {
                     // `_:gx_zita_rev1b9`.  Usually about two dozen lines
                     // that describe a port
 
-                    plugin_ports = port_names
-								.iter()
-								.map(|p| {
-									 // :Vec<Vec<Port>> `p`
+                    plugin_ports = port_names.iter()
+			.map(|p| {
+			    // :Vec<Vec<Port>> `p`
 
-									 // `l` is the set of tripples that define this port
-									 let plugin_data: Vec<&Lv2Datum> = lv2_data.iter().
-										  filter(|&x| &x.subject == p).collect();
+			    // `l` is the set of tripples that define this port
+			    let plugin_data: Vec<&Lv2Datum> = lv2_data.iter().
+				filter(|&x| &x.subject == p).collect();
 
-									 let name: String = plugin_data
-										  .iter()
-										  .filter(|&l| l.predicate == "<http://lv2plug.in/ns/lv2core#name>")
-										  .collect::<Vec<&&Lv2Datum>>()
-										  .iter()
-										  .fold(String::new(), |a, b| {
-												// println!("Name: '{a}' + '{}'", b.object);
-												a + remove_quotes(b.object.as_str())
-										  });
+			    let name: String = plugin_data
+				.iter()
+				.filter(|&l| l.predicate == "<http://lv2plug.in/ns/lv2core#name>")
+				.collect::<Vec<&&Lv2Datum>>()
+				.iter()
+				.fold(String::new(), |a, b| {
+				    // println!("Name: '{a}' + '{}'", b.object);
+				    a + remove_quotes(b.object.as_str())
+				});
 
-									 let symbol: String = plugin_data
-										  .iter()
-										  .filter(|&l| l.predicate == "<http://lv2plug.in/ns/lv2core#symbol>")
-										  .collect::<Vec<&&Lv2Datum>>()
-										  .iter()
-										  .fold(String::new(), |a, b| {
-												// println!("Symbol: '{a}' + '{}'", b.object);
-												a + remove_quotes(b.object.as_str())
-										  });
-									 let index: usize = plugin_data
-										  .iter()
-										  .filter(|&l| l.predicate == "<http://lv2plug.in/ns/lv2core#index>")
-										  .collect::<Vec<&&Lv2Datum>>()
-										  .iter()
-										  .fold(0_usize, |a, &b| {
-												let b2 = b.object.as_str()[1..].to_string();
-												let i = b2.find('"').expect("{b2}");
-												let b2 = b2.as_str()[..i].to_string();
-												let b2 = b2.as_str().parse::<usize>().expect("{b2} not a usize");
-												a + b2
-										  });
+			    let symbol: String = plugin_data
+				.iter()
+				.filter(|&l| l.predicate == "<http://lv2plug.in/ns/lv2core#symbol>")
+				.collect::<Vec<&&Lv2Datum>>()
+				.iter()
+				.fold(String::new(), |a, b| {
+				    // println!("Symbol: '{a}' + '{}'", b.object);
+				    a + remove_quotes(b.object.as_str())
+				});
+			    let index: usize = plugin_data
+				.iter()
+				.filter(|&l| l.predicate == "<http://lv2plug.in/ns/lv2core#index>")
+				.collect::<Vec<&&Lv2Datum>>()
+				.iter()
+				.fold(0_usize, |a, &b| {
+				    let b2 = b.object.as_str()[1..].to_string();
+				    let i = b2.find('"').expect("{b2}");
+				    let b2 = b2.as_str()[..i].to_string();
+				    let b2 = b2.as_str().parse::<usize>().expect("{b2} not a usize");
+				    a + b2
+				});
 
-									 // Usually more than one type for a port
-									 let types: Vec<PortType> = plugin_data
-										  .iter()
-										  .filter(|l| l.predicate == "<http://www.w3.org/1999/02/22-rdf-syntax-ns#type>")
-										  .collect::<Vec<&&Lv2Datum>>()
-										  .iter()
-										  .map(|&l| {
-												let i = l.object.find('#').unwrap();
-												let j = l.object.rfind('>').unwrap();
-												match &l.object.as_str()[(i + 1)..j] {
-													 // Input,
-													 // Output,
-													 // Control,
-													 // Audio,
-													 // Other(String),
-													 "InputPort" => PortType::Input,
-													 "ControlPort" => {
-														  let (min, max, default, logarthmic, scale, tp) = get_mmdls(&plugin_data, &lv2_data);
-														  PortType::Control(ControlPortProperties::new(min, max, default, logarthmic,  scale.clone(), tp,))
-													 },
-													 "OutputPort" => PortType::Output,
-													 "AudioPort" => PortType::Audio,
-													 "AtomPort" => PortType::AtomPort,
-													 x => PortType::Other(x.to_string()),
-												}
-										  })
-										  .collect();
+			    // Usually more than one type for a port
+			    let types: Vec<PortType> = plugin_data
+				.iter()
+				.filter(|l| l.predicate == "<http://www.w3.org/1999/02/22-rdf-syntax-ns#type>")
+				.collect::<Vec<&&Lv2Datum>>()
+				.iter()
+				.map(|&l| {
+				    let i = l.object.find('#').unwrap();
+				    let j = l.object.rfind('>').unwrap();
+				    match &l.object.as_str()[(i + 1)..j] {
+					// Input,
+					// Output,
+					// Control,
+					// Audio,
+					// Other(String),
+					"InputPort" => PortType::Input,
+					"ControlPort" => {
+					    if let Some((min,
+                                                 max,
+                                                 default,
+                                                 logarthmic,
+                                                 scale,
+                                                 tp)) =
+                                                get_mmdls(&plugin_data, &lv2_data) {
+					    PortType::Control(ControlPortProperties::new(
+                                                min,
+                                                max,
+                                                default,
+                                                logarthmic,
+                                                scale.clone(),
+                                                tp,))
+					        }else{
+                                                    PortType::Other(String::from("Unimplemented type(?)"))
+                                                }
+                                        },
+					"OutputPort" => PortType::Output,
+					"AudioPort" => PortType::Audio,
+					"AtomPort" => PortType::AtomPort,
+					x => PortType::Other(x.to_string()),
+				    }
+				})
+				.collect();
 
-									 Port {
-										  symbol,
-										  name,
-										  index,
-										  types,
-										  // value: None,
-									 }
-								})
-								.collect::<Vec<Port>>();
+			    Port {
+				symbol,
+				name,
+				index,
+				types,
+				// value: None,
+			    }
+			})
+			.collect::<Vec<Port>>();
                 };
 
                 let url =
@@ -483,9 +497,9 @@ impl ModHostController {
     pub fn pump_mh_queue(&mut self) {
         // self.reduce_queue();
         if !self.mh_command_queue.is_empty()
-      &&
-      // Only push a command if there is none or one command in flight
-      self.sent_commands.is_empty()
+            &&
+        // Only push a command if there is none or one command in flight
+            self.sent_commands.is_empty()
         {
             // Safe because queue is not empty
             let cmd = self.mh_command_queue.pop_front().unwrap();
@@ -595,14 +609,14 @@ pub struct ScaleDescription {
 fn get_mmdls(
     l: &[&Lv2Datum],
     lv2_data: &[Lv2Datum],
-) -> (
+) -> Option<(
     f64,
     f64,
     f64,
     bool,
     Option<ScaleDescription>,
     ContinuousType,
-) {
+)> {
     let min_set: Vec<&Lv2Datum> =
         predicate_filter(l.iter(), "<http://lv2plug.in/ns/lv2core#minimum>")
             .into_iter()
@@ -610,7 +624,8 @@ fn get_mmdls(
             .collect();
 
     if min_set.is_empty() {
-        assert!(min_set.len() == 1);
+        eprintln!("DBG {l:?}");
+        return None;
     }
     let min_set = control_number(&min_set[0].object);
     let min_type = min_set.1;
@@ -643,7 +658,8 @@ fn get_mmdls(
         // What to do if not default?
         (min, min_type.clone())
     } else {
-        panic!("Too many defaults");
+        eprintln!("Too many defaults");
+        return None;
     };
     let def_type = default_set.1;
     let default = default_set.0;
@@ -724,7 +740,7 @@ fn get_mmdls(
         "double".to_string()
     };
 
-    (
+    Some((
         min,
         max,
         default,
@@ -734,9 +750,12 @@ fn get_mmdls(
             "integer" => ContinuousType::Integer,
             "decimal" => ContinuousType::Decimal,
             "double" => ContinuousType::Double,
-            _ => panic!("{con_type}: Unknown conntrol port type"),
+            _ => {
+                eprintln!("{con_type}: Unknown conntrol port type");
+                return None;
+            }
         },
-    )
+    ))
 }
 
 // Filter Lv2Datum by predicate
