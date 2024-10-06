@@ -303,6 +303,7 @@ impl App<'_> {
                                 // Set status of Lv2 to Loaded.  Put the
                                 // simulator into the list of loaded
                                 // simulators
+
                                 let lv2: Lv2Simulator =
                                     self.lv2_stateful_list.items[i].clone();
 
@@ -311,11 +312,11 @@ impl App<'_> {
                                 self.send_mh_cmd(cmd.as_str());
 
                                 // TODO:  Move this into the handler for received messages
-
                                 self.lv2_loaded_list.items.push(lv2);
                                 self.lv2_loaded_list
                                     .items
                                     .sort_by(|a, b| a.mh_id.cmp(&b.mh_id));
+
                                 Status::Pending
                             }
 
@@ -460,13 +461,13 @@ impl App<'_> {
                             .collect();
                     }
                     for cmd in disconnect_cmds.iter() {
-                        self.mod_host_controller.send_mh_cmd(cmd.as_str());
+                        self.send_mh_cmd(cmd.as_str());
                     }
                     for cmd in input_commands.iter() {
-                        self.mod_host_controller.send_mh_cmd(cmd.as_str());
+                        self.send_mh_cmd(cmd.as_str());
                     }
                     for cmd in output_commands.iter() {
-                        self.mod_host_controller.send_mh_cmd(cmd.as_str());
+                        self.send_mh_cmd(cmd.as_str());
                     }
                 }
             }
@@ -792,7 +793,7 @@ impl App<'_> {
 
     /// Set a value displayed for the port named by `symbol` to the LV2
     /// with `instance_number`.  Port values are a matter for mod-host
-    /// to maintain.  Here they are just displayed.  SO check if
+    /// to maintain.  Here they are just displayed.  So check if
     /// `instance_number` matches the currently loaded simulater, and
     /// if so the port's value is stored in `self.control_port_vales`.
     fn update_port(
@@ -1327,7 +1328,7 @@ impl App<'_> {
     }
 
     /// F1 The main screen with all known simulators displayed.
-    /// Simulators can be loaded here.  Fo now simulators can only be
+    /// Simulators can be loaded here.  For now simulators can only be
     /// loaded once.
     fn render_list(&mut self, area: Rect, buf: &mut Buffer) {
         // Header, body, and footer
