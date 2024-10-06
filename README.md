@@ -4,6 +4,16 @@ Idiosyncratic music making system.
 
 Two Approaches.
 
+# Install
+
+```
+git clone --recurse-submodules https://github.com/worikgh/120Proof
+cd qzn3t
+./build --release
+cd ../novation-lpx/
+./build --release
+```
+
 1. Process Audio
 ---
 
