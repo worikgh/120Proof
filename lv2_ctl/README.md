@@ -18,6 +18,14 @@ Use `serdi` from the [serd](https://gitlab.com/drobilla/serd) project to get a l
 find /usr/lib/lv2/ -name "*.ttl"  | perl -e '$p = 0; while($z = <>){chomp $z;  print `serdi  -p $p $z`;$p++}' > /tmp/lv2.dat
 ```
 
+## Required software
+
+Other packages are required:
+
+* Jackd must be running
+* Mod-host 
+* 
+
 ## Running This
 
 ```

@@ -232,7 +232,7 @@ impl App<'_> {
 
     fn status_string(&self) -> String {
         format!(
-         "AppViewState({:?}) queued command({})  Last last_command({}): {:?}",
+         "AppViewState({:?}) queued command({})  Last sent_command({}): {:?}",
          self.app_view_state,
          self.mod_host_controller.mh_command_queue.len(),
          // self.mod_host_controller.mh_command_queue.iter().fold("".to_string(), |a, b| format!("{a}{b}, ")),
@@ -264,7 +264,7 @@ impl App<'_> {
         for _i in 0..len {
             let cmd = itr.nth(0).unwrap();
             let res = if cmd.starts_with("param_get ")
-                || cmd.starts_with("param_get ")
+                || cmd.starts_with("param_set ")
             {
                 let p = cmd.as_str()[9..].trim();
                 let sp = p.find(' ').unwrap_or(p.len());
@@ -320,9 +320,10 @@ impl App<'_> {
                                 Status::Pending
                             }
 
-                            // Set status of Lv2 to Unloaded.  Remove from the
-                            // list of loaded simulators
                             Status::Loaded => {
+                                // Set status of Lv2 to Unloaded.
+                                // Remove from the list of loaded
+                                // simulators
                                 if self.lv2_loaded_list.items.iter().any(|x| {
                                     x.url == self.lv2_stateful_list.items[i].url
                                 }) {
@@ -433,6 +434,8 @@ impl App<'_> {
                                         .any(|t| t == &PortType::Audio)
                             })
                             .collect::<Vec<&Port>>();
+                        eprintln!("DBG output ports: {output_ports:?}");
+                        eprintln!("DBG input ports: {input_ports:?}");
                         let mut i = 1;
                         input_commands = input_ports
                             .iter()
@@ -459,6 +462,8 @@ impl App<'_> {
                                 format!("connect {lhs} {rhs}")
                             })
                             .collect();
+                        eprintln!("DBG output commands: {output_commands:?}");
+                        eprintln!("DBG input commands: {input_commands:?}");
                     }
                     for cmd in disconnect_cmds.iter() {
                         self.send_mh_cmd(cmd.as_str());
@@ -523,6 +528,7 @@ impl App<'_> {
     /// `self.mod_host_controller.last_mh_command` resp status [value]
     fn process_response(&mut self, response: &str) {
         // Can only get a "resp " from mod-host after a command has been sent
+        eprintln!("DBG Process response: {response}");
         let resp_code = Self::get_resp_code(response);
         if !self.validate_resp(resp_code) {
             // No action to take if response not valid, except report the error
@@ -570,7 +576,7 @@ impl App<'_> {
             .unwrap()
             .to_string();
         eprintln!("DBG CMD RESP {command} -> {resp_code}: {response}");
-        let command = String::from_utf8(run_executable::rem_trail_0(
+        let command = String::from_utf8(run_executable::resp_0(
             command.as_bytes().to_vec(),
         ))
         .expect("Trim command");
@@ -618,7 +624,7 @@ impl App<'_> {
         match cmd {
             "add" => {
                 // Adding an LV2.  Get the instance number from the
-                // command, the instance number that the cammand was
+                // command, the instance number that the command was
                 // addressed to
                 let sp = command.rfind(' ').unwrap_or_else(|| {
                     panic!("Malformed command: '{command}'")
@@ -752,6 +758,7 @@ impl App<'_> {
     fn process_buffer(&mut self) {
         // If there is no '\n' in buffer, do not process it, leave it
         // till next time.  But process all lines that are available
+        eprintln!("DBG Process Buffer: '{}'", self.buffer);
         while let Some(resp_line) =
             self.buffer.as_str().find(['\n', '\r', '\u{1b}'])
         {
@@ -768,6 +775,7 @@ impl App<'_> {
                     } else {
                         resp.as_str().trim()
                     };
+
                 if !resp.is_empty() {
                     if resp.len() > 5 && &resp[0..5] == "resp " {
                         self.process_response(resp);
@@ -833,7 +841,10 @@ impl App<'_> {
             r.len(),
         );
         let res = r[..sp].trim();
-        res.parse::<isize>().unwrap()
+        match res.parse::<isize>() {
+            Ok(s) => s,
+            Err(err) => panic!("{err}: Not an isize: {res}"),
+        }
     }
 
     /// When responding to a param_get or param_set extract the
@@ -1270,9 +1281,6 @@ impl App<'_> {
             if let Ok(Some(data)) = self.mod_host_controller.try_get_resp() {
                 // // Clean up the data.
                 // let data_b = data.as_bytes();
-
-                // let data = String::from_utf8(data_b.to_vec())
-                //    .expect("Create a data string");
                 self.buffer += data.as_str();
                 self.process_buffer();
             };

@@ -5,7 +5,7 @@ use crate::port::ContinuousType;
 use crate::port::ControlPortProperties;
 use crate::port::Port;
 use crate::port::PortType;
-use crate::run_executable::rem_trail_0;
+use crate::run_executable::resp_0;
 use crate::run_executable::run_executable;
 use std::collections::HashMap;
 use std::collections::HashSet;
@@ -420,7 +420,7 @@ impl ModHostController {
                 ))
             }
         };
-        let resp = rem_trail_0(resp);
+        let resp = resp_0(resp);
         match String::from_utf8(resp) {
             Ok(s) => Ok(s),
             Err(err) => {
@@ -435,14 +435,19 @@ impl ModHostController {
         match self.output_rx.try_recv() {
             Ok(resp) => {
                 // Got some data
-                let resp: Vec<u8> = rem_trail_0(resp);
-                match String::from_utf8(resp) {
+                let resp: Vec<u8> = resp_0(resp);
+                let result = match String::from_utf8(resp) {
                     Ok(s) => Ok(Some(s)),
                     Err(err) => Err(io::Error::new(
                         io::ErrorKind::InvalidData,
                         err.to_string(),
                     )),
-                }
+                };
+                eprintln!(
+                    "DBG Process from exe: '{:?}'",
+                    result.as_ref().unwrap().as_ref()
+                );
+                result
             }
             Err(err) => match err {
                 // No data available
@@ -527,7 +532,8 @@ impl ModHostController {
                 self.connections
                     .insert(connection.to_string(), ConDisconFlight::InFlight);
             }
-            self.sent_commands.insert(cmd.trim().to_string());
+            let cmd = cmd.trim();
+            self.sent_commands.insert(cmd.to_string());
             eprintln!("DBG CMD SEND {cmd}");
             self.input_tx
                 .send(cmd.as_bytes().to_vec())
