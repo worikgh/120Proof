@@ -42,7 +42,7 @@ fn main() -> std::io::Result<()> {
     ;
     let mut mod_host_controller: ModHostController =
         ModHostController::get_lv2_controller(
-            reader.lines(), //.map(|r| r)
+            reader.lines(), 
         )?;
     // Start user interface.  Loop until user quits
     App::run(&mut mod_host_controller).expect("Running app");

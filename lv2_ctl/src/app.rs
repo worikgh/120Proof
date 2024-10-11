@@ -758,7 +758,6 @@ impl App<'_> {
     fn process_buffer(&mut self) {
         // If there is no '\n' in buffer, do not process it, leave it
         // till next time.  But process all lines that are available
-        eprintln!("DBG Process Buffer: '{}'", self.buffer);
         while let Some(resp_line) =
             self.buffer.as_str().find(['\n', '\r', '\u{1b}'])
         {
@@ -968,23 +967,23 @@ impl App<'_> {
         // Get the port
         // let port = self.control_ports.iter().nth(self.table_state.selected().unwrap()).unwrap();
         let mh_id: usize;
-        let port: &Port;
+        let port: &Port =
         if let Some(idx) = self.get_stateful_list_mut().state.selected() {
             // Connect the selected effect to system in/out
 
             mh_id = self.get_stateful_list().items[idx].mh_id;
             if let Some(i) = self.table_state.selected() {
-                port = self.control_ports.get(i).unwrap();
+                self.control_ports.get(i).unwrap()
             } else {
                 return;
             }
         } else {
             eprintln!("ERR Attempting to adjust a port when there is no simulator selected");
             return;
-        }
+        };
         // Symbol
-        let port_symbol = port.symbol.clone();
-        let value: String = match self.port_values.get(port_symbol.as_str()) {
+        let port_symbol = port.symbol.as_str();
+        let value: String = match self.port_values.get(port_symbol) {
             Some(v) => match v {
                 Some(s) => s.clone(),
                 _ => {
@@ -1005,7 +1004,7 @@ impl App<'_> {
                         // Adjust between max and min
                         let range = cppc.max - cppc.min;
                         let n: usize = 128; // 128 graduations of a MIDI control
-                        let _step = range / n as f64;
+                        let step = range / n as f64;
 
                         let v = value
                             .parse::<f64>()
@@ -1030,7 +1029,7 @@ impl App<'_> {
                                 PortAdj::Up => max - (max - v) / 2.0,
                             }
                         } else {
-                            n + _step
+                            n + step
                                 * match adj {
                                     PortAdj::Down => -1_f64,
                                     PortAdj::Up => 1_f64,
@@ -1094,6 +1093,7 @@ impl App<'_> {
                 // Test to see if file exists.  If so, load it, if not create it
                 self.app_view_state = AppViewState::Command;
                 let save_name = format!("data/{save_name}.json");
+                eprintln!("DBG save_name: {save_name}");
                 if Path::new(save_name.as_str()).exists() {
                     self.load_lv2(save_name.as_str());
                     self.dialogue = None;

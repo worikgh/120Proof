@@ -12,3 +12,11 @@ regex = "1.10.3"
 serde = { version = "1.0", features = ["derive"] }
 serde_json = "1.0"
 tui-input = "0.8.0"
+
+
+## These are useful for profiling.  If I can find a sensible profiler.
+## `flamegraph` has not been easy to understand
+# [build]
+# rustflags = ["-g", "-pg"]
+# [profile.release]
+# debug = true

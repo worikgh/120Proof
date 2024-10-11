@@ -60,6 +60,7 @@ impl ModHostController {
         let mut object_store: HashMap<String, usize> = HashMap::new();
 
         let mut index_sbj = 0;
+        
         for line in lines {
             let line = line?;
             if line.is_empty() {
@@ -110,7 +111,7 @@ impl ModHostController {
 
         // Keep track of the simulators to put into the result
         let mut simulators: Vec<Lv2> = vec![];
-
+        eprintln!("DBG Before loop over lines");
         for l in lv2_data.iter() {
             if &l.object == "<http://lv2plug.in/ns/lv2core#Plugin>" {
                 // Examine this because it is a plugin.
@@ -315,6 +316,7 @@ impl ModHostController {
                 }
             }
         }
+        eprintln!("DBG After loop over lines");
 
         eprintln!("Found {} simulators", simulators.len());
 
@@ -443,10 +445,6 @@ impl ModHostController {
                         err.to_string(),
                     )),
                 };
-                eprintln!(
-                    "DBG Process from exe: '{:?}'",
-                    result.as_ref().unwrap().as_ref()
-                );
                 result
             }
             Err(err) => match err {
