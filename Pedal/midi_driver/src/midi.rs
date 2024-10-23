@@ -53,7 +53,7 @@ impl Midi {
                             .ok_or("Invalid port number")
                             .unwrap()
                             .clone();
-                        eprintln!("this_port");
+
                         let connect = midi_in.connect(
                             &this_port,
                             format!("{}-in", this_name).as_str(),

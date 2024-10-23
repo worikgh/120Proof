@@ -23,7 +23,7 @@ fn main() -> Result<(), Box<dyn Error>> {
 fn handle_midi(b: &[u8], connection_cache: &mut MidiData) {
     match handle_midi_real(b, connection_cache) {
         Ok(_) => (),
-        Err(err) => panic!("Cannot handle midi: {err}"),
+        Err(err) => eprintln!("Cannot handle midi: {err}"),
     };
     // println!("handle_midi {:?}", b);
 }
@@ -31,7 +31,7 @@ fn handle_midi_real(
     b: &[u8],
     midi_data: &mut MidiData,
 ) -> Result<(), Box<(dyn std::error::Error + 'static)>> {
-    println!("handle_midi_real {:?}", b);
+    eprintln!("handle_midi_real {:?}", b);
     let mut jack_connetions = JackConnections::new("client_name");
     let a = b[1];
     if a == midi_data.last {
