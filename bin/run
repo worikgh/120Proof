@@ -1,0 +1,36 @@
+#!/bin/sh
+
+## Check the tools
+MODHOST=${Home120Proof}/bin/mod-host
+GETSIMS=${Home120Proof}/bin/getPedalBoardCommands.pl
+SETSIMS=${Home120Proof}/bin/setPedalBoardCommon.pl
+PEDAL=${Home120Proof}/Pedal/midi_driver/target/release/midi_driver
+TUNER=gxtuner
+VUMETER=/home/patch/vu-meter/target/release/vu-meter
+## Shut down modep and start 120Proof
+sudo systemctl stop modep-mod-ui
+sudo systemctl stop modep-mod-host
+sudo killall mod-host
+
+## Start 120Proof: mod-host first
+echo ' *Start mod-host : ' $MODHOST
+LV2_PATH=/var/modep/pedalboards:/var/modep/lv2 ${MODHOST}
+echo ' *Get simulators'
+`${GETSIMS}`
+echo ' *Set simulators'
+`${SETSIMS}`
+echo ' * Done!'
+if [ ! `pgrep -f ${PEDAL}` ] ; then
+    ${PEDAL} SINCO &
+fi
+if [ ! `pgrep -f ${TUNER}` ] ; then
+    (${TUNER} 2>&1) >/dev/null &
+fi
+# if [ ! `pgrep -f ${VUMETER}` ] ; then
+#     ${VUMETER} &
+# fi
+sleep 3
+jack_connect "system:capture_1" "gxtuner:in_0" 
+# jack_connect "system:capture_1" "VU meter:in_1" 
+
+

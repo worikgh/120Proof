@@ -1,0 +1,8 @@
+#!/bin/sh
+PEDAL=${Home120Proof}/Pedal/midi_driver/target/release/midi_driver
+if [  `pgrep -f ${PEDAL}` ] ; then
+    echo " * Kill ${PEDAL}"
+    pkill -f ${PEDAL}
+fi
+sudo killall mod-host
+sudo systemctl start modep-mod-ui
