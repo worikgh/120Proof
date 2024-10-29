@@ -16,7 +16,7 @@ my $pedal_driver = &One20Proof::get_pedal_driver;
 
 my $user = `whoami`;
 chomp $user;
-if(`pgrep -u $user-f $mod_host`){
+if(`pgrep -u $user -f $mod_host`){
     ## Need to shut down simulators before killing modep
     &One20Proof::remove_all_mod_host_simulators;
     while(&One20Proof::list_mod_host_simulators){
