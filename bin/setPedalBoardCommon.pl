@@ -97,7 +97,7 @@ sub handle_mh_cmd( $$ ) {
 	    return 1;
 	}
     }else{
-	print STDERR ">> Unexpected result! $result ";
+	print STDERR ">> Unexpected result: $result ";
     }
     return 0;
 }    
@@ -121,10 +121,7 @@ sub mod_host( $ ){
 	# warn "Process: \$cmd($cmd) \n";
 	# print STDERR  "mod-host: $cmd\n";
 	if(!$failed){
-	    if(!&handle_mh_cmd($sock, $cmd)){
-		$failed = 1;
-		last;
-	    }
+	    &handle_mh_cmd($sock, $cmd);
 	}
 	## If command was an `add` check the effects got added
 	if($cmd =~ /^add.+\s(\d+)/){

@@ -12,7 +12,7 @@ BEGIN {
 
 ## Constants
 ## Where modep puts its pedal definitions
-our $MODEP_PEDALS = "/home/worik/.pedalboards";
+our $MODEP_PEDALS = "/var/modep/pedalboards";
 
 ## Where the files for the foot pedal are
 our $PEDAL_DIR = "$ENV{'Home120Proof'}/Pedal/PEDALS";

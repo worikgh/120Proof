@@ -1,6 +1,5 @@
 #!/usr/bin/perl -w
 use strict;
-## InitialiseMidi
 use lib("$ENV{'Home120Proof'}/Perl");
 use One20Proof;
 
@@ -277,6 +276,63 @@ sub set_up_midi( $ ) {
 	print `aconnect  $cn`;
     }
     print "Done\n";
+    # ## Filter %connections_to_delete to remove the ones from the
+    # ## configuration file that are to keep
+    # my %delt_with = (); ## The same pair can be in @connections more than once
+    # foreach my $pair (@connections){
+    # 	my $from_dev = $midi_devices_by_str{"$$pair[0]"};
+    #     defined $from_dev or die "No MIDI device for: $$pair[0]";
+    #     my $to_dev = $midi_devices_by_str{"$$pair[1]"};
+    #     defined $to_dev or die "No MIDI device for: $$pair[1]";
+    #     my $key = join(":", @$from_dev)." ".  join(":", @$to_dev);
+
+    # 	defined($delt_with{$key}) and next;
+    #     $delt_with{$key} = 1;
+    # 	my @keys_to_not_delete = grep {
+    # 	    # Do not delete connections to devices we do not use
+    # 	    my $fd = join(":", @$from_dev);
+    # 	    my $td = join(":", @$to_dev);
+    # 	    $_ !~ /$td/ and $_ !~  /$fd/
+    # 	} keys %connections_to_delete;
+    # 	foreach my $k (@keys_to_not_delete){
+    # 	    delete($connections_to_delete{"$k"});
+    # 	}
+
+    #     if(defined($connections_to_delete{"$key"})){
+    #         delete($connections_to_delete{"$key"});
+    #     }else{
+    #         ## Connection in config but not made
+    #         $connections_to_make{"$key"} = 1;
+    #     }
+
+
+    # }
+
+    # ## Got all the connections that need to be deleted.
+    # my @to_delete =  keys(%connections_to_delete);
+    # print "To Delete:\n".join(",", @to_delete)."\n";
+    # sub del_con( $ ) {
+    #     my ($l) = @_;
+    #     my $cmd = "aconnect -d $l";
+    #     `$cmd`;
+    #     $? == 0 or print STDERR "Failed $?: $cmd \n";
+    # }
+    # map {&del_con($_)} @to_delete;
+    # # print("Finished\n");
+
+    # ## Now make the connections
+    # ## Make new connections
+    # sub make_con( $ ) {
+    #     my ($l) = @_;
+    #     my $cmd = "aconnect $l";
+    #     `$cmd`;
+    #     $? == 0 or print STDERR "Failed $?: $cmd \n";
+    # }
+    # my @to_connect = keys %connections_to_make;
+    # print "To Connect:\n".join(", ", @to_connect)."\n";
+    # foreach my $l (@to_connect){
+    #     &make_con($l);
+    # }
 }
 
 ## Parse output of aconnect -l to make a list of all MIDI connections  that
