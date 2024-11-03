@@ -2,37 +2,77 @@
 
 Idiosyncratic music making system.
 
+Designed to run on a Raspberry Pi using a [Pisound](https://blokas.io/pisound/) card
+
 Two Approaches.
 
 1. Process Audio
----
+2. Route MIDI
+
+## Processing Audio
 
 Use [JACK Audio Connection Kit](https://github.com/jackaudio) to route audio from a sound card through an effects chain.
 
 The effects chain includes LV2 simulators,  [`mod-ui`]() is used to configure them.
 
-2. Route MIDI
----
+Uses [Modep](https://blokas.io/modep/) to build virtual pedal boards and effect chains
+
+The programme `bin/run` reads the `Modep`  configuration  files and loads the simulators into memory.  The `Jack` connections are made between the simulators,  but not the connections to the input and output.  In the directory `120Proof/pedal/PEDALS/` it leaves a file for each pedal described in `Modep` that describes the input and output Jack connections to make to enable that "pedal board".  These description files are named for the names assigned the "pedal boards" in `Modep`.
+
+The programme in `Pedal/midi_driver/` acts as a driver for a MIDI pedal (currently only one MIDI pedal SINCO is supported).  Depressing a key on the SINCO pedal (there are four) reads the `Jack` connections from one of four files in `120Proof/pedal/PEDALS/` (`120Proof/pedal/PEDALS/A` to `120Proof/pedal/PEDALS/D`) that are symbolic links to one of the files created by `120Proof/bin/run`. 
+
+Creating links in `120Proof/pedal/PEDALS/` is how each MIDI pedal is assigned to a "pedal board"
+
+### The Guitar Tuner
+
+`120Proof/bin/run` starts [`gxtuner`](https://directory.fsf.org/wiki/Gxtuner) and connects it to the `Jack` inputs.  When started using the `Pisound` button  (see below) it is the only window open.
+
+### Integration with Pisound
+
+The `Pisound` card has a physical button.  It can be assigned various functions for single, double, and more, "clicks".
+
+Press the button once starts `120Proof` in audio routing (guitar pedal) mode.
+
+Press the button twice and `Modep` is started
+
+To set up the button edit `/usr/local/patchbox-modules/modep/pisound-btn.conf` and edit the two lines:
+
+```
+CLICK_1	<path to start script>
+CLICK_2	<path to stop script>
+```
+
+The script to start `120Proof` in audio processing mode calls the button common script, sets up the `Home120Proof` environment variable, and calls `120Proof/bin/run`
+
+(In this case the default user is left as [`Patchbox-OS`](https://blokas.io/patchbox-os/) set it).
+
+
+```sh
+. /usr/local/pisound/scripts/common/common.sh
+export Home120Proof=/home/patch/120Proof
+${Home120Proof}/bin/run
+```
+
+The script to stop the `120Proof` (and start `Modep`) is:
+
+```sh
+. /usr/local/pisound/scripts/common/common.sh
+/home/patch/120Proof/bin/stop
+```
+
+## Routing MIDI
 
 Process MIDI signals using [ALSA MIDI](https://github.com/opensrc/alsa/blob/master/lib/md/AlsaMidi.md) from input devices and use them to controll [Yoshimi](https://yoshimi.sourceforge.io/) or [Pure Data](https://puredata.info/).
 
-A sample player 
+This is still a work in progress and is not being used 
 
-Code to control the display of an LPX
-
-
-## Audio Processing Workflow
-
-TODO:  Must have guitar tuner always set up and ready
-
-* Use `mod-ui` to create pedal boards
-* Run `getPedalBoardCommands.pl` to create pedal definitions
-* Run `setPedalBoardCommon.pl` to set up the simulators
-TBC
+---
+---
+Below here is incomplete and probably confusing
+---
+---
 
 ## General Setup for All Instrumets/Configurations
-
-
 
 
 The LV2 pedal boards are initialised using `modep-mod-host` and `modep-mod-ui`.  The simulators are initialised and the Jack pipes between them set up.
