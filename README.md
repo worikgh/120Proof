@@ -13,9 +13,7 @@ Two Approaches.
 
 Use [JACK Audio Connection Kit](https://github.com/jackaudio) to route audio from a sound card through an effects chain.
 
-The effects chain includes LV2 simulators,  [`mod-ui`]() is used to configure them.
-
-Uses [Modep](https://blokas.io/modep/) to build virtual pedal boards and effect chains
+The effects chain is made from  LV2 simulators.  Uses [Modep](https://blokas.io/modep/) to build the virtual pedal boards and effect chains
 
 The programme `bin/run` reads the `Modep`  configuration  files and loads the simulators into memory.  The `Jack` connections are made between the simulators,  but not the connections to the input and output.  In the directory `120Proof/pedal/PEDALS/` it leaves a file for each pedal described in `Modep` that describes the input and output Jack connections to make to enable that "pedal board".  These description files are named for the names assigned the "pedal boards" in `Modep`.
 
