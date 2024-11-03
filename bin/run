@@ -1,12 +1,12 @@
 #!/bin/sh
 print STDERR "120Proof: run\n";
-## Check the tools
+## The tools
 MODHOST=${Home120Proof}/bin/mod-host
 GETSIMS=${Home120Proof}/bin/getPedalBoardCommands.pl
 SETSIMS=${Home120Proof}/bin/setPedalBoardCommon.pl
 PEDAL=${Home120Proof}/Pedal/midi_driver/target/release/midi_driver
 TUNER=/usr/bin/gxtuner
-VUMETER=/home/patch/vu-meter/target/release/vu-meter
+
 ## Shut down modep and start 120Proof
 sudo systemctl stop modep-mod-ui
 sudo systemctl stop modep-mod-host
@@ -35,11 +35,8 @@ else
     echo "120Proof  ${TUNER} already running"
     
 fi
-# if [ ! `pgrep -f ${VUMETER}` ] ; then
-#     ${VUMETER} &
-# fi
 sleep 3
 jack_connect "system:capture_1" "gxtuner:in_0" 
-# jack_connect "system:capture_1" "VU meter:in_1" 
+
 
 
